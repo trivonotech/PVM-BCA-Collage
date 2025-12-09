@@ -1,0 +1,27 @@
+[build]
+  command = "npm run build:client"
+  functions = "netlify/functions"
+  publish = "dist/spa"
+
+[build.environment]
+  GIT_LFS_SKIP_SMUDGE = "1"
+
+[build.processing]
+  skip_processing = false
+
+
+[functions]
+  external_node_modules = ["express"]
+  node_bundler = "esbuild"
+  
+[[redirects]]
+  force = true
+  from = "/api/*"
+  status = 200
+  to = "/.netlify/functions/api/:splat"
+
+# SPA Fallback Rule - Fixes "Page Not Found" on reload
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
