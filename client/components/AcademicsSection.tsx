@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 
+
 export default function AcademicsSection() {
   const [activeIndex, setActiveIndex] = useState(0);
   const carouselRef = useRef<HTMLDivElement>(null);
@@ -125,6 +126,15 @@ export default function AcademicsSection() {
           ))}
         </div>
       </div>
+      <style>{`
+        .hide-scrollbar::-webkit-scrollbar {
+          display: none;
+        }
+        .hide-scrollbar {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+      `}</style>
       <style>{`
         .hide-scrollbar::-webkit-scrollbar {
           display: none;
