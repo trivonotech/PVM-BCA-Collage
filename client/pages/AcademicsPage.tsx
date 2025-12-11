@@ -1,6 +1,7 @@
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { BookOpen, Download, Calendar, FileText, GraduationCap } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 export default function AcademicsPage() {
     const courses = [
@@ -9,28 +10,32 @@ export default function AcademicsPage() {
             duration: '3 Years',
             seats: 120,
             eligibility: '10+2 with minimum 50%',
-            color: 'from-[#BFD8FF] to-[#E5E7EB]'
+            color: 'from-[#BFD8FF] to-[#E5E7EB]',
+            link: '/bba'
         },
         {
             name: 'Bachelor of Commerce (B.Com)',
             duration: '3 Years',
             seats: 100,
             eligibility: '10+2 with minimum 45%',
-            color: 'from-[#FFF5F5] to-[#FFE5E5]'
+            color: 'from-[#FFF5F5] to-[#FFE5E5]',
+            link: '/bcom'
         },
         {
             name: 'Bachelor of Computer Applications (BCA)',
             duration: '3 Years',
             seats: 80,
             eligibility: '10+2 with Mathematics',
-            color: 'from-[#FFF9E5] to-[#FFEED5]'
+            color: 'from-[#FFF9E5] to-[#FFEED5]',
+            link: '/bca'
         },
         {
             name: 'Bachelor of Science (B.Sc)',
             duration: '3 Years',
             seats: 90,
             eligibility: '10+2 with Science stream',
-            color: 'from-[#E5F9E5] to-[#D5F5D5]'
+            color: 'from-[#E5F9E5] to-[#D5F5D5]',
+            link: '/bsc'
         }
     ];
 
@@ -97,9 +102,11 @@ export default function AcademicsPage() {
                                                 <span>{course.eligibility}</span>
                                             </div>
                                         </div>
-                                        <button className="w-full py-3 bg-[#0B0B3B] text-white rounded-xl font-bold hover:bg-[#1a1a5e] transition-colors">
-                                            View Details →
-                                        </button>
+                                        <Link to={course.link || '#'} className="block w-full">
+                                            <button className="w-full py-3 bg-[#0B0B3B] text-white rounded-xl font-bold hover:bg-[#1a1a5e] transition-colors">
+                                                View Details →
+                                            </button>
+                                        </Link>
                                     </div>
                                 </div>
                             ))}
