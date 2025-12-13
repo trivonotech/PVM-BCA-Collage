@@ -85,7 +85,20 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         });
 
         return () => unsubscribe();
+
     }, [user?.uid]); // Only re-subscribe if UID changes (e.g. login)
+
+    // Lock body scroll when mobile sidebar is open
+    useEffect(() => {
+        if (sidebarOpen) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = 'unset';
+        }
+        return () => {
+            document.body.style.overflow = 'unset';
+        };
+    }, [sidebarOpen]);
 
     const userPermissions = user?.permissions || [];
     const isSuperAdmin = user?.role === 'super_admin';
@@ -108,17 +121,17 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
 
             {/* Sidebar */}
             <aside
-                className={`fixed top-0 left-0 h-full bg-[#0B0B3B] text-white w-64 transform transition-transform duration-300 z-40 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+                className={`fixed top-0 left-0 h-full bg-[#0B0B3B] text-white w-64 transform transition-transform duration-300 z-40 flex flex-col ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'
                     } lg:translate-x-0`}
             >
                 {/* Logo Section */}
-                <div className="p-6 border-b border-gray-700">
+                <div className="p-6 border-b border-gray-700 flex-shrink-0">
                     <h1 className="text-2xl font-bold text-white">PVM BCA</h1>
                     <p className="text-sm text-gray-400 mt-1">Admin Panel</p>
                 </div>
 
                 {/* Menu Items */}
-                <nav className="p-4 space-y-2 overflow-y-auto h-[calc(100vh-180px)] scrollbar-hide">
+                <nav className="flex-1 overflow-y-auto p-4 space-y-2 scrollbar-hide">
                     <style>{`
             .scrollbar-hide::-webkit-scrollbar {
               display: none;
@@ -149,7 +162,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                 </nav>
 
                 {/* Logout Button */}
-                <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-700">
+                <div className="p-4 border-t border-gray-700 flex-shrink-0">
                     <button
                         onClick={handleLogout}
                         className="flex items-center gap-3 px-4 py-3 rounded-lg w-full text-gray-300 hover:bg-red-600 hover:text-white transition-all"
