@@ -37,7 +37,7 @@ export function Hero() {
                     <img
                         src={heroIllustration}
                         alt="Student"
-                        className="w-full max-w-xs lg:max-w-xl object-contain transform lg:-translate-x-10"
+                        className="w-full max-w-xs lg:max-w-xl object-contain transform lg:translate-x-12"
                     />
                 </div>
 

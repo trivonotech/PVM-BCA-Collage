@@ -1,0 +1,236 @@
+import { ReactNode, useState, useEffect } from 'react';
+import { db } from '@/lib/firebase';
+import { doc, onSnapshot } from 'firebase/firestore';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import {
+    LayoutDashboard,
+    Calendar,
+    Trophy,
+    Dumbbell,
+    Lightbulb,
+    Newspaper,
+    Users,
+    Award,
+    Briefcase,
+    BookOpen,
+    Settings,
+    LogOut,
+    Menu,
+    X,
+    Eye,
+    ShieldAlert
+} from 'lucide-react';
+
+interface AdminLayoutProps {
+    children: ReactNode;
+}
+
+export default function AdminLayout({ children }: AdminLayoutProps) {
+    const [sidebarOpen, setSidebarOpen] = useState(false);
+    const location = useLocation();
+    const navigate = useNavigate();
+
+    const menuItems = [
+        { icon: LayoutDashboard, label: 'Dashboard', path: '/admin', permission: 'dashboard' },
+        { icon: Calendar, label: 'Events', path: '/admin/events', permission: 'events' },
+        { icon: Trophy, label: 'Top Students', path: '/admin/students', permission: 'students' },
+        { icon: Dumbbell, label: 'Sports', path: '/admin/sports', permission: 'sports' },
+        { icon: Lightbulb, label: 'Workshops', path: '/admin/workshops', permission: 'workshops' },
+        { icon: Newspaper, label: 'News', path: '/admin/news', permission: 'news' },
+        { icon: Users, label: 'Faculty', path: '/admin/faculty', permission: 'faculty' },
+        { icon: Award, label: 'Achievements', path: '/admin/achievements', permission: 'achievements' },
+        { icon: Briefcase, label: 'Placements', path: '/admin/placements', permission: 'placements' },
+        { icon: BookOpen, label: 'Courses', path: '/admin/courses', permission: 'courses' },
+        { icon: Eye, label: 'Section Visibility', path: '/admin/visibility', permission: 'visibility' },
+        { icon: Users, label: 'User Management', path: '/admin/users', permission: 'user_management' },
+        { icon: Settings, label: 'Settings', path: '/admin/settings', permission: 'settings' },
+    ];
+
+    // State for user data to handle real-time updates
+    const [user, setUser] = useState(() => {
+        const userStr = localStorage.getItem('user');
+        return userStr ? JSON.parse(userStr) : null;
+    });
+
+    const handleLogout = () => {
+        localStorage.removeItem('isAuthenticated');
+        localStorage.removeItem('user');
+        navigate('/admin/login');
+    };
+
+    // Real-time listener for user permissions
+    useEffect(() => {
+        if (!user?.uid) return;
+
+        const unsubscribe = onSnapshot(doc(db, 'users', user.uid), (snapshot) => {
+            if (snapshot.exists()) {
+                const userData = snapshot.data();
+                // Create updated user object
+                const updatedUser = {
+                    ...user,
+                    ...userData,
+                    // Ensure local fields like uid don't get overwritten if missing in doc (usually they are consistent)
+                };
+
+                // Only update if changes detected to avoid loops (though onSnapshot is usually smart)
+                if (JSON.stringify(updatedUser.permissions) !== JSON.stringify(user.permissions) ||
+                    updatedUser.role !== user.role) {
+                    setUser(updatedUser);
+                    localStorage.setItem('user', JSON.stringify(updatedUser));
+                }
+            } else {
+                // User document deleted (ban/remove)
+                handleLogout();
+            }
+        });
+
+        return () => unsubscribe();
+    }, [user?.uid]); // Only re-subscribe if UID changes (e.g. login)
+
+    const userPermissions = user?.permissions || [];
+    const isSuperAdmin = user?.role === 'super_admin';
+
+    const filteredMenuItems = menuItems.filter(item => {
+        if (isSuperAdmin) return true;
+        if (userPermissions.includes('all')) return true;
+        return userPermissions.includes(item.permission);
+    });
+
+    return (
+        <div className="min-h-screen bg-gray-50">
+            {/* Mobile Header */}
+            <div className="lg:hidden fixed top-0 left-0 right-0 bg-[#0B0B3B] text-white px-4 py-3 flex items-center justify-between z-50">
+                <h1 className="text-xl font-bold">Admin Panel</h1>
+                <button onClick={() => setSidebarOpen(!sidebarOpen)}>
+                    {sidebarOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+                </button>
+            </div>
+
+            {/* Sidebar */}
+            <aside
+                className={`fixed top-0 left-0 h-full bg-[#0B0B3B] text-white w-64 transform transition-transform duration-300 z-40 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+                    } lg:translate-x-0`}
+            >
+                {/* Logo Section */}
+                <div className="p-6 border-b border-gray-700">
+                    <h1 className="text-2xl font-bold text-white">PVM BCA</h1>
+                    <p className="text-sm text-gray-400 mt-1">Admin Panel</p>
+                </div>
+
+                {/* Menu Items */}
+                <nav className="p-4 space-y-2 overflow-y-auto h-[calc(100vh-180px)] scrollbar-hide">
+                    <style>{`
+            .scrollbar-hide::-webkit-scrollbar {
+              display: none;
+            }
+            .scrollbar-hide {
+              -ms-overflow-style: none;
+              scrollbar-width: none;
+            }
+          `}</style>
+                    {filteredMenuItems.map((item) => {
+                        const Icon = item.icon;
+                        const isActive = location.pathname === item.path;
+                        return (
+                            <Link
+                                key={item.path}
+                                to={item.path}
+                                onClick={() => setSidebarOpen(false)}
+                                className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${isActive
+                                    ? 'bg-blue-600 text-white shadow-lg'
+                                    : 'text-gray-300 hover:bg-gray-800 hover:text-white'
+                                    }`}
+                            >
+                                <Icon className="w-5 h-5" />
+                                <span className="font-medium">{item.label}</span>
+                            </Link>
+                        );
+                    })}
+                </nav>
+
+                {/* Logout Button */}
+                <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-700">
+                    <button
+                        onClick={handleLogout}
+                        className="flex items-center gap-3 px-4 py-3 rounded-lg w-full text-gray-300 hover:bg-red-600 hover:text-white transition-all"
+                    >
+                        <LogOut className="w-5 h-5" />
+                        <span className="font-medium">Logout</span>
+                    </button>
+                </div>
+            </aside>
+
+            {/* Overlay for mobile */}
+            {sidebarOpen && (
+                <div
+                    className="fixed inset-0 bg-black/50 z-30 lg:hidden"
+                    onClick={() => setSidebarOpen(false)}
+                />
+            )}
+
+            {/* Main Content */}
+            <main className="lg:ml-64 min-h-screen pt-16 lg:pt-0">
+                <div className="p-4 lg:p-8">
+                    {(() => {
+                        // Route Security Check
+                        const routePermissions: Record<string, string> = {
+                            '/admin': 'dashboard', // Explicitly protect dashboard
+                            '/admin/events': 'events',
+                            '/admin/students': 'students',
+                            '/admin/sports': 'sports',
+                            '/admin/workshops': 'workshops',
+                            '/admin/news': 'news',
+                            '/admin/faculty': 'faculty',
+                            '/admin/achievements': 'achievements',
+                            '/admin/placements': 'placements',
+                            '/admin/courses': 'courses',
+                            '/admin/visibility': 'visibility',
+                            '/admin/users': 'user_management',
+                            '/admin/settings': 'settings'
+                        };
+
+                        let hasAccess = true;
+                        if (!isSuperAdmin && !userPermissions.includes('all')) {
+                            // Find the most specific (longest) matching route
+                            const matchedRoute = Object.entries(routePermissions)
+                                .sort((a, b) => b[0].length - a[0].length) // Sort by length desc
+                                .find(([route]) =>
+                                    location.pathname === route || location.pathname.startsWith(route + '/')
+                                );
+
+                            if (matchedRoute) {
+                                const requiredPermission = matchedRoute[1];
+                                if (!userPermissions.includes(requiredPermission)) {
+                                    hasAccess = false;
+                                }
+                            }
+                        }
+
+                        if (!hasAccess) {
+                            return (
+                                <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
+                                    <div className="bg-red-50 p-6 rounded-full mb-6">
+                                        <ShieldAlert className="w-16 h-16 text-red-600" />
+                                    </div>
+                                    <h2 className="text-3xl font-bold text-gray-900 mb-4">Access Denied</h2>
+                                    <p className="text-gray-600 max-w-md mb-8">
+                                        You do not have permission to access the <strong>{location.pathname}</strong> section.
+                                        Please contact the Super Admin if you believe this is an error.
+                                    </p>
+                                    <button
+                                        onClick={() => navigate(filteredMenuItems[0]?.path || '/admin/login')}
+                                        className="bg-blue-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-blue-700 transition-colors shadow-lg"
+                                    >
+                                        Return to {filteredMenuItems[0]?.label || 'Login'}
+                                    </button>
+                                </div>
+                            );
+                        }
+
+                        return children;
+                    })()}
+                </div>
+            </main>
+        </div>
+    );
+}

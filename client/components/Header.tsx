@@ -2,10 +2,12 @@ import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { Menu, X, ChevronDown } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
+import { useSectionVisibility } from '@/hooks/useSectionVisibility';
 // Import the logo
 import logo from '../assets/institute-logo.png';
 
 export default function Header() {
+  const { isVisible } = useSectionVisibility();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [expandedMobile, setExpandedMobile] = useState<string | null>(null);
   const location = useLocation();
@@ -23,32 +25,38 @@ export default function Header() {
   }, [mobileOpen]);
 
   const navItems = [
-    { label: 'Home', href: '/' },
-    { label: 'About', href: '/about' },
+    { label: 'Home', href: '/', visible: true },
+    { label: 'About', href: '/about', visible: isVisible('aboutHero') },
     {
       label: 'Academics',
       submenu: [
-        { label: 'All Courses', href: '/academics' },
-        { label: 'Examinations & Results', href: '/examinations' },
-      ]
+        { label: 'All Courses', href: '/academics', visible: isVisible('academicsHero') },
+        { label: 'Examinations & Results', href: '/examinations', visible: isVisible('examinationsHero') },
+      ].filter(item => item.visible !== false)
     },
-    { label: 'Admissions', href: '/admissions' },
+    { label: 'Admissions', href: '/admissions', visible: true },
     {
       label: 'Campus Life',
       submenu: [
-        { label: 'Student Life & Activities', href: '/student-life' },
-        { label: 'Placements', href: '/placements' },
-        { label: 'News & Updates', href: '/news' },
-      ]
+        { label: 'Student Life & Activities', href: '/student-life', visible: isVisible('studentLifeHero') },
+        { label: 'Placements', href: '/placements', visible: isVisible('placementsHero') },
+        { label: 'News & Updates', href: '/news', visible: isVisible('newsHero') },
+      ].filter(item => item.visible !== false)
     },
     {
       label: 'Resources',
       submenu: [
-        { label: 'Student Corner', href: '/student-corner' },
-        { label: 'Contact Us', href: '/contact' },
-      ]
+        { label: 'Student Corner', href: '/student-corner', visible: true },
+        { label: 'Contact Us', href: '/contact', visible: isVisible('contactHero') },
+      ].filter(item => item.visible !== false)
     },
-  ];
+  ].filter(item => {
+    // Hide top-level items if they have a visible property set to false
+    if (item.visible === false) return false;
+    // Hide top-level items with empty submenus (if filtering removed all children)
+    if (item.submenu && item.submenu.length === 0) return false;
+    return true;
+  });
 
   const isActiveMenu = (item: any) => {
     if (item.href) {
@@ -118,12 +126,14 @@ export default function Header() {
           {/* Right Side Actions */}
           <div className="flex items-center gap-4 z-10">
             {/* Contact Button - Desktop */}
-            <Link
-              to="/contact"
-              className="hidden lg:block px-6 py-3 bg-[#BFD8FF] rounded-full text-[#0B0B3B] text-sm font-bold hover:bg-blue-200 transition-colors"
-            >
-              Contact Us
-            </Link>
+            {isVisible('contactHero') && (
+              <Link
+                to="/contact"
+                className="hidden lg:block px-6 py-3 bg-[#BFD8FF] rounded-full text-[#0B0B3B] text-sm font-bold hover:bg-blue-200 transition-colors"
+              >
+                Contact Us
+              </Link>
+            )}
 
             {/* Mobile Menu Button */}
             <button
@@ -228,13 +238,15 @@ export default function Header() {
                   </div>
                 </div>
 
-                <Link
-                  to="/contact"
-                  onClick={() => setMobileOpen(false)}
-                  className="w-full py-3 bg-[#BFD8FF] rounded-xl text-[#0B0B3B] font-bold hover:bg-blue-200 transition-colors shadow-sm block text-center"
-                >
-                  Contact Us
-                </Link>
+                {isVisible('contactHero') && (
+                  <Link
+                    to="/contact"
+                    onClick={() => setMobileOpen(false)}
+                    className="w-full py-3 bg-[#BFD8FF] rounded-xl text-[#0B0B3B] font-bold hover:bg-blue-200 transition-colors shadow-sm block text-center"
+                  >
+                    Contact Us
+                  </Link>
+                )}
               </div>
             </div>
           </div>
