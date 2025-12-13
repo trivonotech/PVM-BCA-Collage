@@ -297,6 +297,6 @@ export default function NewsDetailPage() {
             </section>
 
             <Footer />
-        </div>
+        </div >
     );
 }
