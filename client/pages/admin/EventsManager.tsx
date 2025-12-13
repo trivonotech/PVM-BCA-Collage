@@ -354,6 +354,7 @@ export default function EventsManager() {
                 isOpen={showModal}
                 onClose={() => setShowModal(false)}
                 title={editingEvent ? 'Edit Event' : 'Add New Event'}
+                hideScrollbar={true}
             >
                 <form onSubmit={handleSubmit} className="space-y-6">
                     {/* Event Name */}
