@@ -214,19 +214,19 @@ export default function SectionVisibilityManager() {
                             <div key={page} className="bg-white rounded-2xl shadow-lg overflow-hidden">
                                 {/* Page Header */}
                                 <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-6 border-b-2 border-gray-200">
-                                    <div className="flex items-center justify-between">
+                                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                                         <div>
                                             <h2 className="text-2xl font-bold text-gray-900">{page} Page</h2>
                                             <p className="text-gray-600 mt-1">
                                                 {stats.visible} of {stats.total} sections visible
                                             </p>
                                         </div>
-                                        <div className="flex gap-2">
+                                        <div className="flex gap-2 self-start md:self-auto">
                                             <button
                                                 type="button"
                                                 onClick={() => toggleAllInPage(page, true)}
                                                 disabled={allVisible}
-                                                className={`px-4 py-2 rounded-lg font-semibold transition-all ${allVisible
+                                                className={`px-4 py-2 rounded-lg font-semibold transition-all whitespace-nowrap text-sm md:text-base ${allVisible
                                                     ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
                                                     : 'bg-green-600 text-white hover:bg-green-700'
                                                     } `}

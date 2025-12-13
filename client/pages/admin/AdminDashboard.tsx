@@ -141,7 +141,7 @@ export default function AdminDashboard() {
                 </div>
 
                 {/* Stats Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
                     {stats.map((stat, idx) => {
                         const Icon = stat.icon;
                         return (
@@ -214,14 +214,14 @@ export default function AdminDashboard() {
 
                 {/* System Info */}
                 <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-2xl p-6 text-white shadow-lg">
-                    <div className="flex items-center justify-between">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                         <div>
                             <h3 className="text-lg font-semibold mb-2">System Status</h3>
-                            <p className="text-blue-100">All systems operational • Firebase ready for integration</p>
+                            <p className="text-blue-100 text-sm">All systems operational • Firebase ready</p>
                         </div>
-                        <div className="flex items-center gap-2">
-                            <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse" />
-                            <span className="text-sm font-medium">Online</span>
+                        <div className="flex items-center gap-2 bg-white/10 px-4 py-2 rounded-full self-start sm:self-auto">
+                            <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse flex-shrink-0" />
+                            <span className="text-sm font-medium whitespace-nowrap">Online</span>
                         </div>
                     </div>
                 </div>

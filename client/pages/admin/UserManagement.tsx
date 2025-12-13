@@ -247,7 +247,7 @@ export default function UserManagement() {
         <AdminLayout>
             <div className="max-w-6xl space-y-6">
                 {/* Header */}
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div>
                         <h1 className="text-3xl font-bold text-gray-900">User Management</h1>
                         <p className="text-gray-600 mt-2">
@@ -452,7 +452,7 @@ export default function UserManagement() {
                                 {/* Role Selection */}
                                 <div className="space-y-4">
                                     <h3 className="font-bold text-lg text-gray-900">Role</h3>
-                                    <div className="grid grid-cols-2 gap-4">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <div
                                             onClick={() => setFormData({ ...formData, role: 'super_admin', permissions: ['all'] })}
                                             className={`p-4 border-2 rounded-xl cursor-pointer transition-all ${formData.role === 'super_admin'

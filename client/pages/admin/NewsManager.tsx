@@ -273,7 +273,7 @@ export default function NewsManager() {
 
     return (
         <AdminLayout>
-            <div className="p-8">
+            <div className="p-4 md:p-8">
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                     <div>
                         <h1 className="text-3xl font-bold text-gray-900">News Management</h1>
@@ -281,16 +281,16 @@ export default function NewsManager() {
                             Review and manage student-submitted news articles
                         </p>
                     </div>
-                    <div>
+                    <div className="flex flex-wrap items-center gap-3">
                         <button
                             onClick={handleRestoreLegacy}
-                            className="mr-3 text-blue-600 hover:text-blue-800 font-semibold text-sm underline"
+                            className="text-blue-600 hover:text-blue-800 font-semibold text-sm underline whitespace-nowrap"
                         >
                             Find Missing/Legacy News
                         </button>
                         <button
                             onClick={handleAddNew}
-                            className="bg-blue-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-blue-700 transition-colors inline-flex items-center gap-2 shadow-lg"
+                            className="bg-blue-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-blue-700 transition-colors inline-flex items-center gap-2 shadow-lg whitespace-nowrap"
                         >
                             <Plus className="w-5 h-5" />
                             Add News
@@ -299,7 +299,8 @@ export default function NewsManager() {
                 </div>
 
                 {/* Tabs */}
-                <div className="flex gap-2 mb-6 border-b border-gray-200">
+                {/* Mobile: Wrapped flex for visibility */}
+                <div className="flex flex-wrap gap-2 mb-6 border-b border-gray-200">
                     {tabs.map(tab => {
                         const Icon = tab.icon;
                         const isActive = activeTab === tab.key;
@@ -310,7 +311,7 @@ export default function NewsManager() {
                                     setActiveTab(tab.key);
                                     setLoading(true);
                                 }}
-                                className={`flex items-center gap-2 px-6 py-3 font-semibold border-b-2 transition-all ${isActive
+                                className={`flex items-center gap-2 px-4 py-2 md:px-6 md:py-3 font-semibold border-b-2 transition-all whitespace-nowrap text-sm md:text-base ${isActive
                                     ? `border-${tab.color}-600 text-${tab.color}-600`
                                     : 'border-transparent text-gray-500 hover:text-gray-700'
                                     }`}
@@ -340,15 +341,15 @@ export default function NewsManager() {
                 ) : (
                     <div className="grid grid-cols-1 gap-6">
                         {news.map(item => (
-                            <div key={item.id} className="bg-white rounded-xl shadow-md p-6 border border-gray-200">
-                                <div className="flex gap-6">
+                            <div key={item.id} className="bg-white rounded-xl shadow-md p-4 md:p-6 border border-gray-200">
+                                <div className="flex flex-col md:flex-row gap-4 md:gap-6">
                                     {/* Image */}
                                     {item.imageUrl && (
                                         <div className="flex-shrink-0">
                                             <img
                                                 src={item.imageUrl}
                                                 alt={item.title}
-                                                className="w-48 h-32 object-cover rounded-lg"
+                                                className="w-full h-48 md:w-48 md:h-32 object-cover rounded-lg"
                                             />
                                         </div>
                                     )}
@@ -380,7 +381,7 @@ export default function NewsManager() {
                                         </div>
 
                                         {/* Action Buttons */}
-                                        <div className="flex gap-2">
+                                        <div className="flex flex-wrap gap-2">
                                             {activeTab === 'pending' && (
                                                 <>
                                                     <button
