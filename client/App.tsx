@@ -5,7 +5,7 @@ import { createRoot } from "react-dom/client";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import Index from "./pages/Index";
 import AboutPage from "./pages/AboutPage";
 import AcademicsPage from "./pages/AcademicsPage";
@@ -29,18 +29,31 @@ import SectionVisibilityManager from "./pages/admin/SectionVisibilityManager";
 import UserManagement from "./pages/admin/UserManagement";
 import NewsManager from "./pages/admin/NewsManager";
 import ProtectedRoute from "./components/admin/ProtectedRoute";
+import PlaceholderPage from "./pages/admin/PlaceholderPage";
+import PlacementsManager from "./pages/admin/PlacementsManager";
+import CoursesManager from "./pages/admin/CoursesManager";
 
 import ScrollToTop from "./components/ScrollToTop";
 
+import { usePageTracker } from "@/hooks/usePageTracker";
+import { lazy, Suspense } from "react";
+import { GlobalErrorBoundary } from "@/components/GlobalErrorBoundary";
+import { SecurityMonitor } from "@/components/SecurityMonitor";
+
+const PageContentManager = lazy(() => import("./pages/admin/PageContentManager"));
+const SystemHealth = lazy(() => import("./pages/admin/SystemHealth"));
+
+const PageEditor = lazy(() => import("./pages/admin/editors/PageEditor"));
+
 const queryClient = new QueryClient();
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <ScrollToTop />
+function AppContent() {
+  const { pathname } = useLocation();
+  usePageTracker();
+  return (
+    <>
+      <ScrollToTop />
+      <Suspense fallback={<div className="h-screen w-full flex items-center justify-center">Loading...</div>}>
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/about" element={<AboutPage />} />
@@ -60,22 +73,41 @@ const App = () => (
           <Route path="/admin/login" element={<AdminLogin />} />
           <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
           <Route path="/admin/dashboard" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
-          <Route path="/admin/events" element={<ProtectedRoute><EventsManager /></ProtectedRoute>} />
+
+          <Route path="/admin/events" element={<ProtectedRoute><EventsManager pageTitle="Events Management" /></ProtectedRoute>} />
           <Route path="/admin/students" element={<ProtectedRoute><StudentsManager /></ProtectedRoute>} />
-          <Route path="/admin/sports" element={<ProtectedRoute><EventsManager /></ProtectedRoute>} />
-          <Route path="/admin/workshops" element={<ProtectedRoute><EventsManager /></ProtectedRoute>} />
+          <Route path="/admin/sports" element={<ProtectedRoute><EventsManager pageTitle="Sports Management" defaultCategory="Sports" /></ProtectedRoute>} />
+          <Route path="/admin/workshops" element={<ProtectedRoute><EventsManager pageTitle="Workshops Management" defaultCategory="Workshop" /></ProtectedRoute>} />
           <Route path="/admin/news" element={<ProtectedRoute><NewsManager /></ProtectedRoute>} />
-          <Route path="/admin/faculty" element={<ProtectedRoute><EventsManager /></ProtectedRoute>} />
-          <Route path="/admin/achievements" element={<ProtectedRoute><EventsManager /></ProtectedRoute>} />
-          <Route path="/admin/placements" element={<ProtectedRoute><EventsManager /></ProtectedRoute>} />
-          <Route path="/admin/courses" element={<ProtectedRoute><EventsManager /></ProtectedRoute>} />
+          <Route path="/admin/faculty" element={<ProtectedRoute><PlaceholderPage title="Faculty Management" /></ProtectedRoute>} />
+          <Route path="/admin/achievements" element={<ProtectedRoute><EventsManager pageTitle="Achievements Management" defaultCategory="Achievement" /></ProtectedRoute>} />
+          <Route path="/admin/placements" element={<ProtectedRoute><PlacementsManager /></ProtectedRoute>} />
+          <Route path="/admin/courses" element={<ProtectedRoute><CoursesManager /></ProtectedRoute>} />
+          <Route path="/admin/pages" element={<ProtectedRoute><PageContentManager /></ProtectedRoute>} />
           <Route path="/admin/visibility" element={<ProtectedRoute><SectionVisibilityManager /></ProtectedRoute>} />
           <Route path="/admin/users" element={<ProtectedRoute><UserManagement /></ProtectedRoute>} />
           <Route path="/admin/settings" element={<ProtectedRoute><SettingsManager /></ProtectedRoute>} />
+          <Route path="/admin/system" element={<ProtectedRoute><SystemHealth /></ProtectedRoute>} />
 
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
+      </Suspense>
+    </>
+  );
+};
+
+const App = () => (
+  <QueryClientProvider client={queryClient}>
+    <TooltipProvider>
+      <Toaster />
+      <Sonner />
+      <BrowserRouter>
+        <SecurityMonitor>
+          <GlobalErrorBoundary>
+            <AppContent />
+          </GlobalErrorBoundary>
+        </SecurityMonitor>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>

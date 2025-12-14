@@ -7,7 +7,13 @@ import { collection, query, orderBy, onSnapshot, addDoc, updateDoc, deleteDoc, d
 import Modal from '@/components/ui/Modal';
 import ConfirmModal from '@/components/ui/ConfirmModal';
 
-export default function EventsManager() {
+interface EventsManagerProps {
+    pageTitle?: string;
+    defaultCategory?: string;
+}
+
+export default function EventsManager({ pageTitle = 'Events Management', defaultCategory = '' }: EventsManagerProps) {
+    const term = defaultCategory || 'Event';
     const [events, setEvents] = useState<Event[]>([]);
     const [loading, setLoading] = useState(true);
 
@@ -186,7 +192,7 @@ export default function EventsManager() {
         setFormData({
             name: '',
             date: '',
-            category: categories[0] || '',
+            category: defaultCategory || categories[0] || '',
             description: '',
             image: '',
         });
@@ -207,10 +213,12 @@ export default function EventsManager() {
         setShowModal(true);
     };
 
-    const filteredEvents = events.filter((event) =>
-        event.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        event.category.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const filteredEvents = events.filter((event) => {
+        const matchesSearch = event.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            event.category.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchesCategory = defaultCategory ? event.category === defaultCategory : true;
+        return matchesSearch && matchesCategory;
+    });
 
     return (
         <AdminLayout>
@@ -218,8 +226,8 @@ export default function EventsManager() {
                 {/* Header */}
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                     <div>
-                        <h1 className="text-3xl font-bold text-gray-900">Events Management</h1>
-                        <p className="text-gray-600 mt-1">Manage festivals and cultural events</p>
+                        <h1 className="text-3xl font-bold text-gray-900">{pageTitle}</h1>
+                        <p className="text-gray-600 mt-1">Manage {defaultCategory ? defaultCategory.toLowerCase() : 'festivals and cultural events'}</p>
                     </div>
 
                     <div className="flex gap-4">
@@ -234,7 +242,7 @@ export default function EventsManager() {
                             className="bg-blue-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-blue-700 transition-colors flex items-center gap-2 shadow-lg"
                         >
                             <Plus className="w-5 h-5" />
-                            Add New Event
+                            Add New {defaultCategory || 'Event'}
                         </button>
                     </div>
                 </div>
@@ -245,7 +253,7 @@ export default function EventsManager() {
                         <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                         <input
                             type="text"
-                            placeholder="Search events by name or category..."
+                            placeholder={`Search ${term.toLowerCase()}s by name...`}
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                             className="w-full pl-12 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none"
@@ -298,9 +306,9 @@ export default function EventsManager() {
                 {filteredEvents.length === 0 && (
                     <div className="bg-white rounded-2xl p-12 text-center shadow-lg">
                         <CalendarIcon className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                        <h3 className="text-xl font-semibold text-gray-900 mb-2">No events found</h3>
+                        <h3 className="text-xl font-semibold text-gray-900 mb-2">No {term.toLowerCase()}s found</h3>
                         <p className="text-gray-600 mb-6">
-                            {searchTerm ? 'Try a different search term' : 'Get started by adding your first event'}
+                            {searchTerm ? 'Try a different search term' : `Get started by adding your first ${term.toLowerCase()}`}
                         </p>
                         {!searchTerm && (
                             <button
@@ -308,7 +316,7 @@ export default function EventsManager() {
                                 className="bg-blue-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-blue-700 transition-colors inline-flex items-center gap-2"
                             >
                                 <Plus className="w-5 h-5" />
-                                Add First Event
+                                Add First {term}
                             </button>
                         )}
                     </div>
@@ -353,14 +361,14 @@ export default function EventsManager() {
             <Modal
                 isOpen={showModal}
                 onClose={() => setShowModal(false)}
-                title={editingEvent ? 'Edit Event' : 'Add New Event'}
+                title={editingEvent ? `Edit ${term}` : `Add New ${term}`}
                 hideScrollbar={true}
             >
                 <form onSubmit={handleSubmit} className="space-y-6">
                     {/* Event Name */}
                     <div>
                         <label className="block text-sm font-semibold text-gray-700 mb-2">
-                            Event Name *
+                            {term} Name *
                         </label>
                         <input
                             type="text"
@@ -479,7 +487,7 @@ export default function EventsManager() {
                             type="submit"
                             className="flex-1 bg-blue-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-blue-700 transition-colors"
                         >
-                            {editingEvent ? 'Update Event' : 'Create Event'}
+                            {editingEvent ? `Update ${term}` : `Create ${term}`}
                         </button>
                     </div >
                 </form >

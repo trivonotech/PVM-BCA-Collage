@@ -10,14 +10,17 @@ import {
     Lightbulb,
     Newspaper,
     Users,
+    GraduationCap,
     Award,
     Briefcase,
     BookOpen,
-    Settings,
-    LogOut,
-    Menu,
-    X,
     Eye,
+    Settings,
+    Menu,
+    LogOut,
+    FileText,
+    Activity,
+    X,
     ShieldAlert
 } from 'lucide-react';
 
@@ -41,9 +44,10 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         { icon: Award, label: 'Achievements', path: '/admin/achievements', permission: 'achievements' },
         { icon: Briefcase, label: 'Placements', path: '/admin/placements', permission: 'placements' },
         { icon: BookOpen, label: 'Courses', path: '/admin/courses', permission: 'courses' },
-        { icon: Eye, label: 'Section Visibility', path: '/admin/visibility', permission: 'visibility' },
+        { icon: Eye, label: 'Section Visibility', id: 'visibility', path: '/admin/visibility', permission: 'visibility' },
         { icon: Users, label: 'User Management', path: '/admin/users', permission: 'user_management' },
-        { icon: Settings, label: 'Settings', path: '/admin/settings', permission: 'settings' },
+        { icon: Settings, label: 'Settings', id: 'settings', path: '/admin/settings', permission: 'settings' },
+        { icon: Activity, label: 'System Health', id: 'system', path: '/admin/system', permission: 'system_health' },
     ];
 
     // State for user data to handle real-time updates

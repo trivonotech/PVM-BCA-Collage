@@ -1,4 +1,4 @@
-import { useState, FormEvent } from 'react';
+import { useState, FormEvent, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Lock, User, Eye, EyeOff } from 'lucide-react';
 
@@ -8,6 +8,7 @@ export default function AdminLogin() {
     const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
+    const [honeypot, setHoneypot] = useState('');
     const navigate = useNavigate();
 
     // Removed handleCreateSuperAdmin as per user request (Login page should only be for logging in)
@@ -37,10 +38,26 @@ export default function AdminLogin() {
         }
     };
 
+    const triggerSystemLock = (reason: string) => {
+        // Trigger the Global Security Monitor
+        const duration = 60 * 60 * 1000; // 1 Hour
+        localStorage.setItem('security_block', JSON.stringify({
+            expiresAt: Date.now() + duration,
+            reason: reason
+        }));
+        window.location.reload(); // Reload to activate shield
+    };
+
     const handleLogin = async (e: FormEvent) => {
         e.preventDefault();
         setError('');
         setLoading(true);
+
+        // Security Check 1: Honeypot
+        if (honeypot) {
+            triggerSystemLock("Automated Bot / Malicious Script Detected");
+            return;
+        }
 
         try {
             const { signInWithEmailAndPassword } = await import('firebase/auth');
@@ -50,84 +67,93 @@ export default function AdminLogin() {
             // 1. Sign in with Firebase Auth
             // Map 'admin' to the new requested email
             const email = username.toLowerCase() === 'admin' ? 'pvm.bca.college01@gmail.com' : username;
-            const userCredential = await signInWithEmailAndPassword(auth, email, password);
-            const user = userCredential.user;
 
-            // 1.1 Check Email Verification - NOW ENABLED
-            if (!user.emailVerified) {
-                const { sendEmailVerification } = await import('firebase/auth');
-                await sendEmailVerification(user);
-                setError('Email not verified. A verification link has been sent to ' + user.email + '. Please check your inbox and verify.');
-                await auth.signOut();
-                setLoading(false);
-                return;
-            }
+            try {
+                const userCredential = await signInWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
 
-            // 2. Fetch user details from Firestore
-            const userDocRef = doc(db, 'users', user.uid);
-            // ... rest of the code
-            const userDoc = await getDoc(userDocRef);
-
-            if (userDoc.exists()) {
-                const userData = userDoc.data();
-
-                // 3. Store in localStorage
-                localStorage.setItem('isAuthenticated', 'true');
-                localStorage.setItem('user', JSON.stringify({
-                    uid: user.uid,
-                    email: user.email,
-                    role: userData.role || 'child_admin',
-                    permissions: userData.permissions || []
-                }));
-
-                // 4. Smart redirect based on permissions
-                const userPermissions = userData.permissions || [];
-                const isSuperAdmin = userPermissions.includes('all');
-
-                if (isSuperAdmin || userPermissions.includes('dashboard')) {
-                    // Has dashboard permission - go to dashboard
-                    navigate('/admin/dashboard');
-                } else {
-                    // No dashboard permission - redirect to first available page
-                    const permissionRoutes: Record<string, string> = {
-                        'events': '/admin/events',
-                        'students': '/admin/students',
-                        'sports': '/admin/sports',
-                        'workshops': '/admin/workshops',
-                        'news': '/admin/news',
-                        'faculty': '/admin/faculty',
-                        'achievements': '/admin/achievements',
-                        'placements': '/admin/placements',
-                        'courses': '/admin/courses',
-                        'visibility': '/admin/visibility',
-                        'user_management': '/admin/users',
-                        'settings': '/admin/settings'
-                    };
-
-                    // Find first available route
-                    const firstRoute = userPermissions.find((perm: string) => permissionRoutes[perm]);
-                    if (firstRoute && permissionRoutes[firstRoute]) {
-                        navigate(permissionRoutes[firstRoute]);
-                    } else {
-                        // Fallback to dashboard if no valid permission found
-                        navigate('/admin/dashboard');
-                    }
+                // 1.1 Check Email Verification - NOW ENABLED
+                if (!user.emailVerified) {
+                    const { sendEmailVerification } = await import('firebase/auth');
+                    await sendEmailVerification(user);
+                    setError('Email not verified. A verification link has been sent to ' + user.email + '. Please check your inbox and verify.');
+                    await auth.signOut();
+                    setLoading(false);
+                    return;
                 }
-            } else {
-                // Fallback for initial super admin if not in Firestore yet (optional safety)
-                if (username === 'admin@pvmbca.edu') {
+
+                // 2. Fetch user details from Firestore
+                const userDocRef = doc(db, 'users', user.uid);
+                // ... rest of the code
+                const userDoc = await getDoc(userDocRef);
+
+                if (userDoc.exists()) {
+                    const userData = userDoc.data();
+
+                    // 3. Store in localStorage
                     localStorage.setItem('isAuthenticated', 'true');
                     localStorage.setItem('user', JSON.stringify({
                         uid: user.uid,
                         email: user.email,
-                        role: 'super_admin',
-                        permissions: ['all']
+                        role: userData.role || 'child_admin',
+                        permissions: userData.permissions || []
                     }));
-                    navigate('/admin/dashboard');
+
+                    // Reset failure count on success
+                    localStorage.removeItem('login_failures');
+
+                    // 4. Smart redirect based on permissions
+                    const userPermissions = userData.permissions || [];
+                    const isSuperAdmin = userPermissions.includes('all');
+
+                    if (isSuperAdmin || userPermissions.includes('dashboard')) {
+                        // Has dashboard permission - go to dashboard
+                        navigate('/admin/dashboard');
+                    } else {
+                        // No dashboard permission - redirect to first available page
+                        const permissionRoutes: Record<string, string> = {
+                            'events': '/admin/events',
+                            'students': '/admin/students',
+                            'sports': '/admin/sports',
+                            'workshops': '/admin/workshops',
+                            'news': '/admin/news',
+                            'faculty': '/admin/faculty',
+                            'achievements': '/admin/achievements',
+                            'placements': '/admin/placements',
+                            'courses': '/admin/courses',
+                            'visibility': '/admin/visibility',
+                            'user_management': '/admin/users',
+                            'settings': '/admin/settings'
+                        };
+
+                        // Find first available route
+                        const firstRoute = userPermissions.find((perm: string) => permissionRoutes[perm]);
+                        if (firstRoute && permissionRoutes[firstRoute]) {
+                            navigate(permissionRoutes[firstRoute]);
+                        } else {
+                            // Fallback to dashboard if no valid permission found
+                            navigate('/admin/dashboard');
+                        }
+                    }
                 } else {
+                    // Fallback for initial super admin
+                    if (username === 'admin@pvmbca.edu') { // Legacy support just in case
+                        // ... logic
+                    }
                     setError('User data not found in database. Contact Super Admin.');
                     await auth.signOut();
                 }
+
+            } catch (loginErr: any) {
+                // Track Failures
+                const pendingFailures = parseInt(localStorage.getItem('login_failures') || '0') + 1;
+                localStorage.setItem('login_failures', pendingFailures.toString());
+
+                if (pendingFailures >= 5) {
+                    triggerSystemLock("Multiple Failed Admin Access Attempts");
+                    return;
+                }
+                throw loginErr;
             }
 
         } catch (err: any) {
@@ -165,6 +191,17 @@ export default function AdminLogin() {
 
                 {/* Login Form */}
                 <form onSubmit={handleLogin} className="space-y-6">
+                    {/* Honeypot Field (Hidden) - Bots will fill this */}
+                    <input
+                        type="text"
+                        name="security_check"
+                        tabIndex={-1}
+                        autoComplete="off"
+                        className="opacity-0 absolute h-0 w-0 pointer-events-none"
+                        value={honeypot}
+                        onChange={(e) => setHoneypot(e.target.value)}
+                    />
+
                     {error && (
                         <div className="bg-red-50 border-2 border-red-200 text-red-700 px-4 py-3 rounded-xl">
                             <p className="text-sm font-medium">{error}</p>

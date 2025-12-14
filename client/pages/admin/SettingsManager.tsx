@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import AdminLayout from '@/components/admin/AdminLayout';
-import { Save, Globe, Mail, Phone, MapPin, Facebook, Twitter, Instagram, Linkedin, Youtube } from 'lucide-react';
+import { Save, Globe, Mail, Phone, MapPin, Facebook, Twitter, Instagram, Linkedin, Youtube, Shield } from 'lucide-react';
+import SecurityConfigModal from '@/components/admin/SecurityConfigModal';
 
 export default function SettingsManager() {
+    const [showSecurityConfig, setShowSecurityConfig] = useState(false);
     const [formData, setFormData] = useState({
         siteName: 'PVM BCA College',
         siteEmail: 'info@pvmbca.edu',
@@ -29,6 +31,10 @@ export default function SettingsManager() {
 
     return (
         <AdminLayout>
+            <SecurityConfigModal
+                isOpen={showSecurityConfig}
+                onClose={() => setShowSecurityConfig(false)}
+            />
             <div className="max-w-4xl space-y-6">
                 <div>
                     <h1 className="text-3xl font-bold text-gray-900">Site Settings</h1>
@@ -40,6 +46,26 @@ export default function SettingsManager() {
                         <p className="font-semibold">✓ Settings saved successfully!</p>
                     </div>
                 )}
+
+                {/* Security Section */}
+                <div className="bg-white rounded-2xl p-6 shadow-lg border-l-4 border-indigo-600">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+                                <Shield className="w-6 h-6 text-indigo-600" />
+                                Security & Safety
+                            </h2>
+                            <p className="text-gray-500 mt-1 text-sm">Configure protection rules, rate limits, and automated blocking.</p>
+                        </div>
+                        <button
+                            type="button"
+                            onClick={() => setShowSecurityConfig(true)}
+                            className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-lg font-semibold transition shadow-md flex items-center gap-2"
+                        >
+                            <Shield className="w-4 h-4" /> Manage Security Rules
+                        </button>
+                    </div>
+                </div>
 
                 <form onSubmit={handleSubmit} className="space-y-6">
                     {/* Basic Information */}

@@ -1,53 +1,102 @@
+import { useState, useEffect } from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Briefcase, Building2, Award, User, TrendingUp } from 'lucide-react';
+import { db } from '@/lib/firebase';
+import { collection, query, orderBy, onSnapshot, doc, getDoc } from 'firebase/firestore';
+
+interface Placement {
+    id: string;
+    studentName: string;
+    company: string;
+    package: string;
+    course: string;
+    type: 'Success Story' | 'Top Student' | 'Regular';
+    image?: string;
+    quote?: string;
+}
 
 export default function PlacementsPage() {
+    const [placements, setPlacements] = useState<Placement[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const q = query(collection(db, 'placements'), orderBy('createdAt', 'desc'));
+        const unsubscribe = onSnapshot(q, (snapshot) => {
+            const data = snapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data()
+            })) as Placement[];
+            setPlacements(data);
+            setLoading(false);
+        }, (error) => {
+            console.error("Error fetching placements:", error);
+            setLoading(false); // Stop loading even on error
+        });
+        return () => unsubscribe();
+    }, []);
+
+
+    // State for manual stats
+    const [stats, setStats] = useState({
+        averagePackage: '4.5 LPA',
+        highestPackage: '0 LPA', // will be overridden by dynamic or manual
+        companiesVisited: '0+',
+        studentsPlaced: '95%'
+    });
+
+    // Fetch Manual Stats
+    useEffect(() => {
+        const fetchStats = async () => {
+            try {
+                const docRef = doc(db, 'settings', 'placementStats');
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists()) {
+                    setStats(docSnap.data() as any);
+                }
+            } catch (error) {
+                console.error("Error fetching stats:", error);
+            }
+        };
+        fetchStats();
+    }, []);
+
+    // Derived Data
+    const topStudents = placements.filter(p => p.type === 'Top Student').slice(0, 4);
+    const successStories = placements.filter(p => p.type === 'Success Story');
+    const recruiters = [...new Set(placements.map(p => p.company))].sort();
+
+    // Dynamic Stats Calculation (Fallback/Default)
+    const dynamicHighestPackage = placements.length > 0
+        ? Math.max(...placements.map(p => {
+            if (!p.package) return 0;
+            const val = parseFloat(p.package.replace(/[^0-9.]/g, ''));
+            return isNaN(val) ? 0 : val;
+        })) + ' LPA'
+        : '0 LPA';
+
+    // Use manual stats if they exist (and aren't default "0" placeholders check if needed, but simple override is better for user control)
+    // We'll prioritize the manual stats state, but if 'highestPackage' is '0 LPA' (default initial) AND we have dynamic data, we might want to show dynamic.
+    // However, simplicity is best: If user set it in Admin, we show it. If they didn't (it's uninitialized in DB), we might fallback.
+    // For now, let's assume if the DB doc exists, we trust it. If not, we use dynamic/defaults.
+
+    const displayHighest = stats.highestPackage !== '0 LPA' ? stats.highestPackage : dynamicHighestPackage;
+    const displayCompanies = stats.companiesVisited !== '0+' ? stats.companiesVisited : `${recruiters.length}+`;
+
     const placementStats = [
-        { label: 'Average Package', value: '₹4.5 LPA', icon: TrendingUp },
-        { label: 'Highest Package', value: '₹12 LPA', icon: Award },
-        { label: 'Companies Visited', value: '50+', icon: Building2 },
-        { label: 'Students Placed', value: '95%', icon: User }
+        { label: 'Average Package', value: stats.averagePackage, icon: TrendingUp },
+        { label: 'Highest Package', value: displayHighest, icon: Award },
+        { label: 'Companies Visited', value: displayCompanies, icon: Building2 },
+        { label: 'Students Placed', value: stats.studentsPlaced, icon: User }
     ];
 
-    const recruiters = [
-        'TCS', 'Infosys', 'Wipro', 'Accenture', 'Cognizant', 'IBM',
-        'Amazon', 'Flipkart', 'HDFC Bank', 'ICICI Bank', 'Deloitte', 'EY'
-    ];
-
-    const successStories = [
-        {
-            name: 'Rahul Sharma',
-            course: 'BBA 2023',
-            company: 'Amazon',
-            package: '₹10 LPA',
-            image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&h=300&fit=crop',
-            quote: 'The placement cell provided excellent training and guidance that helped me crack Amazon interview.'
-        },
-        {
-            name: 'Priya Verma',
-            course: 'BCA 2023',
-            company: 'Infosys',
-            package: '₹6.5 LPA',
-            image: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=300&h=300&fit=crop',
-            quote: 'Mock interviews and technical training sessions were incredibly helpful in my placement journey.'
-        },
-        {
-            name: 'Amit Kumar',
-            course: 'B.Com 2023',
-            company: 'Deloitte',
-            package: '₹8 LPA',
-            image: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=300&h=300&fit=crop',
-            quote: 'The industry exposure and soft skills training gave me the confidence to succeed in placements.'
-        }
-    ];
-
-    const topStudents = [
-        { name: 'Sneha Patel', company: 'TCS', package: '₹12 LPA', course: 'BCA' },
-        { name: 'Arjun Singh', company: 'Wipro', package: '₹9 LPA', course: 'BBA' },
-        { name: 'Neha Gupta', company: 'Cognizant', package: '₹8.5 LPA', course: 'B.Com' },
-        { name: 'Vikram Rao', company: 'Accenture', package: '₹7.5 LPA', course: 'BCA' }
-    ];
+    if (loading) {
+        return (
+            <div className="min-h-screen bg-white flex items-center justify-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-white font-poppins">
@@ -111,18 +160,22 @@ export default function PlacementsPage() {
                             </p>
                         </div>
 
-                        <div className="grid grid-cols-3 md:grid-cols-6 gap-6">
-                            {recruiters.map((company, idx) => (
-                                <div key={idx} className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow border-2 border-gray-100 flex items-center justify-center">
-                                    <div className="text-center">
-                                        <div className="w-16 h-16 bg-gradient-to-br from-[#BFD8FF] to-[#E5E7EB] rounded-xl flex items-center justify-center mx-auto mb-2">
-                                            <Building2 className="w-8 h-8 text-[#0B0B3B]" />
+                        {recruiters.length > 0 ? (
+                            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6">
+                                {recruiters.map((company, idx) => (
+                                    <div key={idx} className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow border-2 border-gray-100 flex items-center justify-center">
+                                        <div className="text-center w-full">
+                                            <div className="w-16 h-16 bg-gradient-to-br from-[#BFD8FF] to-[#E5E7EB] rounded-xl flex items-center justify-center mx-auto mb-2">
+                                                <Building2 className="w-8 h-8 text-[#0B0B3B]" />
+                                            </div>
+                                            <div className="font-bold text-sm text-[#0B0B3B] truncate">{company}</div>
                                         </div>
-                                        <div className="font-bold text-sm text-[#0B0B3B]">{company}</div>
                                     </div>
-                                </div>
-                            ))}
-                        </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <p className="text-center text-gray-500">No recruiting partners added yet.</p>
+                        )}
                     </div>
                 </div>
             </section>
@@ -141,31 +194,43 @@ export default function PlacementsPage() {
                             </p>
                         </div>
 
-                        <div className="grid md:grid-cols-3 gap-8">
-                            {successStories.map((story, idx) => (
-                                <div key={idx} className="bg-white rounded-3xl shadow-xl overflow-hidden hover:shadow-2xl transition-all duration-300 hover:-translate-y-2">
-                                    <div className="h-2 bg-gradient-to-r from-[#0B0B3B] via-[#FF4040] to-[#FACC15]"></div>
-                                    <div className="p-8">
-                                        <img src={story.image} alt={story.name} className="w-24 h-24 rounded-full mx-auto mb-4 object-cover border-4 border-[#BFD8FF]" />
-                                        <h3 className="text-xl font-bold text-[#0B0B3B] text-center mb-1">{story.name}</h3>
-                                        <p className="text-sm text-gray-600 text-center mb-4">{story.course}</p>
-                                        <div className="bg-gradient-to-r from-[#BFD8FF] to-[#E5E7EB] rounded-2xl p-4 mb-4">
-                                            <div className="flex justify-between items-center">
-                                                <div>
-                                                    <div className="text-xs text-gray-600 mb-1">Placed at</div>
-                                                    <div className="font-bold text-[#0B0B3B]">{story.company}</div>
+                        {successStories.length > 0 ? (
+                            <div className="grid md:grid-cols-3 gap-8">
+                                {successStories.map((story, idx) => (
+                                    <div key={idx} className="bg-white rounded-3xl shadow-xl overflow-hidden hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 flex flex-col h-full">
+                                        <div className="h-2 bg-gradient-to-r from-[#0B0B3B] via-[#FF4040] to-[#FACC15]"></div>
+                                        <div className="p-8 flex-1 flex flex-col">
+                                            {story.image ? (
+                                                <img src={story.image} alt={story.studentName} className="w-24 h-24 rounded-full mx-auto mb-4 object-cover border-4 border-[#BFD8FF]" />
+                                            ) : (
+                                                <div className="w-24 h-24 rounded-full mx-auto mb-4 bg-gray-200 flex items-center justify-center text-gray-400">
+                                                    <User className="w-12 h-12" />
                                                 </div>
-                                                <div className="text-right">
-                                                    <div className="text-xs text-gray-600 mb-1">Package</div>
-                                                    <div className="font-bold text-[#FF4040]">{story.package}</div>
+                                            )}
+                                            <h3 className="text-xl font-bold text-[#0B0B3B] text-center mb-1">{story.studentName}</h3>
+                                            <p className="text-sm text-gray-600 text-center mb-4">{story.course}</p>
+                                            <div className="bg-gradient-to-r from-[#BFD8FF] to-[#E5E7EB] rounded-2xl p-4 mb-4">
+                                                <div className="flex justify-between items-center">
+                                                    <div>
+                                                        <div className="text-xs text-gray-600 mb-1">Placed at</div>
+                                                        <div className="font-bold text-[#0B0B3B]">{story.company}</div>
+                                                    </div>
+                                                    <div className="text-right">
+                                                        <div className="text-xs text-gray-600 mb-1">Package</div>
+                                                        <div className="font-bold text-[#FF4040]">{story.package}</div>
+                                                    </div>
                                                 </div>
                                             </div>
+                                            <p className="text-gray-700 text-sm italic leading-relaxed text-center mt-auto">"{story.quote}"</p>
                                         </div>
-                                        <p className="text-gray-700 text-sm italic leading-relaxed">"{story.quote}"</p>
                                     </div>
-                                </div>
-                            ))}
-                        </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="text-center py-12 bg-gray-50 rounded-2xl">
+                                <p className="text-gray-500">No success stories shared yet.</p>
+                            </div>
+                        )}
                     </div>
                 </div>
             </section>
@@ -184,29 +249,35 @@ export default function PlacementsPage() {
                             </p>
                         </div>
 
-                        <div className="grid md:grid-cols-2 gap-6">
-                            {topStudents.map((student, idx) => (
-                                <div key={idx} className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 hover:bg-white/20 transition-colors">
-                                    <div className="flex items-center gap-6">
-                                        <div className="w-16 h-16 bg-[#FACC15] rounded-full flex items-center justify-center text-3xl font-bold text-[#0B0B3B]">
-                                            {idx + 1}
-                                        </div>
-                                        <div className="flex-1">
-                                            <h3 className="text-2xl font-bold text-white mb-1">{student.name}</h3>
-                                            <p className="text-blue-200 mb-2">{student.course}</p>
-                                            <div className="flex items-center gap-4">
-                                                <span className="px-4 py-1 bg-white/20 rounded-full text-sm font-bold text-white">
-                                                    {student.company}
-                                                </span>
-                                                <span className="text-[#FACC15] font-bold">
-                                                    {student.package}
-                                                </span>
+                        {topStudents.length > 0 ? (
+                            <div className="grid md:grid-cols-2 gap-6">
+                                {topStudents.map((student, idx) => (
+                                    <div key={idx} className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 hover:bg-white/20 transition-colors">
+                                        <div className="flex items-center gap-6">
+                                            <div className="w-16 h-16 bg-[#FACC15] rounded-full flex items-center justify-center text-3xl font-bold text-[#0B0B3B] flex-shrink-0">
+                                                {idx + 1}
+                                            </div>
+                                            <div className="flex-1">
+                                                <h3 className="text-2xl font-bold text-white mb-1">{student.studentName}</h3>
+                                                <p className="text-blue-200 mb-2">{student.course}</p>
+                                                <div className="flex items-center gap-4 flex-wrap">
+                                                    <span className="px-4 py-1 bg-white/20 rounded-full text-sm font-bold text-white">
+                                                        {student.company}
+                                                    </span>
+                                                    <span className="text-[#FACC15] font-bold">
+                                                        {student.package}
+                                                    </span>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
-                            ))}
-                        </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="text-center text-blue-200">
+                                <p>Top student profiles coming soon.</p>
+                            </div>
+                        )}
                     </div>
                 </div>
             </section>

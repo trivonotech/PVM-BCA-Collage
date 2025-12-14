@@ -1,4 +1,5 @@
 import AdminLayout from '@/components/admin/AdminLayout';
+import AnalyticsDashboard from '@/components/admin/AnalyticsDashboard';
 
 import { useState, useEffect } from 'react';
 import { db } from '@/lib/firebase';
@@ -24,7 +25,10 @@ interface Activity {
     timestamp: any;
 }
 
+import { useNavigate } from 'react-router-dom';
+
 export default function AdminDashboard() {
+    const navigate = useNavigate();
     const [counts, setCounts] = useState({
         events: 0,
         sports: 0,
@@ -32,6 +36,8 @@ export default function AdminDashboard() {
         news: 0,
         students: 0,
         faculty: 0,
+        courses: 0,
+        placements: 0,
     });
     const [recentActivity, setRecentActivity] = useState<Activity[]>([]);
     const [loading, setLoading] = useState(true);
@@ -71,6 +77,18 @@ export default function AdminDashboard() {
         const usersQ = query(collection(db, 'users'));
         unsubs.push(onSnapshot(usersQ, (snap) => {
             setCounts(prev => ({ ...prev, faculty: snap.size }));
+        }));
+
+        // Courses
+        const coursesQ = query(collection(db, 'courses'));
+        unsubs.push(onSnapshot(coursesQ, (snap) => {
+            setCounts(prev => ({ ...prev, courses: snap.size }));
+        }));
+
+        // Placements
+        const placementsQ = query(collection(db, 'placements'));
+        unsubs.push(onSnapshot(placementsQ, (snap) => {
+            setCounts(prev => ({ ...prev, placements: snap.size }));
         }));
 
         return () => unsubs.forEach(u => u());
@@ -140,6 +158,9 @@ export default function AdminDashboard() {
                     <p className="text-gray-600 mt-2">Welcome back! Here's what's happening with your website.</p>
                 </div>
 
+                {/* Visitor Analytics (Simplified) */}
+                <AnalyticsDashboard />
+
                 {/* Stats Grid */}
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
                     {stats.map((stat, idx) => {
@@ -171,19 +192,31 @@ export default function AdminDashboard() {
                     <div className="lg:col-span-1 bg-white rounded-2xl p-6 shadow-lg">
                         <h2 className="text-xl font-bold text-gray-900 mb-4">Quick Actions</h2>
                         <div className="space-y-3">
-                            <button className="w-full bg-blue-600 text-white px-4 py-3 rounded-xl font-semibold hover:bg-blue-700 transition-colors flex items-center justify-center gap-2">
+                            <button
+                                onClick={() => navigate('/admin/events')}
+                                className="w-full bg-blue-600 text-white px-4 py-3 rounded-xl font-semibold hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
+                            >
                                 <Calendar className="w-5 h-5" />
                                 Add New Event
                             </button>
-                            <button className="w-full bg-purple-600 text-white px-4 py-3 rounded-xl font-semibold hover:bg-purple-700 transition-colors flex items-center justify-center gap-2">
+                            <button
+                                onClick={() => navigate('/admin/news')}
+                                className="w-full bg-purple-600 text-white px-4 py-3 rounded-xl font-semibold hover:bg-purple-700 transition-colors flex items-center justify-center gap-2"
+                            >
                                 <Newspaper className="w-5 h-5" />
                                 Publish News
                             </button>
-                            <button className="w-full bg-green-600 text-white px-4 py-3 rounded-xl font-semibold hover:bg-green-700 transition-colors flex items-center justify-center gap-2">
+                            <button
+                                onClick={() => navigate('/admin/events')}
+                                className="w-full bg-green-600 text-white px-4 py-3 rounded-xl font-semibold hover:bg-green-700 transition-colors flex items-center justify-center gap-2"
+                            >
                                 <Lightbulb className="w-5 h-5" />
                                 Create Workshop
                             </button>
-                            <button className="w-full bg-orange-600 text-white px-4 py-3 rounded-xl font-semibold hover:bg-orange-700 transition-colors flex items-center justify-center gap-2">
+                            <button
+                                onClick={() => navigate('/admin/placements')}
+                                className="w-full bg-orange-600 text-white px-4 py-3 rounded-xl font-semibold hover:bg-orange-700 transition-colors flex items-center justify-center gap-2"
+                            >
                                 <Briefcase className="w-5 h-5" />
                                 Add Placement
                             </button>
@@ -208,20 +241,6 @@ export default function AdminDashboard() {
                                     <span className="text-xs text-gray-500 whitespace-nowrap">{activity.time}</span>
                                 </div>
                             ))}
-                        </div>
-                    </div>
-                </div>
-
-                {/* System Info */}
-                <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-2xl p-6 text-white shadow-lg">
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                        <div>
-                            <h3 className="text-lg font-semibold mb-2">System Status</h3>
-                            <p className="text-blue-100 text-sm">All systems operational • Firebase ready</p>
-                        </div>
-                        <div className="flex items-center gap-2 bg-white/10 px-4 py-2 rounded-full self-start sm:self-auto">
-                            <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse flex-shrink-0" />
-                            <span className="text-sm font-medium whitespace-nowrap">Online</span>
                         </div>
                     </div>
                 </div>
