@@ -6,6 +6,7 @@ import { db } from '@/lib/firebase';
 import { collection, query, orderBy, onSnapshot, addDoc, updateDoc, deleteDoc, doc } from 'firebase/firestore';
 import Modal from '@/components/ui/Modal';
 import ConfirmModal from '@/components/ui/ConfirmModal';
+import { useToast } from "@/components/ui/use-toast";
 
 interface EventsManagerProps {
     pageTitle?: string;
@@ -13,6 +14,7 @@ interface EventsManagerProps {
 }
 
 export default function EventsManager({ pageTitle = 'Events Management', defaultCategory = '' }: EventsManagerProps) {
+    const { toast } = useToast();
     const term = defaultCategory || 'Event';
     const [events, setEvents] = useState<Event[]>([]);
     const [loading, setLoading] = useState(true);
@@ -75,13 +77,30 @@ export default function EventsManager({ pageTitle = 'Events Management', default
         if (newCategory.trim()) {
             try {
                 if (categories.some(c => c.toLowerCase() === newCategory.trim().toLowerCase())) {
-                    alert('Category already exists');
+                    toast({
+                        title: "Error",
+                        description: "Category already exists",
+                        variant: "destructive",
+                        duration: 3000,
+                    });
                     return;
                 }
                 await addDoc(collection(db, 'event_categories'), { name: newCategory.trim() });
                 setNewCategory('');
+                toast({
+                    title: "Success",
+                    description: "Category added successfully!",
+                    className: "bg-green-500 text-white border-none",
+                    duration: 3000,
+                });
             } catch (error) {
                 console.error("Error adding category: ", error);
+                toast({
+                    title: "Error",
+                    description: "Failed to add category",
+                    variant: "destructive",
+                    duration: 3000,
+                });
             }
         }
     };
@@ -110,9 +129,20 @@ export default function EventsManager({ pageTitle = 'Events Management', default
             setShowDeleteConfirm(false);
             setItemToDelete(null);
             setDeleteType(null);
+            toast({
+                title: "Success",
+                description: `${deleteType === 'event' ? 'Event' : 'Category'} deleted successfully`,
+                className: "bg-green-500 text-white border-none",
+                duration: 3000,
+            });
         } catch (error) {
             console.error("Error deleting:", error);
-            alert("Failed to delete item");
+            toast({
+                title: "Error",
+                description: "Failed to delete item",
+                variant: "destructive",
+                duration: 3000,
+            });
         }
     };
 
@@ -138,9 +168,20 @@ export default function EventsManager({ pageTitle = 'Events Management', default
                 });
             }
             setShowModal(false);
+            toast({
+                title: "Success",
+                description: `Event ${editingEvent ? 'updated' : 'created'} successfully!`,
+                className: "bg-green-500 text-white border-none",
+                duration: 3000,
+            });
         } catch (error) {
             console.error("Error saving event: ", error);
-            alert("Failed to save event");
+            toast({
+                title: "Error",
+                description: "Failed to save event",
+                variant: "destructive",
+                duration: 3000,
+            });
         }
     };
 
@@ -182,7 +223,12 @@ export default function EventsManager({ pageTitle = 'Events Management', default
                 setFormData(prev => ({ ...prev, image: compressedBase64 }));
             } catch (err) {
                 console.error("Compression error:", err);
-                alert("Failed to process image. Please try another.");
+                toast({
+                    title: "Error",
+                    description: "Failed to process image. Please try another.",
+                    variant: "destructive",
+                    duration: 3000,
+                });
             }
         }
     };

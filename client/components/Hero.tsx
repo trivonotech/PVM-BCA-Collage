@@ -1,9 +1,22 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import heroIllustration from "../assets/hero-illustration.png";
 import decoBulb from "../assets/deco-bulb.png";
 import decoBook from "../assets/deco-book.png";
+import { db } from "@/lib/firebase";
+import { doc, onSnapshot } from "firebase/firestore";
 
 export function Hero() {
+    const [content, setContent] = useState<any>(null);
+
+    useEffect(() => {
+        const unsub = onSnapshot(doc(db, 'page_content', 'page_home'), (doc) => {
+            if (doc.exists()) {
+                setContent(doc.data());
+            }
+        });
+        return () => unsub();
+    }, []);
+
     return (
         <section className="relative w-full min-h-[90vh] bg-[#FDFDFF] overflow-hidden flex flex-col items-center font-sans pt-10 lg:pt-16">
             {/* Background Grid */}
@@ -20,12 +33,18 @@ export function Hero() {
                 <div className="relative inline-block">
                     <img src={decoBulb} className="absolute -left-12 -top-6 w-12 h-12 md:w-16 md:h-16 lg:w-20 lg:h-20 animate-pulse-slow" alt="Idea" />
                     <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-extrabold text-[#0B0B3B] leading-tight tracking-tight">
-                        Education That <span className="whitespace-nowrap">Builds <img src={decoBook} className="inline-block w-8 h-8 md:w-12 md:h-12 lg:w-16 lg:h-16 ml-2 -mt-2 lg:-mt-4 align-middle animate-bounce-slow" alt="Book" /></span> <br />
-                        <span className="text-[#0B0B3B]">Capable Professionals</span>
+                        {content?.title ? (
+                            <div dangerouslySetInnerHTML={{ __html: content.title.replace(/\n/g, '<br/>') }} />
+                        ) : (
+                            <>
+                                Education That <span className="whitespace-nowrap">Builds <img src={decoBook} className="inline-block w-8 h-8 md:w-12 md:h-12 lg:w-16 lg:h-16 ml-2 -mt-2 lg:-mt-4 align-middle animate-bounce-slow" alt="Book" /></span> <br />
+                                <span className="text-[#0B0B3B]">Capable Professionals</span>
+                            </>
+                        )}
                     </h1>
                 </div>
                 <p className="text-gray-600 text-sm md:text-base lg:text-lg max-w-3xl mx-auto mt-6 font-medium leading-relaxed">
-                    Undergraduate Programs In Business Administration And Science Designed To Develop Practical Skills, Analytical Thinking, And Career Readiness.
+                    {content?.description || "Undergraduate Programs In Business Administration And Science Designed To Develop Practical Skills, Analytical Thinking, And Career Readiness."}
                 </p>
             </div>
 
@@ -35,7 +54,7 @@ export function Hero() {
                 {/* Left: Illustration (Boy) */}
                 <div className="w-full lg:w-1/2 flex justify-center lg:justify-start pointer-events-auto mt-8 lg:mt-0">
                     <img
-                        src={heroIllustration}
+                        src={content?.images?.hero || heroIllustration}
                         alt="Student"
                         className="w-full max-w-xs lg:max-w-xl object-contain transform lg:translate-x-12"
                     />

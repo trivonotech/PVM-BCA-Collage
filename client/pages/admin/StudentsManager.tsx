@@ -8,7 +8,10 @@ import { collection, query, orderBy, onSnapshot, addDoc, updateDoc, deleteDoc, d
 import Modal from '@/components/ui/Modal';
 import ConfirmModal from '@/components/ui/ConfirmModal';
 
+import { useToast } from "@/components/ui/use-toast";
+
 export default function StudentsManager() {
+    const { toast } = useToast();
     const [students, setStudents] = useState<Student[]>([]);
     const [loading, setLoading] = useState(true);
 
@@ -79,11 +82,22 @@ export default function StudentsManager() {
     const executeDelete = async () => {
         if (confirmState.studentId) {
             try {
-                await deleteDoc(doc(db, 'students', confirmState.studentId));
+                await deleteDoc(doc(db, 'top_students', confirmState.studentId));
                 setConfirmState({ isOpen: false, studentId: null });
+                toast({
+                    title: "Success",
+                    description: "Student deleted successfully",
+                    className: "bg-green-500 text-white border-none",
+                    duration: 3000,
+                });
             } catch (error) {
                 console.error("Error deleting student:", error);
-                alert("Failed to delete student");
+                toast({
+                    title: "Error",
+                    description: "Failed to delete student",
+                    variant: "destructive",
+                    duration: 3000,
+                });
             }
         }
     };
@@ -94,23 +108,34 @@ export default function StudentsManager() {
         try {
             if (editingStudent) {
                 // Update
-                const studentRef = doc(db, 'students', editingStudent.id);
+                const studentRef = doc(db, 'top_students', editingStudent.id);
                 await updateDoc(studentRef, {
                     ...formData,
                     updatedAt: serverTimestamp()
                 });
             } else {
                 // Create
-                await addDoc(collection(db, 'students'), {
+                await addDoc(collection(db, 'top_students'), {
                     ...formData,
                     createdAt: serverTimestamp(),
                     updatedAt: serverTimestamp()
                 });
             }
             setShowModal(false);
+            toast({
+                title: "Success",
+                description: "Student saved successfully!",
+                className: "bg-green-500 text-white border-none",
+                duration: 3000,
+            });
         } catch (error) {
             console.error("Error saving student:", error);
-            alert("Failed to save student");
+            toast({
+                title: "Error",
+                description: "Failed to save student",
+                variant: "destructive",
+                duration: 3000,
+            });
         }
     };
 
@@ -123,7 +148,12 @@ export default function StudentsManager() {
                 setFormData({ ...formData, image: compressedBase64 });
             } catch (error) {
                 console.error("Image compression failed:", error);
-                alert("Failed to process image");
+                toast({
+                    title: "Error",
+                    description: "Failed to process image",
+                    variant: "destructive",
+                    duration: 3000,
+                });
             }
         }
     };

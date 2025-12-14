@@ -1,73 +1,49 @@
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { ClipboardCheck, DollarSign, CalendarDays, FileCheck } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { db } from '@/lib/firebase';
+import { doc, getDoc } from 'firebase/firestore';
 
 export default function AdmissionsPage() {
-    const admissionSteps = [
-        {
-            step: '01',
-            title: 'Fill Application Form',
-            desc: 'Complete the online or offline application form with accurate details',
-            color: 'bg-[#BFD8FF]'
-        },
-        {
-            step: '02',
-            title: 'Document Submission',
-            desc: 'Submit all required documents including marksheets and certificates',
-            color: 'bg-[#FFF5F5]'
-        },
-        {
-            step: '03',
-            title: 'Entrance Test (If Applicable)',
-            desc: 'Appear for the entrance examination as per the course requirement',
-            color: 'bg-[#FFF9E5]'
-        },
-        {
-            step: '04',
-            title: 'Merit List Declaration',
-            desc: 'Check the merit list published on the official website',
-            color: 'bg-[#E5F9E5]'
-        },
-        {
-            step: '05',
-            title: 'Fee Payment',
-            desc: 'Pay the admission fees within the stipulated time period',
-            color: 'bg-[#FFE5F5]'
-        },
-        {
-            step: '06',
-            title: 'Admission Confirmation',
-            desc: 'Receive admission confirmation and join orientation program',
-            color: 'bg-[#E5EFFF]'
-        }
-    ];
+    // Default Static Data (Fallback)
+    // Default Static Data (Fallback)
+    const [steps, setSteps] = useState<any[]>([]);
 
-    const scholarships = [
-        {
-            name: 'Merit-Based Scholarship',
-            eligibility: 'Students scoring 80% and above',
-            amount: 'Up to 50% fee waiver',
-            icon: '🏆'
-        },
-        {
-            name: 'Government Scholarship',
-            eligibility: 'As per government criteria',
-            amount: 'Varies based on category',
-            icon: '🎓'
-        },
-        {
-            name: 'Sports Quota',
-            eligibility: 'State/National level players',
-            amount: 'Up to 30% fee waiver',
-            icon: '⚽'
-        },
-        {
-            name: 'Economically Weaker Section',
-            eligibility: 'Annual income below specified limit',
-            amount: 'Up to 75% fee waiver',
-            icon: '💰'
-        }
-    ];
+    const [scholarships, setScholarships] = useState<any[]>([]);
+
+    const [dates, setDates] = useState({
+        applicationStart: '-',
+        applicationEnd: '-',
+        examDate: '-',
+        meritDate: '-'
+    });
+
+    useEffect(() => {
+        const loadData = async () => {
+            try {
+                // Load Dates
+                const datesSnap = await getDoc(doc(db, 'admissions_content', 'dates'));
+                if (datesSnap.exists()) setDates(datesSnap.data() as any);
+
+                // Load Steps
+                const stepsSnap = await getDoc(doc(db, 'admissions_content', 'steps'));
+                if (stepsSnap.exists()) {
+                    setSteps(stepsSnap.data().items || []);
+                }
+
+                // Load Scholarships
+                const scholarSnap = await getDoc(doc(db, 'admissions_content', 'scholarships'));
+                if (scholarSnap.exists()) {
+                    setScholarships(scholarSnap.data().items || []);
+                }
+            } catch (err) {
+                console.error("Error loading admission content:", err);
+            }
+        };
+        loadData();
+    }, []);
+
 
     return (
         <div className="min-h-screen bg-white font-poppins">
@@ -106,7 +82,7 @@ export default function AdmissionsPage() {
                         </div>
 
                         <div className="grid md:grid-cols-3 gap-6">
-                            {admissionSteps.map((item, idx) => (
+                            {steps.map((item, idx) => (
                                 <div key={idx} className="relative">
                                     <div className={`${item.color} rounded-3xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-2 h-full`}>
                                         <div className="text-5xl font-black text-[#0B0B3B] opacity-20 mb-4">
@@ -115,7 +91,7 @@ export default function AdmissionsPage() {
                                         <h3 className="text-xl font-bold text-[#0B0B3B] mb-3">{item.title}</h3>
                                         <p className="text-gray-700 leading-relaxed">{item.desc}</p>
                                     </div>
-                                    {idx < admissionSteps.length - 1 && (
+                                    {idx < steps.length - 1 && (
                                         <div className="hidden md:block absolute top-1/2 -right-3 w-6 h-6 bg-[#FACC15] rounded-full transform -translate-y-1/2 z-10">
                                             <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-white font-bold text-xs">→</div>
                                         </div>
@@ -141,19 +117,19 @@ export default function AdmissionsPage() {
                             <div className="grid md:grid-cols-2 gap-6">
                                 <div className="bg-white/10 rounded-2xl p-6">
                                     <div className="text-[#FACC15] font-bold mb-2">Application Start Date</div>
-                                    <div className="text-2xl font-bold">1st May 2024</div>
+                                    <div className="text-2xl font-bold">{dates.applicationStart}</div>
                                 </div>
                                 <div className="bg-white/10 rounded-2xl p-6">
                                     <div className="text-[#FACC15] font-bold mb-2">Application Last Date</div>
-                                    <div className="text-2xl font-bold">30th June 2024</div>
+                                    <div className="text-2xl font-bold">{dates.applicationEnd}</div>
                                 </div>
                                 <div className="bg-white/10 rounded-2xl p-6">
                                     <div className="text-[#FACC15] font-bold mb-2">Entrance Exam Date</div>
-                                    <div className="text-2xl font-bold">15th July 2024</div>
+                                    <div className="text-2xl font-bold">{dates.examDate}</div>
                                 </div>
                                 <div className="bg-white/10 rounded-2xl p-6">
                                     <div className="text-[#FACC15] font-bold mb-2">Merit List Declaration</div>
-                                    <div className="text-2xl font-bold">25th July 2024</div>
+                                    <div className="text-2xl font-bold">{dates.meritDate}</div>
                                 </div>
                             </div>
                         </div>
@@ -194,9 +170,23 @@ export default function AdmissionsPage() {
                                             </div>
                                         </div>
                                     </div>
-                                    <button className="w-full mt-4 py-3 bg-gradient-to-r from-[#0B0B3B] to-[#1a1a5e] text-white rounded-xl font-bold hover:shadow-lg transition-shadow">
-                                        Apply Now
-                                    </button>
+                                    {scholarship.link ? (
+                                        <a
+                                            href={scholarship.link}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="block w-full text-center mt-4 py-3 bg-gradient-to-r from-[#0B0B3B] to-[#1a1a5e] text-white rounded-xl font-bold hover:shadow-lg transition-shadow"
+                                        >
+                                            Apply Now
+                                        </a>
+                                    ) : (
+                                        <button
+                                            onClick={() => alert("Please contact the college administration for this scholarship.")}
+                                            className="w-full mt-4 py-3 bg-gradient-to-r from-[#0B0B3B] to-[#1a1a5e] text-white rounded-xl font-bold hover:shadow-lg transition-shadow"
+                                        >
+                                            Apply Now
+                                        </button>
+                                    )}
                                 </div>
                             ))}
                         </div>

@@ -11,11 +11,14 @@ import {
     deleteDoc,
     serverTimestamp,
     addDoc,
-    getDocs
+    getDocs,
+    writeBatch
 } from 'firebase/firestore';
+import { ref, uploadString, getDownloadURL, deleteObject } from 'firebase/storage';
 import { Check, X, Edit, Trash2, Eye, Clock, CheckCircle, XCircle, Upload, Plus } from 'lucide-react';
 import AdminLayout from '@/components/admin/AdminLayout';
 import { compressImage } from '@/utils/imageUtils';
+import { useToast } from "@/components/ui/use-toast";
 import Modal from '@/components/ui/Modal';
 import ConfirmModal from '@/components/ui/ConfirmModal';
 
@@ -42,6 +45,7 @@ interface NewsSubmission {
 }
 
 export default function NewsManager() {
+    const { toast } = useToast();
     const [activeTab, setActiveTab] = useState<'pending' | 'approved' | 'rejected'>('pending');
     const [news, setNews] = useState<NewsSubmission[]>([]);
     const [loading, setLoading] = useState(true);
@@ -244,17 +248,31 @@ export default function NewsManager() {
             await Promise.all(updates);
 
             if (restoredCount > 0) {
-                alert(`Successfully restored ${restoredCount} legacy news articles!`);
+                toast({
+                    title: "Success",
+                    description: `Successfully restored ${restoredCount} legacy news articles!`,
+                    className: "bg-green-500 text-white border-none",
+                    duration: 3000,
+                });
                 // Refresh by toggling tab
                 const currentTab = activeTab;
                 setActiveTab('rejected'); // switch briefly
                 setTimeout(() => setActiveTab(currentTab), 100);
             } else {
-                alert('No legacy items found needing restoration.');
+                toast({
+                    title: "Info",
+                    description: "No legacy items found needing restoration.",
+                    duration: 3000,
+                });
             }
         } catch (error) {
-            console.error('Error restoring legacy news:', error);
-            alert('Failed to restore legacy news.');
+            console.error("Error restoring legacy news:", error);
+            toast({
+                title: "Error",
+                description: "Failed to restore legacy news.",
+                variant: "destructive",
+                duration: 3000,
+            });
         } finally {
             setLoading(false);
         }

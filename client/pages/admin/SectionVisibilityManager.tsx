@@ -3,8 +3,10 @@ import AdminLayout from '@/components/admin/AdminLayout';
 import { Eye, EyeOff, Save, Loader2 } from 'lucide-react';
 import { db } from '@/lib/firebase';
 import { doc, getDoc, setDoc, onSnapshot } from 'firebase/firestore';
+import { useToast } from "@/components/ui/use-toast";
 
 export default function SectionVisibilityManager() {
+    const { toast } = useToast();
     const [formData, setFormData] = useState({
         // Home Page
         homeHero: true,
@@ -54,6 +56,7 @@ export default function SectionVisibilityManager() {
 
     const [loading, setLoading] = useState(true);
     const [saved, setSaved] = useState(false);
+    const [saving, setSaving] = useState(false);
 
     // Initial load from Firestore
     useEffect(() => {
@@ -66,15 +69,26 @@ export default function SectionVisibilityManager() {
         return () => unsubscribe();
     }, []);
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
+    const handleSave = async () => {
+        setSaving(true);
         try {
             await setDoc(doc(db, 'settings', 'visibility'), formData, { merge: true });
-            setSaved(true);
-            setTimeout(() => setSaved(false), 3000);
+            toast({
+                title: "Success",
+                description: "Visibility settings saved successfully!",
+                className: "bg-green-500 text-white border-none",
+                duration: 3000,
+            });
         } catch (error) {
             console.error("Error saving visibility settings:", error);
-            alert("Failed to save settings. Please check console.");
+            toast({
+                title: "Error",
+                description: "Failed to save settings. Please check console.",
+                variant: "destructive",
+                duration: 3000,
+            });
+        } finally {
+            setSaving(false);
         }
     };
 
@@ -203,7 +217,7 @@ export default function SectionVisibilityManager() {
                     </div>
                 )}
 
-                <form onSubmit={handleSubmit} className="space-y-6">
+                <form onSubmit={(e) => { e.preventDefault(); handleSave(); }} className="space-y-6">
                     {/* Sections by Page */}
                     {Object.entries(groupedSections).map(([page, sections]) => {
                         const stats = getPageStats(page);

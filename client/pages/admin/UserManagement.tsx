@@ -155,9 +155,20 @@ export default function UserManagement() {
 
             resetForm();
             setShowModal(false);
+            toast({
+                title: "Success",
+                description: "Admin user created successfully!",
+                className: "bg-green-500 text-white border-none",
+                duration: 3000,
+            });
         } catch (error: any) {
             console.error("Error creating user:", error);
-            alert("Error creating user: " + error.message);
+            toast({
+                title: "Error",
+                description: "Error creating user: " + error.message,
+                variant: "destructive",
+                duration: 3000,
+            });
         }
     };
 
@@ -185,9 +196,20 @@ export default function UserManagement() {
 
             resetForm();
             setShowModal(false);
+            toast({
+                title: "Success",
+                description: "Admin user updated successfully!",
+                className: "bg-green-500 text-white border-none",
+                duration: 3000,
+            });
         } catch (error: any) {
             console.error("Error updating user:", error);
-            alert("Error updating user: " + error.message);
+            toast({
+                title: "Error",
+                description: "Error updating user: " + error.message,
+                variant: "destructive",
+                duration: 3000,
+            });
         }
     };
 
@@ -199,9 +221,20 @@ export default function UserManagement() {
                 // Note: Auth user deletion requires Admin SDK (Backend).
                 // For client-side only valid logic: We delete the Firestore doc.
                 // Since Login checks for Firestore doc existence, the user is effectively banned.
+                toast({
+                    title: "Success",
+                    description: "Admin user deleted successfully!",
+                    className: "bg-green-500 text-white border-none",
+                    duration: 3000,
+                });
             } catch (error: any) {
                 console.error("Error deleting user:", error);
-                alert("Error deleting user: " + error.message);
+                toast({
+                    title: "Error",
+                    description: "Error deleting user: " + error.message,
+                    variant: "destructive",
+                    duration: 3000,
+                });
             }
         }
     };

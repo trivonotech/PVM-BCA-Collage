@@ -1,15 +1,28 @@
-import React from 'react';
+import { useState, useEffect } from 'react';
 import aboutBuilding from '../assets/about-building.png';
 import quoteMark from '../assets/quote-mark.png';
+import { db } from '@/lib/firebase';
+import { doc, onSnapshot } from 'firebase/firestore';
 
 export default function AboutSection() {
+  const [content, setContent] = useState<any>(null);
+
+  useEffect(() => {
+    const unsub = onSnapshot(doc(db, 'page_content', 'page_home'), (doc) => {
+      if (doc.exists()) {
+        setContent(doc.data());
+      }
+    });
+    return () => unsub();
+  }, []);
+
   return (
     <section className="relative w-full py-12 bg-[#03002E] overflow-hidden">
       <div className="container mx-auto px-4 relative z-10 flex flex-col items-center justify-center text-center">
 
         {/* Heading */}
         <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-6">
-          About Institute
+          {content?.about_title || "About Institute"}
         </h2>
 
         {/* Content Box with Quotes */}
@@ -23,7 +36,7 @@ export default function AboutSection() {
           {/* Note: Increased opacity from 0.1 to 0.3 as user said it was 'missing' */}
 
           <p className="text-white text-base md:text-xl leading-relaxed font-medium tracking-wide relative z-10">
-            Our Institute Is Dedicated To Delivering Quality Education Through Well-Structured Academic Programs, Experienced Faculty, And A Student-Focused Learning Environment. We Aim To Build Strong Academic Foundations While Enhancing Practical Skills That Prepare Students For Real-World Challenges.
+            {content?.about_desc || "Our Institute Is Dedicated To Delivering Quality Education Through Well-Structured Academic Programs, Experienced Faculty, And A Student-Focused Learning Environment. We Aim To Build Strong Academic Foundations While Enhancing Practical Skills That Prepare Students For Real-World Challenges."}
           </p>
 
           {/* Quote Marks - Right */}

@@ -1,4 +1,4 @@
-import { ReactNode, useState, useEffect } from 'react';
+import { ReactNode, useState, useEffect, useRef, useLayoutEffect, UIEvent } from 'react';
 import { db } from '@/lib/firebase';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
@@ -21,7 +21,9 @@ import {
     FileText,
     Activity,
     X,
-    ShieldAlert
+    ShieldAlert,
+    Layout,
+    School,
 } from 'lucide-react';
 
 interface AdminLayoutProps {
@@ -37,6 +39,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         { icon: LayoutDashboard, label: 'Dashboard', path: '/admin', permission: 'dashboard' },
         { icon: Calendar, label: 'Events', path: '/admin/events', permission: 'events' },
         { icon: Trophy, label: 'Top Students', path: '/admin/students', permission: 'students' },
+        { icon: School, label: 'Admissions', path: '/admin/admissions', permission: 'admissions' },
         { icon: Dumbbell, label: 'Sports', path: '/admin/sports', permission: 'sports' },
         { icon: Lightbulb, label: 'Workshops', path: '/admin/workshops', permission: 'workshops' },
         { icon: Newspaper, label: 'News', path: '/admin/news', permission: 'news' },
@@ -46,6 +49,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         { icon: BookOpen, label: 'Courses', path: '/admin/courses', permission: 'courses' },
         { icon: Eye, label: 'Section Visibility', id: 'visibility', path: '/admin/visibility', permission: 'visibility' },
         { icon: Users, label: 'User Management', path: '/admin/users', permission: 'user_management' },
+        { icon: Layout, label: 'Page Content', path: '/admin/pages', permission: 'pages' },
         { icon: Settings, label: 'Settings', id: 'settings', path: '/admin/settings', permission: 'settings' },
         { icon: Activity, label: 'System Health', id: 'system', path: '/admin/system', permission: 'system_health' },
     ];
@@ -104,6 +108,21 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         };
     }, [sidebarOpen]);
 
+    const sidebarRef = useRef<HTMLElement>(null);
+
+    // Restore sidebar scroll position
+    useLayoutEffect(() => {
+        const savedScroll = sessionStorage.getItem('adminSidebarScroll');
+        if (sidebarRef.current && savedScroll) {
+            sidebarRef.current.scrollTop = parseInt(savedScroll, 10);
+        }
+    }, []);
+
+    // Save scroll position immediately when scrolling
+    const handleSidebarScroll = (e: UIEvent<HTMLElement>) => {
+        sessionStorage.setItem('adminSidebarScroll', e.currentTarget.scrollTop.toString());
+    };
+
     const userPermissions = user?.permissions || [];
     const isSuperAdmin = user?.role === 'super_admin';
 
@@ -135,7 +154,10 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                 </div>
 
                 {/* Menu Items */}
-                <nav className="flex-1 overflow-y-auto p-4 space-y-2 scrollbar-hide">
+                <nav className="flex-1 overflow-y-auto p-4 space-y-2 scrollbar-hide overscroll-contain"
+                    ref={sidebarRef}
+                    onScroll={handleSidebarScroll}
+                >
                     <style>{`
             .scrollbar-hide::-webkit-scrollbar {
               display: none;
@@ -201,6 +223,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                             '/admin/achievements': 'achievements',
                             '/admin/placements': 'placements',
                             '/admin/courses': 'courses',
+                            '/admin/pages': 'pages',
                             '/admin/visibility': 'visibility',
                             '/admin/users': 'user_management',
                             '/admin/settings': 'settings'

@@ -45,10 +45,20 @@ export default function PageEditor() {
                 updatedAt: serverTimestamp(),
                 updatedBy: 'admin' // In real app, use auth uid
             }, { merge: true });
-            alert('Page saved successfully!');
+            toast({
+                title: "Success",
+                description: "Page saved successfully!",
+                className: "bg-green-500 text-white border-none",
+                duration: 3000,
+            });
         } catch (e) {
             console.error(e);
-            alert('Failed to save.');
+            toast({
+                title: "Error",
+                description: "Failed to save.",
+                variant: "destructive",
+                duration: 3000,
+            });
         } finally {
             setSaving(false);
         }
@@ -61,7 +71,12 @@ export default function PageEditor() {
             const compressed = await compressImage(file);
             setData(prev => ({ ...prev, heroImage: compressed }));
         } catch (err) {
-            alert('Image upload failed');
+            toast({
+                title: "Error",
+                description: "Image upload failed",
+                variant: "destructive",
+                duration: 3000,
+            });
         }
     };
 

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { db } from '@/lib/firebase';
 import { doc, onSnapshot, collection, query, orderBy, limit, getDocs } from 'firebase/firestore';
+import { useToast } from "@/components/ui/use-toast";
 import { Activity, CheckCircle2, AlertCircle, Server, Zap, AlertTriangle, ExternalLink, ShieldAlert, Settings } from 'lucide-react';
 import UsageDetailsModal from '@/components/admin/UsageDetailsModal';
 import SecurityConfigModal from '@/components/admin/SecurityConfigModal';
@@ -36,9 +37,20 @@ export default function SystemHealth() {
             const { setDoc, doc } = await import('firebase/firestore');
             await setDoc(doc(db, 'settings', 'security'), { isActive: !securityEnabled }, { merge: true });
             // State will update via listener below
+            toast({
+                title: "Success",
+                description: `Security ${!securityEnabled ? 'Activated' : 'Deactivated'}`,
+                className: "bg-green-500 text-white border-none",
+                duration: 3000,
+            });
         } catch (e) {
             console.error(e);
-            alert('Failed to toggle security.');
+            toast({
+                title: "Error",
+                description: 'Failed to toggle security.',
+                variant: "destructive",
+                duration: 3000,
+            });
         } finally {
             setToggleLoading(false);
         }

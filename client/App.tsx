@@ -31,7 +31,7 @@ import NewsManager from "./pages/admin/NewsManager";
 import ProtectedRoute from "./components/admin/ProtectedRoute";
 import PlaceholderPage from "./pages/admin/PlaceholderPage";
 import PlacementsManager from "./pages/admin/PlacementsManager";
-import CoursesManager from "./pages/admin/CoursesManager";
+
 
 import ScrollToTop from "./components/ScrollToTop";
 
@@ -41,6 +41,8 @@ import { GlobalErrorBoundary } from "@/components/GlobalErrorBoundary";
 import { SecurityMonitor } from "@/components/SecurityMonitor";
 
 const PageContentManager = lazy(() => import("./pages/admin/PageContentManager"));
+const AdmissionsManager = lazy(() => import("./pages/admin/AdmissionsManager"));
+const CoursesManager = lazy(() => import("./pages/admin/CoursesManager"));
 const SystemHealth = lazy(() => import("./pages/admin/SystemHealth"));
 
 const PageEditor = lazy(() => import("./pages/admin/editors/PageEditor"));
@@ -76,6 +78,7 @@ function AppContent() {
 
           <Route path="/admin/events" element={<ProtectedRoute><EventsManager pageTitle="Events Management" /></ProtectedRoute>} />
           <Route path="/admin/students" element={<ProtectedRoute><StudentsManager /></ProtectedRoute>} />
+          <Route path="/admin/admissions" element={<ProtectedRoute><AdmissionsManager /></ProtectedRoute>} />
           <Route path="/admin/sports" element={<ProtectedRoute><EventsManager pageTitle="Sports Management" defaultCategory="Sports" /></ProtectedRoute>} />
           <Route path="/admin/workshops" element={<ProtectedRoute><EventsManager pageTitle="Workshops Management" defaultCategory="Workshop" /></ProtectedRoute>} />
           <Route path="/admin/news" element={<ProtectedRoute><NewsManager /></ProtectedRoute>} />
@@ -102,7 +105,7 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
-      <BrowserRouter>
+      <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <SecurityMonitor>
           <GlobalErrorBoundary>
             <AppContent />

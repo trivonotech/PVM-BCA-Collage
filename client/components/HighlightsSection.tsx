@@ -1,75 +1,34 @@
 import { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { X, Download, Share2 } from 'lucide-react';
+import { db } from '@/lib/firebase';
+import { collection, query, orderBy, onSnapshot, limit } from 'firebase/firestore';
 
 export default function HighlightsSection() {
   const [activeIndex, setActiveIndex] = useState(0);
-  const [selectedEvent, setSelectedEvent] = useState<any>(null);
+  const [students, setStudents] = useState<any[]>([]);
+  const [events, setEvents] = useState<any[]>([]);
   const carouselRef = useRef<HTMLDivElement>(null);
 
-  const students = [
-    { rank: '1', name: 'MOHIT', course: 'Environmental Science', achievement: 'achievement' },
-    { rank: '2', name: 'PRIYA', course: 'BBA', achievement: 'achievement' },
-    { rank: '3', name: 'ARJUN', course: 'BBA', achievement: 'achievement' },
-    { rank: '4', name: 'SOPHIA', course: 'Computer Science', achievement: 'achievement' },
-    { rank: '5', name: 'ADITYA', course: 'Environmental Science', achievement: 'achievement' },
-    { rank: '6', name: 'NEHA', course: 'BBA', achievement: 'achievement' },
-    { rank: '7', name: 'RAHUL', course: 'Engineering', achievement: 'achievement' },
-    { rank: '8', name: 'ANANYA', course: 'Science', achievement: 'achievement' },
-  ];
+  // Fetch Top Students Dynamically
+  useEffect(() => {
+    const q = query(collection(db, 'students'), orderBy('rank'));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setStudents(data);
+    });
+    return () => unsubscribe();
+  }, []);
 
-
-
-  const events = [
-    {
-      id: 1,
-      name: 'Annual Tech Fest 2024',
-      date: 'March 15, 2024',
-      image: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=800&q=80',
-    },
-    {
-      id: 2,
-      name: 'Convocation Ceremony',
-      date: 'April 02, 2024',
-      image: 'https://images.unsplash.com/photo-1523580494863-6f3031224c94?auto=format&fit=crop&w=800&q=80',
-    },
-    {
-      id: 3,
-      name: 'Sports Day Final',
-      date: 'February 20, 2024',
-      image: 'https://images.unsplash.com/photo-1461896836934-ffe607ba8211?auto=format&fit=crop&w=800&q=80',
-    },
-    {
-      id: 4,
-      name: 'Science Exhibition',
-      date: 'January 10, 2024',
-      image: 'https://images.unsplash.com/photo-1564325724739-bae0bd08762c?auto=format&fit=crop&w=800&q=80',
-    },
-    {
-      id: 5,
-      name: 'Cultural Fest 2024',
-      date: 'March 25, 2024',
-      image: 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=800&q=80',
-    },
-    {
-      id: 6,
-      name: 'Annual Day Celebration',
-      date: 'December 15, 2023',
-      image: 'https://images.unsplash.com/photo-1475721027785-f74eccf877e2?auto=format&fit=crop&w=800&q=80',
-    },
-    {
-      id: 7,
-      name: 'Tech Workshop Series',
-      date: 'February 10, 2024',
-      image: 'https://images.unsplash.com/photo-1505373877841-8d25f7d46678?auto=format&fit=crop&w=800&q=80',
-    },
-    {
-      id: 8,
-      name: 'Alumni Meet 2024',
-      date: 'January 20, 2024',
-      image: 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&w=800&q=80',
-    },
-  ];
+  // Fetch Latest 10 Events Dynamically
+  useEffect(() => {
+    const q = query(collection(db, 'events'), orderBy('date', 'desc'), limit(10));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setEvents(data);
+    });
+    return () => unsubscribe();
+  }, []);
 
   /* Auto-play Effect - purely CSS based now, simplified component */
 
@@ -142,6 +101,13 @@ export default function HighlightsSection() {
             >
               {/* Student Image */}
               <div className="h-40 md:h-48 bg-gradient-to-br from-blue-200 to-blue-300 relative">
+                {student.image ? (
+                  <img src={student.image} alt={student.name} className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-4xl font-bold text-blue-600">
+                    {student.name[0]}
+                  </div>
+                )}
                 <div className="absolute top-3 right-3 bg-gray-900 text-white rounded-full w-8 h-8 md:w-10 md:h-10 flex items-center justify-center font-bold text-xs md:text-sm">
                   {student.rank}
                 </div>
@@ -175,10 +141,13 @@ export default function HighlightsSection() {
                 {/* Circular Photo */}
                 <div className="relative w-24 h-24 mb-3">
                   <div className="w-full h-full rounded-full bg-gradient-to-br from-blue-200 to-blue-300 overflow-hidden shadow-md">
-                    {/* Photo placeholder - you can add actual images here */}
-                    <div className="w-full h-full flex items-center justify-center text-2xl font-bold text-blue-600">
-                      {student.name[0]}
-                    </div>
+                    {student.image ? (
+                      <img src={student.image} alt={student.name} className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-2xl font-bold text-blue-600">
+                        {student.name[0]}
+                      </div>
+                    )}
                   </div>
                   {/* Rank Badge */}
                   <div className="absolute -top-1 -right-1 bg-blue-600 text-white rounded-full w-7 h-7 flex items-center justify-center font-bold text-xs shadow-md">
@@ -209,10 +178,13 @@ export default function HighlightsSection() {
                 {/* Circular Photo */}
                 <div className="relative w-24 h-24 mb-3">
                   <div className="w-full h-full rounded-full bg-gradient-to-br from-blue-200 to-blue-300 overflow-hidden shadow-md">
-                    {/* Photo placeholder - you can add actual images here */}
-                    <div className="w-full h-full flex items-center justify-center text-2xl font-bold text-blue-600">
-                      {student.name[0]}
-                    </div>
+                    {student.image ? (
+                      <img src={student.image} alt={student.name} className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-2xl font-bold text-blue-600">
+                        {student.name[0]}
+                      </div>
+                    )}
                   </div>
                   {/* Rank Badge */}
                   <div className="absolute -top-1 -right-1 bg-blue-600 text-white rounded-full w-7 h-7 flex items-center justify-center font-bold text-xs shadow-md">

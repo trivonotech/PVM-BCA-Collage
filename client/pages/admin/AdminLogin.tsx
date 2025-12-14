@@ -16,7 +16,13 @@ export default function AdminLogin() {
 
     const handleForgotPassword = async () => {
         if (!username) {
-            setError('Please enter your username or email to reset password.');
+            // Replaced setError with toast for validation
+            toast({
+                title: "Validation Error",
+                description: "Please enter your username or email to reset password.",
+                variant: "destructive",
+                duration: 3000,
+            });
             return;
         }
 
@@ -25,11 +31,17 @@ export default function AdminLogin() {
             const { sendPasswordResetEmail } = await import('firebase/auth');
             const { auth } = await import('@/lib/firebase');
 
-            const email = username.toLowerCase() === 'admin' ? 'pvm.bca.college01@gmail.com' : username;
-            await sendPasswordResetEmail(auth, email);
+            const emailToReset = username.toLowerCase() === 'admin' ? 'pvm.bca.college01@gmail.com' : username;
+            await sendPasswordResetEmail(auth, emailToReset);
 
-            alert('Password reset link sent to ' + email + '. Check your inbox.');
-            setError('');
+            // Replaced alert with toast
+            toast({
+                title: "Email Sent",
+                description: `Password reset link sent to ${emailToReset}. Check your inbox.`,
+                className: "bg-green-500 text-white border-none",
+                duration: 3000,
+            });
+            setError(''); // Clear any previous error message
         } catch (err: any) {
             console.error('Reset Password Error:', err);
             setError('Failed to send reset link: ' + err.message);

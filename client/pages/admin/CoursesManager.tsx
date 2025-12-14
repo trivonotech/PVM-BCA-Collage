@@ -5,6 +5,7 @@ import { Plus, Search, Pencil, Trash2, X, GraduationCap, Upload, Image as ImageI
 import AdminLayout from '@/components/admin/AdminLayout';
 import Modal from '@/components/ui/Modal';
 import ConfirmModal from '@/components/ui/ConfirmModal';
+import { useToast } from "@/components/ui/use-toast"; // Added useToast import
 import { compressImage } from '@/utils/imageUtils';
 
 interface Course {
@@ -21,6 +22,7 @@ interface Course {
 }
 
 export default function CoursesManager() {
+    const { toast } = useToast(); // Initialized useToast
     const [courses, setCourses] = useState<Course[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
@@ -59,8 +61,13 @@ export default function CoursesManager() {
             const compressed = await compressImage(file);
             setFormData(prev => ({ ...prev, image: compressed }));
         } catch (error) {
-            console.error("Image upload failed", error);
-            alert("Failed to upload image.");
+            console.error("Image upload failed:", error);
+            toast({
+                title: "Error",
+                description: "Failed to upload image.",
+                variant: "destructive",
+                duration: 3000,
+            });
         }
     };
 
@@ -82,9 +89,20 @@ export default function CoursesManager() {
             setIsModalOpen(false);
             setEditingCourse(null);
             setFormData({ name: '', code: '', duration: '', eligibility: '', seats: 60, fees: '', description: '', image: '' });
+            toast({
+                title: "Success",
+                description: "Course saved successfully!",
+                className: "bg-green-500 text-white border-none",
+                duration: 3000,
+            });
         } catch (error) {
             console.error("Error saving course:", error);
-            alert("Failed to save course.");
+            toast({
+                title: "Error",
+                description: "Failed to save course.",
+                variant: "destructive",
+                duration: 3000,
+            });
         }
     };
 
