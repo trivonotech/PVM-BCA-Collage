@@ -382,6 +382,7 @@ export default function PlacementsManager() {
                                 <option value="Top Student">Top Student</option>
                                 <option value="Success Story">Success Story</option>
                             </select>
+                            <p className="text-xs text-gray-500 mt-1">Select <b>Success Story</b> to display in the website's Success Stories section.</p>
                         </div>
                     </div>
                     <div>

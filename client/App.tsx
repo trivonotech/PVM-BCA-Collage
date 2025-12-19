@@ -43,6 +43,7 @@ import { SecurityMonitor } from "@/components/SecurityMonitor";
 const PageContentManager = lazy(() => import("./pages/admin/PageContentManager"));
 const AdmissionsManager = lazy(() => import("./pages/admin/AdmissionsManager"));
 const CoursesManager = lazy(() => import("./pages/admin/CoursesManager"));
+const WorkshopsManager = lazy(() => import("./pages/admin/WorkshopsManager"));
 const SystemHealth = lazy(() => import("./pages/admin/SystemHealth"));
 
 const PageEditor = lazy(() => import("./pages/admin/editors/PageEditor"));
@@ -80,7 +81,7 @@ function AppContent() {
           <Route path="/admin/students" element={<ProtectedRoute><StudentsManager /></ProtectedRoute>} />
           <Route path="/admin/admissions" element={<ProtectedRoute><AdmissionsManager /></ProtectedRoute>} />
           <Route path="/admin/sports" element={<ProtectedRoute><EventsManager pageTitle="Sports Management" defaultCategory="Sports" /></ProtectedRoute>} />
-          <Route path="/admin/workshops" element={<ProtectedRoute><EventsManager pageTitle="Workshops Management" defaultCategory="Workshop" /></ProtectedRoute>} />
+          <Route path="/admin/workshops" element={<ProtectedRoute><WorkshopsManager /></ProtectedRoute>} />
           <Route path="/admin/news" element={<ProtectedRoute><NewsManager /></ProtectedRoute>} />
           <Route path="/admin/faculty" element={<ProtectedRoute><PlaceholderPage title="Faculty Management" /></ProtectedRoute>} />
           <Route path="/admin/achievements" element={<ProtectedRoute><EventsManager pageTitle="Achievements Management" defaultCategory="Achievement" /></ProtectedRoute>} />

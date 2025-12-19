@@ -1,41 +1,40 @@
 import { useState, useEffect } from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import { PartyPopper, Trophy, Users, Lightbulb, Image as ImageIcon, X, Download, Calendar as CalendarIcon, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Trophy, Lightbulb, Image as ImageIcon, X, Download, ChevronLeft, ChevronRight } from 'lucide-react';
 import { db } from '@/lib/firebase';
 import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
 import type { Event } from '@/../../shared/types';
-
 import { useSectionVisibility } from '@/hooks/useSectionVisibility';
+import { getEventStatus } from "@/lib/utils";
 
 export default function StudentLifePage() {
     const { isVisible } = useSectionVisibility();
     const [selectedImage, setSelectedImage] = useState<Event | null>(null);
     const [events, setEvents] = useState<Event[]>([]);
+    const [workshops, setWorkshops] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [categories, setCategories] = useState<string[]>(['All']);
     const [selectedCategory, setSelectedCategory] = useState('All');
 
-    // Lock Body Scroll when Lightbox is Open
+    const [workshopsLoading, setWorkshopsLoading] = useState(true);
+
+    // Fetch Workshops
     useEffect(() => {
-        if (selectedImage) {
-            document.body.style.overflow = 'hidden';
-        } else {
-            document.body.style.overflow = 'unset';
-        }
-        return () => {
-            document.body.style.overflow = 'unset';
-        };
-    }, [selectedImage]);
-
-    const filteredEvents = events.filter(event => {
-        if (!event || !event.category) return false;
-        if (selectedCategory === 'All') return true;
-
-        const evCat = String(event.category).trim().toLowerCase();
-        const selCat = String(selectedCategory).trim().toLowerCase();
-        return evCat === selCat;
-    });
+        const q = query(collection(db, 'workshops'), orderBy('date', 'desc'));
+        const unsubscribe = onSnapshot(q, (snapshot) => {
+            const data = snapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data()
+            }));
+            setWorkshops(data);
+            setWorkshopsLoading(false);
+        }, (err) => {
+            console.error(err);
+            setWorkshopsLoading(false);
+        });
+        return () => unsubscribe();
+    }, []);
 
     // Fetch Events
     useEffect(() => {
@@ -51,7 +50,6 @@ export default function StudentLifePage() {
             console.error("Error fetching events:", error);
             setLoading(false);
         });
-
         return () => unsubscribe();
     }, []);
 
@@ -67,13 +65,32 @@ export default function StudentLifePage() {
         return () => unsubscribe();
     }, []);
 
+    // Lock Scroll
+    useEffect(() => {
+        if (selectedImage) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = 'unset';
+        }
+        return () => {
+            document.body.style.overflow = 'unset';
+        };
+    }, [selectedImage]);
+
+    const filteredEvents = events.filter(event => {
+        if (!event || !event.category) return false;
+        // Explicitly exclude categories containing "Workshop" (case-insensitive)
+        if (String(event.category).toLowerCase().includes('workshop')) return false;
+
+        if (selectedCategory === 'All') return true;
+        return String(event.category).trim().toLowerCase() === String(selectedCategory).trim().toLowerCase();
+    });
+
     const handleNext = (e: React.MouseEvent) => {
         e.stopPropagation();
         if (!selectedImage) return;
-
         const currentIndex = filteredEvents.findIndex(ev => ev.id === selectedImage.id);
         if (currentIndex === -1) return;
-
         const nextIndex = (currentIndex + 1) % filteredEvents.length;
         setSelectedImage(filteredEvents[nextIndex]);
     };
@@ -81,10 +98,8 @@ export default function StudentLifePage() {
     const handlePrev = (e: React.MouseEvent) => {
         e.stopPropagation();
         if (!selectedImage) return;
-
         const currentIndex = filteredEvents.findIndex(ev => ev.id === selectedImage.id);
         if (currentIndex === -1) return;
-
         const prevIndex = (currentIndex - 1 + filteredEvents.length) % filteredEvents.length;
         setSelectedImage(filteredEvents[prevIndex]);
     };
@@ -98,11 +113,6 @@ export default function StudentLifePage() {
         { name: 'Athletics', facilities: 'Running Track', icon: '🏃' }
     ];
 
-    const workshops = [
-        { title: 'AI & Machine Learning Workshop', date: '15th Jan 2024', speaker: 'Dr. Amit Sharma', status: 'Upcoming' },
-        { title: 'Digital Marketing Seminar', date: '22nd Jan 2024', speaker: 'Ms. Priya Verma', status: 'Upcoming' },
-        { title: 'Leadership Development Program', date: '28th Jan 2024', speaker: 'Mr. Rajesh Kumar', status: 'Upcoming' }
-    ];
 
     return (
         <div className="min-h-screen bg-white font-poppins">
@@ -256,27 +266,48 @@ export default function StudentLifePage() {
                             </div>
 
                             <div className="space-y-6">
-                                {workshops.map((workshop, idx) => (
-                                    <div key={idx} className="bg-white rounded-2xl p-8 shadow-lg border-2 border-[#BFD8FF] hover:shadow-xl transition-shadow">
-                                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-                                            <div className="flex items-start gap-6">
-                                                <div className="p-4 bg-gradient-to-br from-[#BFD8FF] to-[#E5E7EB] rounded-2xl">
-                                                    <Lightbulb className="w-8 h-8 text-[#0B0B3B]" />
-                                                </div>
-                                                <div>
-                                                    <h3 className="text-2xl font-bold text-[#0B0B3B] mb-2">{workshop.title}</h3>
-                                                    <p className="text-gray-600 mb-1">Speaker: <span className="font-semibold">{workshop.speaker}</span></p>
-                                                    <p className="text-[#FF4040] font-bold">{workshop.date}</p>
-                                                </div>
-                                            </div>
-                                            <div>
-                                                <span className="px-6 py-3 bg-[#FACC15] text-[#0B0B3B] rounded-full font-bold whitespace-nowrap">
-                                                    {workshop.status}
-                                                </span>
-                                            </div>
-                                        </div>
+                                {workshopsLoading ? (
+                                    <div className="text-center py-12">
+                                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+                                        <p className="text-gray-600 mt-4">Loading workshops...</p>
                                     </div>
-                                ))}
+                                ) : (
+                                    <>
+                                        {workshops.map((workshop) => {
+                                            const status = getEventStatus(workshop.date);
+                                            return (
+                                                <div key={workshop.id} className="bg-white rounded-2xl p-8 shadow-lg border-2 border-[#BFD8FF] hover:shadow-xl transition-shadow">
+                                                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                                                        <div className="flex items-start gap-6">
+                                                            <div className="p-4 bg-gradient-to-br from-[#BFD8FF] to-[#E5E7EB] rounded-2xl overflow-hidden w-24 h-24 flex items-center justify-center shrink-0">
+                                                                {workshop.image ? (
+                                                                    <img src={workshop.image} alt={workshop.title} className="w-full h-full object-cover" />
+                                                                ) : (
+                                                                    <Lightbulb className="w-8 h-8 text-[#0B0B3B]" />
+                                                                )}
+                                                            </div>
+                                                            <div>
+                                                                <h3 className="text-2xl font-bold text-[#0B0B3B] mb-2">{workshop.title}</h3>
+                                                                <p className="text-gray-600 mb-1">Speaker: <span className="font-semibold">{workshop.speaker}</span></p>
+                                                                <p className="text-[#FF4040] font-bold">{workshop.date}</p>
+                                                            </div>
+                                                        </div>
+                                                        <div>
+                                                            <span className={`px-6 py-3 rounded-full font-bold whitespace-nowrap ${status === 'Upcoming' ? 'bg-[#FACC15] text-[#0B0B3B]' : 'bg-gray-200 text-gray-600'}`}>
+                                                                {status}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                        {workshops.length === 0 && (
+                                            <div className="text-center py-10 bg-gray-50 rounded-2xl">
+                                                <p className="text-gray-500">No workshops scheduled at the moment.</p>
+                                            </div>
+                                        )}
+                                    </>
+                                )}
                             </div>
                         </div>
                     </div>

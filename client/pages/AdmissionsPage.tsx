@@ -44,6 +44,11 @@ export default function AdmissionsPage() {
         loadData();
     }, []);
 
+    const ensureAbsoluteUrl = (url: string) => {
+        if (!url) return '#';
+        if (url.startsWith('http://') || url.startsWith('https://')) return url;
+        return `https://${url}`;
+    };
 
     return (
         <div className="min-h-screen bg-white font-poppins">
@@ -172,7 +177,7 @@ export default function AdmissionsPage() {
                                     </div>
                                     {scholarship.link ? (
                                         <a
-                                            href={scholarship.link}
+                                            href={ensureAbsoluteUrl(scholarship.link)}
                                             target="_blank"
                                             rel="noopener noreferrer"
                                             className="block w-full text-center mt-4 py-3 bg-gradient-to-r from-[#0B0B3B] to-[#1a1a5e] text-white rounded-xl font-bold hover:shadow-lg transition-shadow"

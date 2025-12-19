@@ -41,6 +41,8 @@ export default function EventsManager({ pageTitle = 'Events Management', default
     const [showModal, setShowModal] = useState(false);
     const [editingEvent, setEditingEvent] = useState<Event | null>(null);
     const [imagePreview, setImagePreview] = useState('');
+    const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     // Confirmation Modal States
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -148,6 +150,7 @@ export default function EventsManager({ pageTitle = 'Events Management', default
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setIsSubmitting(true);
 
         try {
             if (editingEvent) {
@@ -158,22 +161,56 @@ export default function EventsManager({ pageTitle = 'Events Management', default
                     category: String(formData.category),
                     updatedAt: new Date().toISOString()
                 });
-            } else {
-                // Add new event
-                await addDoc(eventsCollection, {
-                    ...formData,
-                    category: String(formData.category),
-                    createdAt: new Date().toISOString(),
-                    updatedAt: new Date().toISOString(),
+                toast({
+                    title: "Success",
+                    description: "Event updated successfully!",
+                    className: "bg-green-500 text-white border-none",
+                    duration: 3000,
                 });
+            } else {
+                // Add new event(s)
+                if (selectedFiles.length > 0) {
+                    // Bulk Upload
+                    let processedCount = 0;
+                    for (const file of selectedFiles) {
+                        try {
+                            const compressedBase64 = await compressImage(file);
+                            await addDoc(eventsCollection, {
+                                ...formData, // Reuse name, date, category, desc
+                                image: compressedBase64,
+                                category: String(formData.category),
+                                createdAt: new Date().toISOString(),
+                                updatedAt: new Date().toISOString(),
+                            });
+                            processedCount++;
+                        } catch (err) {
+                            console.error("Failed to process file:", file.name, err);
+                        }
+                    }
+                    toast({
+                        title: "Bulk Upload Complete",
+                        description: `Successfully created ${processedCount} events!`,
+                        className: "bg-green-500 text-white border-none",
+                        duration: 3000,
+                    });
+                } else {
+                    // Single Upload (fallback if no file selected via new method but maybe via drag drop or something? 
+                    // actually if selectedFiles is empty but formData.image is set, standard single add)
+                    await addDoc(eventsCollection, {
+                        ...formData,
+                        category: String(formData.category),
+                        createdAt: new Date().toISOString(),
+                        updatedAt: new Date().toISOString(),
+                    });
+                    toast({
+                        title: "Success",
+                        description: "Event created successfully!",
+                        className: "bg-green-500 text-white border-none",
+                        duration: 3000,
+                    });
+                }
             }
             setShowModal(false);
-            toast({
-                title: "Success",
-                description: `Event ${editingEvent ? 'updated' : 'created'} successfully!`,
-                className: "bg-green-500 text-white border-none",
-                duration: 3000,
-            });
         } catch (error) {
             console.error("Error saving event: ", error);
             toast({
@@ -182,6 +219,8 @@ export default function EventsManager({ pageTitle = 'Events Management', default
                 variant: "destructive",
                 duration: 3000,
             });
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -214,21 +253,40 @@ export default function EventsManager({ pageTitle = 'Events Management', default
     };
 
     const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
+        const files = e.target.files;
+        if (!files || files.length === 0) return;
 
-        if (file) {
+        // If editing or only 1 file selected, standard behavior
+        if (editingEvent || files.length === 1) {
+            const file = files[0];
             try {
                 const compressedBase64 = await compressImage(file);
                 setImagePreview(compressedBase64);
                 setFormData(prev => ({ ...prev, image: compressedBase64 }));
+                setSelectedFiles([file]);
             } catch (err) {
                 console.error("Compression error:", err);
                 toast({
                     title: "Error",
-                    description: "Failed to process image. Please try another.",
+                    description: "Failed to process image.",
                     variant: "destructive",
-                    duration: 3000,
                 });
+            }
+        } else {
+            // Multiple files (New Event Mode)
+            // Show preview of first, but store all
+            const fileArray = Array.from(files);
+            setSelectedFiles(fileArray);
+
+            // Preview first one
+            try {
+                const compressedBase64 = await compressImage(fileArray[0]);
+                setImagePreview(compressedBase64);
+                // We don't set formData.image necessarily if we rely on selectedFiles, 
+                // but setting it ensures the preview logic works
+                setFormData(prev => ({ ...prev, image: compressedBase64 }));
+            } catch (err) {
+                console.error("Preview error:", err);
             }
         }
     };
@@ -243,6 +301,7 @@ export default function EventsManager({ pageTitle = 'Events Management', default
             image: '',
         });
         setImagePreview('');
+        setSelectedFiles([]);
         setShowModal(true);
     };
 
@@ -256,6 +315,7 @@ export default function EventsManager({ pageTitle = 'Events Management', default
             image: event.image || '',
         });
         setImagePreview(event.image || '');
+        setSelectedFiles([]); // Clear multiple files in edit mode
         setShowModal(true);
     };
 
@@ -414,11 +474,10 @@ export default function EventsManager({ pageTitle = 'Events Management', default
                     {/* Event Name */}
                     <div>
                         <label className="block text-sm font-semibold text-gray-700 mb-2">
-                            {term} Name *
+                            {term} Name
                         </label>
                         <input
                             type="text"
-                            required
                             value={formData.name}
                             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                             className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none"
@@ -429,22 +488,20 @@ export default function EventsManager({ pageTitle = 'Events Management', default
                     {/* Date */}
                     <div>
                         <label className="block text-sm font-semibold text-gray-700 mb-2">
-                            Date *
+                            Date
                         </label>
                         <input
-                            type="text"
-                            required
+                            type="date"
                             value={formData.date}
                             onChange={(e) => setFormData({ ...formData, date: e.target.value })}
                             className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none"
-                            placeholder="e.g., March 15, 2024"
                         />
                     </div>
 
                     {/* Category */}
                     <div>
                         <label className="block text-sm font-semibold text-gray-700 mb-2">
-                            Category *
+                            Category
                         </label>
                         <select
                             value={formData.category}
@@ -474,7 +531,7 @@ export default function EventsManager({ pageTitle = 'Events Management', default
                     {/* Image Upload */}
                     < div >
                         <label className="block text-sm font-semibold text-gray-700 mb-2">
-                            Event Image *
+                            Event Image
                         </label>
                         <div className="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-blue-500 transition-colors">
                             {imagePreview ? (
@@ -484,11 +541,17 @@ export default function EventsManager({ pageTitle = 'Events Management', default
                                         alt="Preview"
                                         className="max-h-96 w-auto mx-auto rounded-lg object-contain shadow-sm"
                                     />
+                                    {selectedFiles.length > 1 && (
+                                        <div className="absolute bottom-2 right-2 bg-black bg-opacity-75 text-white px-3 py-1 rounded-full text-sm font-semibold">
+                                            + {selectedFiles.length - 1} more photos
+                                        </div>
+                                    )}
                                     <button
                                         type="button"
                                         onClick={() => {
                                             setImagePreview('');
                                             setFormData({ ...formData, image: '' });
+                                            setSelectedFiles([]);
                                         }}
                                         className="absolute top-2 right-2 bg-red-600 text-white p-2 rounded-full hover:bg-red-700"
                                     >
@@ -500,11 +563,13 @@ export default function EventsManager({ pageTitle = 'Events Management', default
                                     <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                                     <p className="text-gray-600 mb-2">Click to upload or drag and drop</p>
                                     <p className="text-sm text-gray-500">PNG, JPG up to 10MB</p>
+                                    {!editingEvent && <p className="text-xs text-blue-600 mt-2 font-medium">You can select multiple photos to create bulk events</p>}
                                 </div>
                             )}
                             <input
                                 type="file"
                                 accept="image/*"
+                                multiple={!editingEvent} // Only allow multiple for new events
                                 onChange={handleImageUpload}
                                 className="hidden"
                                 id="image-upload"
@@ -531,9 +596,13 @@ export default function EventsManager({ pageTitle = 'Events Management', default
                         </button>
                         <button
                             type="submit"
-                            className="flex-1 bg-blue-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-blue-700 transition-colors"
+                            disabled={isSubmitting}
+                            className="flex-1 bg-blue-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-blue-700 transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
                         >
-                            {editingEvent ? `Update ${term}` : `Create ${term}`}
+                            {isSubmitting
+                                ? (selectedFiles.length > 1 ? 'Creating Bulk Events...' : 'Processing...')
+                                : (editingEvent ? `Update ${term}` : (selectedFiles.length > 1 ? `Create ${selectedFiles.length} Events` : `Create ${term}`))
+                            }
                         </button>
                     </div >
                 </form >

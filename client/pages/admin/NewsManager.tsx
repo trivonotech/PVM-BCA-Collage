@@ -482,10 +482,9 @@ export default function NewsManager() {
 
                             {/* Title */}
                             <div>
-                                <label className="block text-sm font-semibold text-gray-700 mb-2">Title *</label>
+                                <label className="block text-sm font-semibold text-gray-700 mb-2">Title</label>
                                 <input
                                     type="text"
-                                    required
                                     value={editingNews.title}
                                     onChange={(e) => setEditingNews({ ...editingNews, title: e.target.value })}
                                     className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none"
@@ -495,7 +494,7 @@ export default function NewsManager() {
 
                             {/* Category */}
                             <div>
-                                <label className="block text-sm font-semibold text-gray-700 mb-2">Category *</label>
+                                <label className="block text-sm font-semibold text-gray-700 mb-2">Category</label>
                                 <select
                                     value={['General', 'Study Resources', 'Courses', 'Study Support'].includes(editingNews.category)
                                         ? editingNews.category
@@ -529,7 +528,6 @@ export default function NewsManager() {
                                         onChange={(e) => setEditingNews({ ...editingNews, category: e.target.value })}
                                         className="w-full mt-3 px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none"
                                         placeholder="Enter custom category name"
-                                        required
                                     />
                                 )}
                             </div>

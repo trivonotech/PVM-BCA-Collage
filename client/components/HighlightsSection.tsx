@@ -12,7 +12,7 @@ export default function HighlightsSection() {
 
   // Fetch Top Students Dynamically
   useEffect(() => {
-    const q = query(collection(db, 'students'), orderBy('rank'));
+    const q = query(collection(db, 'top_students'), orderBy('rank'));
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       setStudents(data);

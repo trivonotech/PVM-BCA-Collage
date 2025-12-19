@@ -17,7 +17,7 @@ export default function StudentsManager() {
 
     // Real-time sync
     useEffect(() => {
-        const q = query(collection(db, 'students'), orderBy('rank'));
+        const q = query(collection(db, 'top_students'), orderBy('rank'));
         const unsubscribe = onSnapshot(q, (snapshot) => {
             const studentsData = snapshot.docs.map(doc => ({
                 id: doc.id,
@@ -257,11 +257,10 @@ export default function StudentsManager() {
                     <div className="grid grid-cols-2 gap-4">
                         <div>
                             <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                Rank *
+                                Rank
                             </label>
                             <input
                                 type="text"
-                                required
                                 value={formData.rank}
                                 onChange={(e) => setFormData({ ...formData, rank: e.target.value })}
                                 className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-yellow-500 focus:outline-none"
@@ -270,11 +269,10 @@ export default function StudentsManager() {
                         </div>
                         <div>
                             <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                Name *
+                                Name
                             </label>
                             <input
                                 type="text"
-                                required
                                 value={formData.name}
                                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                                 className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-yellow-500 focus:outline-none"
@@ -285,11 +283,10 @@ export default function StudentsManager() {
 
                     <div>
                         <label className="block text-sm font-semibold text-gray-700 mb-2">
-                            Course *
+                            Course
                         </label>
                         <input
                             type="text"
-                            required
                             value={formData.course}
                             onChange={(e) => setFormData({ ...formData, course: e.target.value })}
                             className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-yellow-500 focus:outline-none"
@@ -299,11 +296,10 @@ export default function StudentsManager() {
 
                     <div>
                         <label className="block text-sm font-semibold text-gray-700 mb-2">
-                            Achievement *
+                            Achievement
                         </label>
                         <input
                             type="text"
-                            required
                             value={formData.achievement}
                             onChange={(e) => setFormData({ ...formData, achievement: e.target.value })}
                             className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-yellow-500 focus:outline-none"

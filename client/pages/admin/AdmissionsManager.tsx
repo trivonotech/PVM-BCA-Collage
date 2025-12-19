@@ -124,19 +124,19 @@ export default function AdmissionsManager() {
                     <div className="space-y-4">
                         <div>
                             <label className="block text-sm font-bold text-gray-700">Application Start Date</label>
-                            <input type="text" value={dates.applicationStart || ''} onChange={(e) => setDates({ ...dates, applicationStart: e.target.value })} className="w-full p-2 border rounded-lg" placeholder="e.g. 1st May 2024" />
+                            <input type="date" value={dates.applicationStart || ''} onChange={(e) => setDates({ ...dates, applicationStart: e.target.value })} className="w-full p-2 border rounded-lg" />
                         </div>
                         <div>
                             <label className="block text-sm font-bold text-gray-700">Application Last Date</label>
-                            <input type="text" value={dates.applicationEnd || ''} onChange={(e) => setDates({ ...dates, applicationEnd: e.target.value })} className="w-full p-2 border rounded-lg" placeholder="e.g. 30th June 2024" />
+                            <input type="date" value={dates.applicationEnd || ''} onChange={(e) => setDates({ ...dates, applicationEnd: e.target.value })} className="w-full p-2 border rounded-lg" />
                         </div>
                         <div>
                             <label className="block text-sm font-bold text-gray-700">Entrance Exam Date</label>
-                            <input type="text" value={dates.examDate || ''} onChange={(e) => setDates({ ...dates, examDate: e.target.value })} className="w-full p-2 border rounded-lg" placeholder="e.g. 15th July 2024" />
+                            <input type="date" value={dates.examDate || ''} onChange={(e) => setDates({ ...dates, examDate: e.target.value })} className="w-full p-2 border rounded-lg" />
                         </div>
                         <div>
                             <label className="block text-sm font-bold text-gray-700">Merit List Date</label>
-                            <input type="text" value={dates.meritDate || ''} onChange={(e) => setDates({ ...dates, meritDate: e.target.value })} className="w-full p-2 border rounded-lg" placeholder="e.g. 25th July 2024" />
+                            <input type="date" value={dates.meritDate || ''} onChange={(e) => setDates({ ...dates, meritDate: e.target.value })} className="w-full p-2 border rounded-lg" />
                         </div>
                         <button onClick={() => saveData('dates')} className="bg-blue-600 text-white px-6 py-2 rounded-lg font-bold flex items-center gap-2 mt-4 hover:bg-blue-700">
                             <Save className="w-4 h-4" /> Save Dates
