@@ -14,6 +14,9 @@ export default function AdminLogin() {
     const navigate = useNavigate();
     const { toast } = useToast();
 
+    // Regex for basic email validation
+    const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
     // Removed handleCreateSuperAdmin as per user request (Login page should only be for logging in)
     // The Super Admin account (pvm.bca.college01@gmail.com) is presumed to exist or be created via console if needed.
 
@@ -63,7 +66,7 @@ export default function AdminLogin() {
         //     reason: reason
         // }));
         console.warn("Security Lockout Triggered (Disabled):", reason);
-        // setError(`Security Lockout: ${reason}. Please wait 1 hour.`);
+        setError(`Security Lockout: ${reason}. (Disabled for testing)`); // ENABLED FOR DEBUGGING
     };
 
     // Handle Email Link Sign-in landing
@@ -116,8 +119,10 @@ export default function AdminLogin() {
         checkEmailLink();
     }, [navigate]);
 
-    const handleLogin = async (e: FormEvent) => {
-        e.preventDefault();
+    const handleLogin = async (e: any) => {
+        if (e && e.preventDefault) e.preventDefault();
+        // alert("Login Clicked!"); // Debug Alert
+        console.log("Login sequence started");
         setError('');
         setLoading(true);
 
@@ -127,12 +132,24 @@ export default function AdminLogin() {
             return;
         }
 
+        // Security Check 2: Client-side Validation
+        const email = username.toLowerCase() === 'admin' ? 'pvm.bca.college01@gmail.com' : username.trim();
+
+        if (!EMAIL_REGEX.test(email)) {
+            setLoading(false);
+            console.error("Validation Failed: Invalid Email Format", email);
+            setError("Please enter a valid email address (e.g. user@example.com).");
+            return;
+        }
+
         try {
             const { signInWithEmailAndPassword, sendSignInLinkToEmail } = await import('firebase/auth');
             const { auth } = await import('@/lib/firebase');
 
             // 1. Validate Credentials First (Identity Check)
-            const email = username.toLowerCase() === 'admin' ? 'pvm.bca.college01@gmail.com' : username;
+            // const email = username.toLowerCase() === 'admin' ? 'pvm.bca.college01@gmail.com' : username;
+
+            // Note: 'email' is already defined and validated above.
 
             try {
                 // Check if password is correct
@@ -159,8 +176,8 @@ export default function AdminLogin() {
                 localStorage.setItem('login_failures', pendingFailures.toString());
 
                 if (pendingFailures >= 5) {
-                    triggerSystemLock("Multiple Failed Admin Access Attempts");
-                    return;
+                    // triggerSystemLock("Multiple Failed Admin Access Attempts"); // TEMPORARILY DISABLED TO SHOW REAL ERROR
+                    // return;
                 }
 
                 if (loginErr.code === 'auth/invalid-credential') {
@@ -200,8 +217,10 @@ export default function AdminLogin() {
                     <p className="text-gray-600">PVM BCA College</p>
                 </div>
 
-                {/* Login Form */}
-                <form onSubmit={handleLogin} className="space-y-6">
+                {/* Login Form Container - Changed to div to prevent submit refresh */}
+                <div className="space-y-6" onKeyDown={(e) => {
+                    if (e.key === 'Enter') handleLogin(e);
+                }}>
                     {/* Honeypot Field (Hidden) - Bots will fill this */}
                     <input
                         type="text"
@@ -290,7 +309,8 @@ export default function AdminLogin() {
 
                             {/* Login Button */}
                             <button
-                                type="submit"
+                                type="button"
+                                onClick={handleLogin}
                                 disabled={loading}
                                 className="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl hover:from-blue-700 hover:to-blue-800 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                             >
@@ -305,7 +325,7 @@ export default function AdminLogin() {
                             </button>
                         </>
                     )}
-                </form>
+                </div>
 
 
             </div>

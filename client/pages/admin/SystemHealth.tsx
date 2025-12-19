@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { db } from '@/lib/firebase';
-import { doc, onSnapshot, collection, query, orderBy, limit, getDocs } from 'firebase/firestore';
+import { doc, onSnapshot, collection, query, orderBy, limit, getDocs, setDoc } from 'firebase/firestore';
 import { useToast } from "@/components/ui/use-toast";
 import { Activity, CheckCircle2, AlertCircle, Server, Zap, AlertTriangle, ExternalLink, ShieldAlert, Settings } from 'lucide-react';
 import UsageDetailsModal from '@/components/admin/UsageDetailsModal';
@@ -34,7 +34,6 @@ export default function SystemHealth() {
     const toggleSecurity = async () => {
         try {
             setToggleLoading(true);
-            const { setDoc, doc } = await import('firebase/firestore');
             await setDoc(doc(db, 'settings', 'security'), { isActive: !securityEnabled }, { merge: true });
             // State will update via listener below
             toast({
@@ -58,9 +57,9 @@ export default function SystemHealth() {
 
     useEffect(() => {
         // 1. Fetch Analytics for Total Visits (needed for Reads estimate)
-        const unsubAnalytics = onSnapshot(doc(db, 'analytics', 'aggregate'), (doc) => {
-            if (doc.exists()) {
-                setStats(doc.data());
+        const unsubAnalytics = onSnapshot(doc(db, 'analytics', 'aggregate'), (snap) => {
+            if (snap.exists()) {
+                setStats(snap.data());
                 setDbStatus('online');
             } else {
                 setStats({ totalVisits: 0 });
@@ -77,7 +76,6 @@ export default function SystemHealth() {
                 // AUTO-INIT: If missing, create default config
                 const initConfig = async () => {
                     try {
-                        const { setDoc, doc } = await import('firebase/firestore');
                         await setDoc(doc(db, 'settings', 'security'), {
                             isActive: false,
                             config: {
