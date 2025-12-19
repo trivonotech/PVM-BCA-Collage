@@ -55,12 +55,15 @@ export default function AdminLogin() {
 
     const triggerSystemLock = (reason: string) => {
         // Trigger the Global Security Monitor
-        const duration = 60 * 60 * 1000; // 1 Hour
-        localStorage.setItem('security_block', JSON.stringify({
-            expiresAt: Date.now() + duration,
-            reason: reason
-        }));
-        window.location.reload(); // Reload to activate shield
+        // const duration = 60 * 60 * 1000; // 1 Hour
+
+        // TEMPORARILY DISABLED (Security Off)
+        // localStorage.setItem('security_block', JSON.stringify({
+        //     expiresAt: Date.now() + duration,
+        //     reason: reason
+        // }));
+        console.warn("Security Lockout Triggered (Disabled):", reason);
+        // setError(`Security Lockout: ${reason}. Please wait 1 hour.`);
     };
 
     // Handle Email Link Sign-in landing
@@ -165,7 +168,8 @@ export default function AdminLogin() {
                 } else if (loginErr.code === 'auth/too-many-requests') {
                     setError('Too many failed attempts. Please try again later.');
                 } else {
-                    setError('Failed to login. Please check your connection.');
+                    // Show actual error for debugging
+                    setError(`Login Failed: ${loginErr.code || loginErr.message || 'Check connection'}`);
                 }
             }
 
