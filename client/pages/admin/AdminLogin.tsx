@@ -2,6 +2,7 @@ import { useState, FormEvent, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Lock, User, Eye, EyeOff } from 'lucide-react';
 import { useToast } from "@/components/ui/use-toast";
+import ReCAPTCHA from "react-google-recaptcha";
 
 export default function AdminLogin() {
     const [username, setUsername] = useState('');
@@ -11,8 +12,17 @@ export default function AdminLogin() {
     const [loading, setLoading] = useState(false);
     const [linkSent, setLinkSent] = useState(false);
     const [honeypot, setHoneypot] = useState('');
+    const [captchaToken, setCaptchaToken] = useState<string | null>(null);
     const navigate = useNavigate();
     const { toast } = useToast();
+
+    // ReCAPTCHA Configuration
+    // const TEST_SITE_KEY = "6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI";
+
+    // TODO: PASTE YOUR REAL GOOGLE RECAPTCHA V2 (CHECKBOX) SITE KEY BELOW
+    const REAL_SITE_KEY = "6LcdBDEsAAAAAEqVv6ZR_kXnmxqWH-wafq-aHYdx";
+
+    const SITE_KEY = REAL_SITE_KEY;
 
     // Regex for basic email validation
     const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -129,6 +139,13 @@ export default function AdminLogin() {
         // Security Check 1: Honeypot
         if (honeypot) {
             triggerSystemLock("Automated Bot / Malicious Script Detected");
+            return;
+        }
+
+        // Security Check 2: CAPTCHA
+        if (!captchaToken) {
+            setLoading(false);
+            setError("Please verify you are not a robot.");
             return;
         }
 
@@ -305,6 +322,15 @@ export default function AdminLogin() {
                                 <button type="button" onClick={handleForgotPassword} className="text-blue-600 hover:text-blue-700 font-medium">
                                     Forgot password?
                                 </button>
+                            </div>
+
+                            {/* ReCAPTCHA Widget */}
+                            <div className="flex justify-center transform scale-90 origin-left">
+                                <ReCAPTCHA
+                                    sitekey={SITE_KEY}
+                                    onChange={(token) => setCaptchaToken(token)}
+                                    theme="light"
+                                />
                             </div>
 
                             {/* Login Button */}
