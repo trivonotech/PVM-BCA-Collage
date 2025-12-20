@@ -5,6 +5,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { Activity, CheckCircle2, AlertCircle, Server, Zap, AlertTriangle, ExternalLink, ShieldAlert, Settings } from 'lucide-react';
 import UsageDetailsModal from '@/components/admin/UsageDetailsModal';
 import SecurityConfigModal from '@/components/admin/SecurityConfigModal';
+import SessionManagerModal from '@/components/admin/SessionManagerModal';
 import AdminLayout from '@/components/admin/AdminLayout';
 
 export default function SystemHealth() {
@@ -13,8 +14,10 @@ export default function SystemHealth() {
     const [dbStatus, setDbStatus] = useState<'online' | 'offline'>('offline');
     const [latency, setLatency] = useState<number | null>(null);
     const [recentErrors, setRecentErrors] = useState<any[]>([]);
+    const [recentSessions, setRecentSessions] = useState<any[]>([]);
     const [showUsageModal, setShowUsageModal] = useState(false);
     const [showSecurityConfig, setShowSecurityConfig] = useState(false);
+    const [showSessionManager, setShowSessionManager] = useState(false);
 
     // Counts for Usage Estimation
     const [counts, setCounts] = useState({
@@ -116,6 +119,18 @@ export default function SystemHealth() {
         };
         fetchErrors();
 
+        // 3.5. Recent Sessions (New)
+        const fetchSessions = async () => {
+            try {
+                const sessQ = query(collection(db, 'admin_sessions'), orderBy('timestamp', 'desc'), limit(10));
+                const snap = await getDocs(sessQ);
+                // Simple deduction of non-revoked count
+                const active = snap.docs.filter(d => d.data().status !== 'revoked');
+                setRecentSessions(active.map(d => ({ id: d.id, ...d.data() })));
+            } catch (e) { console.error(e); }
+        };
+        fetchSessions();
+
         // 4. Fetch Item Counts (One-time fetch for this page)
         const fetchCounts = async () => {
             const getCount = async (col: string) => (await getDocs(collection(db, col))).size;
@@ -156,6 +171,10 @@ export default function SystemHealth() {
                 <SecurityConfigModal
                     isOpen={showSecurityConfig}
                     onClose={() => setShowSecurityConfig(false)}
+                />
+                <SessionManagerModal
+                    isOpen={showSessionManager}
+                    onClose={() => setShowSessionManager(false)}
                 />
 
                 {/* Health Grid */}
@@ -245,7 +264,37 @@ export default function SystemHealth() {
                     </div>
                 </div>
 
-                {/* Error Logs */}
+                {/* 5. Managed Access Strip (Horizontal Bar) */}
+                <div
+                    onClick={() => setShowSessionManager(true)}
+                    className="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-2xl shadow-lg p-4 flex items-center justify-between cursor-pointer transform transition hover:scale-[1.01] hover:shadow-xl group"
+                >
+                    <div className="flex items-center gap-4 text-white">
+                        <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm">
+                            <Server className="w-6 h-6 text-white" />
+                        </div>
+                        <div>
+                            <h3 className="font-bold text-lg leading-tight">Manage Active Sessions</h3>
+                            <p className="text-blue-100 text-sm opacity-90">
+                                {recentSessions.length} Devices Online • Monitor & Secure Access
+                            </p>
+                        </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                        <div className="hidden md:flex -space-x-2">
+                            {recentSessions.slice(0, 3).map((_, i) => (
+                                <div key={i} className="w-8 h-8 rounded-full bg-white/20 border-2 border-indigo-600 flex items-center justify-center text-[10px] text-white font-bold">
+                                    <Activity className="w-4 h-4" />
+                                </div>
+                            ))}
+                        </div>
+                        <div className="bg-white text-indigo-700 px-4 py-2 rounded-xl font-bold text-sm shadow-sm group-hover:bg-indigo-50 transition">
+                            View Details
+                        </div>
+                    </div>
+                </div>
+
+                {/* 6. Error Logs (Full Width) */}
                 <div className="bg-white rounded-2xl shadow-sm border border-red-100 overflow-hidden">
                     <div className="p-6 border-b border-gray-100 bg-red-50/50 flex items-center justify-between">
                         <div className="flex items-center gap-3">

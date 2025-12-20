@@ -16,30 +16,42 @@ export default function SecurityConfigModal({ isOpen, onClose }: SecurityConfigM
         blockDuration: 30, // minutes
         enableRefreshCheck: true,
         enableRateLimit: true,
-        maintenanceMode: false
+        maintenanceMode: false,
+        isActive: false // Added Login Security (Shield) state
     });
 
-    // Load initial settings
+    // Load initial settings & Handle Body Scroll
     useEffect(() => {
-        if (!isOpen) return;
-        const loadSettings = async () => {
-            try {
-                const snap = await getDoc(doc(db, 'settings', 'security'));
-                if (snap.exists() && snap.data().config) {
-                    const saved = snap.data().config;
-                    setConfig(prev => ({ ...prev, ...saved }));
+        if (isOpen) {
+            document.body.style.overflow = 'hidden';
+            const loadSettings = async () => {
+                try {
+                    const snap = await getDoc(doc(db, 'settings', 'security'));
+                    if (snap.exists()) {
+                        const data = snap.data();
+                        const savedConfig = data.config || {};
+                        setConfig(prev => ({
+                            ...prev,
+                            ...savedConfig,
+                            isActive: data.isActive !== undefined ? data.isActive : false
+                        }));
+                    }
+                } catch (e) {
+                    console.error("Failed to load security settings", e);
                 }
-            } catch (e) {
-                console.error("Failed to load security settings", e);
-            }
-        };
-        loadSettings();
+            };
+            loadSettings();
+        } else {
+            document.body.style.overflow = 'unset';
+        }
+        return () => { document.body.style.overflow = 'unset'; };
     }, [isOpen]);
 
     const handleSave = async () => {
         setLoading(true);
         try {
             await setDoc(doc(db, 'settings', 'security'), {
+                isActive: config.isActive, // Save root toggle
                 config: {
                     ...config,
                     refreshWindow: Number(config.refreshWindow), // Ensure numbers
@@ -74,6 +86,28 @@ export default function SecurityConfigModal({ isOpen, onClose }: SecurityConfigM
                 </div>
 
                 <div className="p-6 space-y-6">
+                    {/* 0. MAIN LOGIN SECURITY TOGGLE (The one user is looking for) */}
+                    <div className="bg-indigo-50 p-4 rounded-xl border border-indigo-100">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <h4 className="font-bold text-indigo-900 flex items-center gap-2">
+                                    Login Security Shield
+                                </h4>
+                                <p className="text-xs text-indigo-700/80 mt-1">
+                                    Enables Email Link Verification & Lockout Protection.
+                                    <br />(Turn OFF for Direct Login / Bypass)
+                                </p>
+                            </div>
+                            <label className="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" className="sr-only peer"
+                                    checked={config.isActive}
+                                    onChange={e => setConfig({ ...config, isActive: e.target.checked })}
+                                />
+                                <div className="w-11 h-6 bg-indigo-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-indigo-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                            </label>
+                        </div>
+                    </div>
+
                     {/* Refresh Detection */}
                     <div className="space-y-4">
                         <div className="flex items-center justify-between">
@@ -133,10 +167,10 @@ export default function SecurityConfigModal({ isOpen, onClose }: SecurityConfigM
                         <div className="flex items-start justify-between">
                             <div>
                                 <h4 className="font-bold text-red-700 flex items-center gap-2">
-                                    System Lockdown
+                                    Full Site Maintenance (Lockdown)
                                 </h4>
                                 <p className="text-xs text-red-600/80 mt-1">
-                                    Emergency Only. Makes the site inaccessible to public users. Admin panel remains open.
+                                    Emergency Only. Makes the public site inaccessible. Admin panel remains working.
                                 </p>
                             </div>
                             <label className="relative inline-flex items-center cursor-pointer mt-1">

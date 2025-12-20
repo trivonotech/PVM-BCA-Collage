@@ -61,10 +61,27 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     });
 
     const handleLogout = () => {
+        const sessionId = localStorage.getItem('currentSessionId');
+        // Optional: Update session status to 'logout' in DB here if we wanted strict tracking
         localStorage.removeItem('isAuthenticated');
         localStorage.removeItem('user');
+        localStorage.removeItem('currentSessionId');
         navigate('/admin/login');
     };
+
+    // Session Revocation Listener
+    useEffect(() => {
+        const sessionId = localStorage.getItem('currentSessionId');
+        if (!sessionId) return;
+
+        const unsubSession = onSnapshot(doc(db, 'admin_sessions', sessionId), (snap) => {
+            if (snap.exists() && snap.data().status === 'revoked') {
+                alert("Session Expired: You have been logged out remotely.");
+                handleLogout();
+            }
+        });
+        return () => unsubSession();
+    }, []);
 
     // Real-time listener for user permissions
     useEffect(() => {

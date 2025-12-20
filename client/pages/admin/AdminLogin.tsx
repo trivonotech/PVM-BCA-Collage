@@ -13,8 +13,25 @@ export default function AdminLogin() {
     const [linkSent, setLinkSent] = useState(false);
     const [honeypot, setHoneypot] = useState('');
     const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+    const [securityActive, setSecurityActive] = useState(false); // Default to OFF as requested
     const navigate = useNavigate();
     const { toast } = useToast();
+
+    // Listen to System Security Settings
+    useEffect(() => {
+        let unsub: any;
+        const initListener = async () => {
+            const { doc, onSnapshot } = await import('firebase/firestore');
+            const { db } = await import('@/lib/firebase');
+            unsub = onSnapshot(doc(db, 'settings', 'security'), (snap) => {
+                if (snap.exists()) {
+                    setSecurityActive(snap.data().isActive);
+                }
+            });
+        };
+        initListener();
+        return () => { if (unsub) unsub(); };
+    }, []);
 
     // ReCAPTCHA Configuration
     // const TEST_SITE_KEY = "6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI";
@@ -75,8 +92,8 @@ export default function AdminLogin() {
         //     expiresAt: Date.now() + duration,
         //     reason: reason
         // }));
-        console.warn("Security Lockout Triggered (Disabled):", reason);
-        setError(`Security Lockout: ${reason}. (Disabled for testing)`); // ENABLED FOR DEBUGGING
+        console.warn("Security Lockout Triggered:", reason);
+        setError(`Security Lockout: ${reason}. Please wait for admin reset.`);
     };
 
     // Handle Email Link Sign-in landing
@@ -142,14 +159,14 @@ export default function AdminLogin() {
             return;
         }
 
-        // Security Check 2: CAPTCHA
-        if (!captchaToken) {
+        // Security Check 2: CAPTCHA (Only if Security is Active)
+        if (securityActive && !captchaToken) {
             setLoading(false);
             setError("Please verify you are not a robot.");
             return;
         }
 
-        // Security Check 2: Client-side Validation
+        // Security Check 3: Client-side Validation (Email format only)
         const email = username.toLowerCase() === 'admin' ? 'pvm.bca.college01@gmail.com' : username.trim();
 
         if (!EMAIL_REGEX.test(email)) {
@@ -163,27 +180,68 @@ export default function AdminLogin() {
             const { signInWithEmailAndPassword, sendSignInLinkToEmail } = await import('firebase/auth');
             const { auth, db } = await import('@/lib/firebase');
 
-            // 1. Validate Credentials First (Identity Check)
-            // const email = username.toLowerCase() === 'admin' ? 'pvm.bca.college01@gmail.com' : username;
-
-            // Note: 'email' is already defined and validated above.
-
+            // 1. Password Check
             try {
                 // Check if password is correct
                 const userCredential = await signInWithEmailAndPassword(auth, email, password);
                 const user = userCredential.user;
 
-                // --- BYPASSING EMAIL LINK VERIFICATION (Due to Quota Exceeded) ---
-                // await auth.signOut();
-                // const actionCodeSettings = { ... };
-                // await sendSignInLinkToEmail(auth, email, actionCodeSettings);
-                // window.localStorage.setItem('emailForSignIn', email);
-                // setLinkSent(true);
+                if (securityActive) {
+                    // --- SECURE MODE (Email Link) ---
+                    // If successful, immediately sign out to enforce link verification
+                    await auth.signOut();
 
-                // DIRECT LOGIN SUCCESS
-                const { doc, getDoc } = await import('firebase/firestore');
+                    // Send Magic Link (Access Check)
+                    const actionCodeSettings = {
+                        url: window.location.href, // Redirect back to this page
+                        handleCodeInApp: true,
+                    };
+
+                    await sendSignInLinkToEmail(auth, email, actionCodeSettings);
+                    window.localStorage.setItem('emailForSignIn', email);
+
+                    setLinkSent(true);
+                    setError('');
+                    return;
+                }
+
+                // --- BYPASS MODE (Direct Login) --
+                // Proceed directly to dashboard
+
+                const { doc, getDoc, collection, addDoc } = await import('firebase/firestore');
                 const userDocRef = doc(db, 'users', user.uid);
                 const userDoc = await getDoc(userDocRef);
+
+                // --- RECORD SESSION DATA (For Security Audit) ---
+                try {
+                    // 1. Get IP & Location (Public API)
+                    const ipRes = await fetch('https://ipapi.co/json/');
+                    const ipData = await ipRes.json();
+
+                    // 2. Parse Device Info (Rudimentary)
+                    const ua = navigator.userAgent;
+                    let deviceType = "Desktop";
+                    if (/Mobi|Android/i.test(ua)) deviceType = "Mobile";
+                    else if (/iPad|Tablet/i.test(ua)) deviceType = "Tablet";
+
+                    // 3. Store in 'admin_sessions'
+                    const sessionDoc = await addDoc(collection(db, 'admin_sessions'), {
+                        userId: user.uid,
+                        email: user.email,
+                        timestamp: new Date(),
+                        ip: ipData.ip || 'Unknown',
+                        location: `${ipData.city || 'Unknown'}, ${ipData.country_name || 'Unknown'}`,
+                        device: deviceType,
+                        userAgent: ua,
+                        loginMethod: 'Direct Bypass (Security OFF)',
+                        status: 'active'
+                    });
+                    localStorage.setItem('currentSessionId', sessionDoc.id);
+                } catch (sessionErr) {
+                    console.error("Failed to record session:", sessionErr);
+                    // Don't block login if tracking fails, just log it
+                }
+                // ---------------------------
 
                 // Default fallback role if doc missing (for safety)
                 const role = userDoc.exists() ? userDoc.data().role : 'child_admin';
@@ -205,7 +263,6 @@ export default function AdminLogin() {
 
                 navigate('/admin/dashboard');
                 return;
-                // -------------------------------------------------------------
 
             } catch (loginErr: any) {
                 // Wrong password or user
@@ -213,8 +270,8 @@ export default function AdminLogin() {
                 localStorage.setItem('login_failures', pendingFailures.toString());
 
                 if (pendingFailures >= 5) {
-                    // triggerSystemLock("Multiple Failed Admin Access Attempts"); // TEMPORARILY DISABLED TO SHOW REAL ERROR
-                    // return;
+                    triggerSystemLock("Multiple Failed Admin Access Attempts");
+                    return;
                 }
 
                 if (loginErr.code === 'auth/invalid-credential') {
