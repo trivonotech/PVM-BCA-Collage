@@ -161,7 +161,7 @@ export default function AdminLogin() {
 
         try {
             const { signInWithEmailAndPassword, sendSignInLinkToEmail } = await import('firebase/auth');
-            const { auth } = await import('@/lib/firebase');
+            const { auth, db } = await import('@/lib/firebase');
 
             // 1. Validate Credentials First (Identity Check)
             // const email = username.toLowerCase() === 'admin' ? 'pvm.bca.college01@gmail.com' : username;
@@ -170,22 +170,42 @@ export default function AdminLogin() {
 
             try {
                 // Check if password is correct
-                await signInWithEmailAndPassword(auth, email, password);
+                const userCredential = await signInWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
 
-                // If successful, immediately sign out to enforce link verification
-                await auth.signOut();
+                // --- BYPASSING EMAIL LINK VERIFICATION (Due to Quota Exceeded) ---
+                // await auth.signOut();
+                // const actionCodeSettings = { ... };
+                // await sendSignInLinkToEmail(auth, email, actionCodeSettings);
+                // window.localStorage.setItem('emailForSignIn', email);
+                // setLinkSent(true);
 
-                // 2. Send Magic Link (Access Check)
-                const actionCodeSettings = {
-                    url: window.location.href, // Redirect back to this page
-                    handleCodeInApp: true,
-                };
+                // DIRECT LOGIN SUCCESS
+                const { doc, getDoc } = await import('firebase/firestore');
+                const userDocRef = doc(db, 'users', user.uid);
+                const userDoc = await getDoc(userDocRef);
 
-                await sendSignInLinkToEmail(auth, email, actionCodeSettings);
-                window.localStorage.setItem('emailForSignIn', email);
+                // Default fallback role if doc missing (for safety)
+                const role = userDoc.exists() ? userDoc.data().role : 'child_admin';
+                const permissions = userDoc.exists() ? userDoc.data().permissions : [];
 
-                setLinkSent(true);
-                setError('');
+                localStorage.setItem('isAuthenticated', 'true');
+                localStorage.setItem('user', JSON.stringify({
+                    uid: user.uid,
+                    email: user.email,
+                    role: role,
+                    permissions: permissions
+                }));
+
+                toast({
+                    title: "Login Successful",
+                    description: "Welcome to the Admin Panel.",
+                    className: "bg-green-500 text-white border-none",
+                });
+
+                navigate('/admin/dashboard');
+                return;
+                // -------------------------------------------------------------
 
             } catch (loginErr: any) {
                 // Wrong password or user
