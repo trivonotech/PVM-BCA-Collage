@@ -150,12 +150,18 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         return userPermissions.includes(item.permission);
     });
 
-    return (
-        <div className="min-h-screen bg-gray-50 w-full overflow-x-hidden">
+    // If session is revoked, ONLY render the security modal, blocking everything else
+    if (isSessionRevoked) {
+        return (
             <SessionExpiredModal
-                isOpen={isSessionRevoked}
+                isOpen={true}
                 onConfirm={handleLogout}
             />
+        );
+    }
+
+    return (
+        <div className="min-h-screen bg-gray-50 w-full overflow-x-hidden">
             {/* Mobile Header */}
             <div className="lg:hidden fixed top-0 left-0 right-0 bg-[#0B0B3B] text-white px-4 py-3 flex items-center justify-between z-50">
                 <h1 className="text-xl font-bold">Admin Panel</h1>

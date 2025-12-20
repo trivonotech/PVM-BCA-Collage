@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { ShieldAlert, LogOut } from 'lucide-react';
 
 interface SessionExpiredModalProps {
@@ -6,6 +7,16 @@ interface SessionExpiredModalProps {
 }
 
 export default function SessionExpiredModal({ isOpen, onConfirm }: SessionExpiredModalProps) {
+    // Lock scroll when open
+    useEffect(() => {
+        if (isOpen) {
+            document.body.style.overflow = 'hidden';
+            return () => {
+                document.body.style.overflow = 'unset';
+            };
+        }
+    }, [isOpen]);
+
     if (!isOpen) return null;
 
     return (
