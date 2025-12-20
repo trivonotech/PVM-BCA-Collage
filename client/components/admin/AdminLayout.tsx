@@ -25,6 +25,7 @@ import {
     Layout,
     School,
 } from 'lucide-react';
+import SessionExpiredModal from './SessionExpiredModal';
 
 interface AdminLayoutProps {
     children: ReactNode;
@@ -32,6 +33,7 @@ interface AdminLayoutProps {
 
 export default function AdminLayout({ children }: AdminLayoutProps) {
     const [sidebarOpen, setSidebarOpen] = useState(false);
+    const [isSessionRevoked, setIsSessionRevoked] = useState(false);
     const location = useLocation();
     const navigate = useNavigate();
 
@@ -76,8 +78,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
 
         const unsubSession = onSnapshot(doc(db, 'admin_sessions', sessionId), (snap) => {
             if (snap.exists() && snap.data().status === 'revoked') {
-                alert("Session Expired: You have been logged out remotely.");
-                handleLogout();
+                setIsSessionRevoked(true);
             }
         });
         return () => unsubSession();
@@ -151,6 +152,10 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
 
     return (
         <div className="min-h-screen bg-gray-50 w-full overflow-x-hidden">
+            <SessionExpiredModal
+                isOpen={isSessionRevoked}
+                onConfirm={handleLogout}
+            />
             {/* Mobile Header */}
             <div className="lg:hidden fixed top-0 left-0 right-0 bg-[#0B0B3B] text-white px-4 py-3 flex items-center justify-between z-50">
                 <h1 className="text-xl font-bold">Admin Panel</h1>

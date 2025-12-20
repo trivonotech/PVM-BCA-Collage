@@ -38,8 +38,11 @@ export default function SessionManagerModal({ isOpen, onClose }: SessionManagerM
         };
     }, [isOpen]);
 
-    const handleRevokeSession = async (sessionId: string) => {
-        if (!confirm("Are you sure you want to log out this device remotely?")) return;
+    const [revokingId, setRevokingId] = useState<string | null>(null);
+
+    const confirmRevoke = async () => {
+        if (!revokingId) return;
+        const sessionId = revokingId;
 
         try {
             await updateDoc(doc(db, 'admin_sessions', sessionId), {
@@ -58,6 +61,8 @@ export default function SessionManagerModal({ isOpen, onClose }: SessionManagerM
                 description: "Could not revoke session.",
                 variant: "destructive",
             });
+        } finally {
+            setRevokingId(null);
         }
     };
 
@@ -119,7 +124,7 @@ export default function SessionManagerModal({ isOpen, onClose }: SessionManagerM
 
                                     {!isCurrent && (
                                         <button
-                                            onClick={() => handleRevokeSession(session.id)}
+                                            onClick={() => setRevokingId(session.id)}
                                             className="px-3 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition flex items-center gap-2 text-sm font-medium border border-transparent hover:border-red-200"
                                         >
                                             <LogOut className="w-4 h-4" />
@@ -137,6 +142,34 @@ export default function SessionManagerModal({ isOpen, onClose }: SessionManagerM
                     )}
                 </div>
             </div>
+            {/* Clean Custom Confirmation Modal (Overlay) */}
+            {revokingId && (
+                <div className="absolute inset-0 z-50 flex items-center justify-center p-4 bg-black/10 backdrop-blur-[1px] animate-in fade-in">
+                    <div className="bg-white rounded-2xl shadow-xl border border-red-100 p-6 w-full max-w-sm text-center transform scale-100 animate-in zoom-in-95 duration-200">
+                        <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <LogOut className="w-8 h-8 text-red-600" />
+                        </div>
+                        <h3 className="text-xl font-bold text-gray-900 mb-2">Logout Device?</h3>
+                        <p className="text-sm text-gray-500 mb-6">
+                            This will immediately terminate access for this session. Are you sure?
+                        </p>
+                        <div className="flex gap-3">
+                            <button
+                                onClick={() => setRevokingId(null)}
+                                className="flex-1 py-2.5 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200 transition"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={confirmRevoke}
+                                className="flex-1 py-2.5 bg-red-600 text-white font-bold rounded-xl hover:bg-red-700 shadow-lg shadow-red-200 transition"
+                            >
+                                Yes, Logout
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
