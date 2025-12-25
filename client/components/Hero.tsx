@@ -31,13 +31,13 @@ export function Hero() {
             {/* Heading Section - Centered at top */}
             <div className="relative z-20 text-center mb-0 lg:mb-10 w-full max-w-5xl px-4">
                 <div className="relative inline-block">
-                    <img src={decoBulb} className="absolute -left-12 -top-6 w-12 h-12 md:w-16 md:h-16 lg:w-20 lg:h-20 animate-pulse-slow" alt="Idea" />
+                    <img src={decoBulb} className="absolute -left-12 -top-6 w-12 h-12 md:w-16 md:h-16 lg:w-20 lg:h-20 animate-pulse-slow" alt="Innovation and Creativity at PVM BCA College" />
                     <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-extrabold text-[#0B0B3B] leading-tight tracking-tight">
                         {content?.title ? (
                             <div dangerouslySetInnerHTML={{ __html: content.title.replace(/\n/g, '<br/>') }} />
                         ) : (
                             <>
-                                Education That <span className="whitespace-nowrap">Builds <img src={decoBook} className="inline-block w-8 h-8 md:w-12 md:h-12 lg:w-16 lg:h-16 ml-2 -mt-2 lg:-mt-4 align-middle animate-bounce-slow" alt="Book" /></span> <br />
+                                Education That <span className="whitespace-nowrap">Builds <img src={decoBook} className="inline-block w-8 h-8 md:w-12 md:h-12 lg:w-16 lg:h-16 ml-2 -mt-2 lg:-mt-4 align-middle animate-bounce-slow" alt="Comprehensive Learning Materials" /></span> <br />
                                 <span className="text-[#0B0B3B]">Capable Professionals</span>
                             </>
                         )}
@@ -55,7 +55,7 @@ export function Hero() {
                 <div className="w-full lg:w-1/2 flex justify-center lg:justify-start pointer-events-auto mt-8 lg:mt-0">
                     <img
                         src={content?.images?.hero || heroIllustration}
-                        alt="Student"
+                        alt="A student successfully graduating from PVM BCA College - Best BCA Education"
                         className="w-full max-w-xs lg:max-w-xl object-contain transform lg:translate-x-12"
                     />
                 </div>

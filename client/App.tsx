@@ -33,6 +33,7 @@ import NewsManager from "./pages/admin/NewsManager";
 import ProtectedRoute from "./components/admin/ProtectedRoute";
 import PlaceholderPage from "./pages/admin/PlaceholderPage";
 import PlacementsManager from "./pages/admin/PlacementsManager";
+import SEOManager from "./pages/admin/SEOManager";
 
 
 import ScrollToTop from "./components/ScrollToTop";
@@ -41,6 +42,7 @@ import { usePageTracker } from "@/hooks/usePageTracker";
 import { lazy, Suspense } from "react";
 import { GlobalErrorBoundary } from "@/components/GlobalErrorBoundary";
 import { SecurityMonitor } from "@/components/SecurityMonitor";
+import SchemaData from "@/components/SchemaData";
 
 const PageContentManager = lazy(() => import("./pages/admin/PageContentManager"));
 const AdmissionsManager = lazy(() => import("./pages/admin/AdmissionsManager"));
@@ -96,6 +98,7 @@ function AppContent() {
           <Route path="/admin/system" element={<ProtectedRoute><SystemHealth /></ProtectedRoute>} />
           <Route path="/admin/inquiries" element={<ProtectedRoute><InquiriesManager /></ProtectedRoute>} />
           <Route path="/admin/subscribers" element={<ProtectedRoute><SubscribersManager /></ProtectedRoute>} />
+          <Route path="/admin/seo" element={<ProtectedRoute><SEOManager /></ProtectedRoute>} />
 
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
@@ -113,6 +116,7 @@ const App = () => (
       <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <SecurityMonitor>
           <GlobalErrorBoundary>
+            <SchemaData />
             <AppContent />
           </GlobalErrorBoundary>
         </SecurityMonitor>

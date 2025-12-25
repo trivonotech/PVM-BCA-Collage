@@ -26,6 +26,7 @@ import {
     Layout,
     School,
     MessageSquare,
+    Search,
 } from 'lucide-react';
 
 
@@ -60,6 +61,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         { icon: Users, label: 'User Management', path: '/admin/users', permission: 'user_management' },
         { icon: Layout, label: 'Page Content', path: '/admin/pages', permission: 'pages' },
         { icon: Settings, label: 'Settings', id: 'settings', path: '/admin/settings', permission: 'settings' },
+        { icon: Search, label: 'SEO Manager', path: '/admin/seo', permission: 'seo' },
         { icon: Activity, label: 'System Health', id: 'system', path: '/admin/system', permission: 'system_health' },
     ];
 
@@ -303,7 +305,8 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                             '/admin/pages': 'pages',
                             '/admin/visibility': 'visibility',
                             '/admin/users': 'user_management',
-                            '/admin/settings': 'settings'
+                            '/admin/settings': 'settings',
+                            '/admin/seo': 'seo'
                         };
 
                         let hasAccess = true;
