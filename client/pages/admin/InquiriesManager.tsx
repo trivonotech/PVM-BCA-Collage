@@ -213,18 +213,20 @@ export default function InquiriesManager() {
                 </div>
 
                 {/* Filter Bar */}
-                <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 relative">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
-                    <input
-                        type="text"
-                        placeholder="Search by name, email, or subject..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-100 focus:border-blue-400 outline-none transition-all"
-                    />
+                <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
+                    <div className="relative">
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+                        <input
+                            type="text"
+                            placeholder="Search by name, email, or subject..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-100 focus:border-blue-400 outline-none transition-all"
+                        />
+                    </div>
                 </div>
 
-                {/* Inquiries Table */}
+                {/* Inquiries List */}
                 <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                     {loading ? (
                         <div className="text-center py-20 text-gray-500">Loading inquiries...</div>
@@ -235,95 +237,160 @@ export default function InquiriesManager() {
                             <p className="text-gray-500">Try adjusting your filters.</p>
                         </div>
                     ) : (
-                        <div className="overflow-x-auto">
-                            <Table>
-                                <TableHeader>
-                                    <TableRow className="bg-gray-50/50 hover:bg-gray-50/50">
-                                        <TableHead className="w-[200px] font-semibold text-[#0B0B3B]">Student / User</TableHead>
-                                        <TableHead className="font-semibold text-[#0B0B3B]">Subject</TableHead>
-                                        <TableHead className="font-semibold text-[#0B0B3B]">Status</TableHead>
-                                        <TableHead className="font-semibold text-[#0B0B3B]">Date</TableHead>
-                                        <TableHead className="text-right font-semibold text-[#0B0B3B]">Actions</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {filteredInquiries.map((inq) => (
-                                        <TableRow key={inq.id} className="hover:bg-blue-50/50 transition-colors">
-                                            <TableCell>
-                                                <div className="flex flex-col">
-                                                    <span className="font-bold text-gray-900">{inq.name}</span>
-                                                    <span className="text-xs text-gray-500">{inq.email}</span>
-                                                    {inq.phone && <span className="text-xs text-gray-400">{inq.phone}</span>}
-                                                </div>
-                                            </TableCell>
-                                            <TableCell>
-                                                <div className="max-w-[200px]">
-                                                    <div className="font-medium text-gray-900 truncate" title={inq.subject}>
-                                                        {inq.subject}
-                                                    </div>
-                                                    <div className="text-xs text-gray-500 truncate" title={inq.message}>
-                                                        {inq.message}
-                                                    </div>
-                                                </div>
-                                            </TableCell>
-                                            <TableCell>
-                                                <span className={`px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wide border ${getStatusColor(inq.status)}`}>
-                                                    {inq.status}
-                                                </span>
-                                            </TableCell>
-                                            <TableCell>
-                                                <div className="flex flex-col text-xs text-gray-500">
-                                                    <div className="flex items-center gap-1">
-                                                        <Calendar className="w-3 h-3" />
-                                                        {formatDateSafe(inq.createdAt?.seconds, 'MMM d, yyyy')}
-                                                    </div>
-                                                    <div className="flex items-center gap-1">
-                                                        <Clock className="w-3 h-3" />
-                                                        {formatDateSafe(inq.createdAt?.seconds, 'h:mm a')}
-                                                    </div>
-                                                </div>
-                                            </TableCell>
-                                            <TableCell className="text-right">
-                                                <div className="flex items-center justify-end gap-2">
-                                                    <button
-                                                        onClick={() => setViewInquiry(inq)}
-                                                        className="p-2 text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors"
-                                                        title="View Details"
-                                                    >
-                                                        <Eye className="w-4 h-4" />
-                                                    </button>
-                                                    {inq.status !== 'read' && inq.status !== 'archived' && (
-                                                        <button
-                                                            onClick={() => handleStatusUpdate(inq.id, 'read')}
-                                                            className="p-2 text-green-600 bg-green-50 hover:bg-green-100 rounded-lg transition-colors"
-                                                            title="Mark as Read"
-                                                        >
-                                                            <CheckCircle className="w-4 h-4" />
-                                                        </button>
-                                                    )}
-                                                    {inq.status !== 'archived' && (
-                                                        <button
-                                                            onClick={() => confirmAction(inq.id, 'archive')}
-                                                            className="p-2 text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
-                                                            title="Archive"
-                                                        >
-                                                            <Archive className="w-4 h-4" />
-                                                        </button>
-                                                    )}
-                                                    <button
-                                                        onClick={() => confirmAction(inq.id, 'delete')}
-                                                        className="p-2 text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors"
-                                                        title="Delete"
-                                                    >
-                                                        <Trash2 className="w-4 h-4" />
-                                                    </button>
-                                                </div>
-                                            </TableCell>
+                        <>
+                            {/* Desktop View: Table */}
+                            <div className="hidden md:block overflow-x-auto">
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow className="bg-gray-50/50 hover:bg-gray-50/50">
+                                            <TableHead className="w-[200px] font-semibold text-[#0B0B3B]">Student / User</TableHead>
+                                            <TableHead className="font-semibold text-[#0B0B3B]">Subject</TableHead>
+                                            <TableHead className="font-semibold text-[#0B0B3B]">Status</TableHead>
+                                            <TableHead className="font-semibold text-[#0B0B3B]">Date</TableHead>
+                                            <TableHead className="text-right font-semibold text-[#0B0B3B]">Actions</TableHead>
                                         </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
-                        </div>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {filteredInquiries.map((inq) => (
+                                            <TableRow key={inq.id} className="hover:bg-blue-50/50 transition-colors">
+                                                <TableCell>
+                                                    <div className="flex flex-col">
+                                                        <span className="font-bold text-gray-900">{inq.name}</span>
+                                                        <span className="text-xs text-gray-500">{inq.email}</span>
+                                                        {inq.phone && <span className="text-xs text-gray-400">{inq.phone}</span>}
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell>
+                                                    <div className="max-w-[200px]">
+                                                        <div className="font-medium text-gray-900 truncate" title={inq.subject}>
+                                                            {inq.subject}
+                                                        </div>
+                                                        <div className="text-xs text-gray-500 truncate" title={inq.message}>
+                                                            {inq.message}
+                                                        </div>
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell>
+                                                    <span className={`px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wide border ${getStatusColor(inq.status)}`}>
+                                                        {inq.status}
+                                                    </span>
+                                                </TableCell>
+                                                <TableCell>
+                                                    <div className="flex flex-col text-xs text-gray-500">
+                                                        <div className="flex items-center gap-1">
+                                                            <Calendar className="w-3 h-3" />
+                                                            {formatDateSafe(inq.createdAt?.seconds, 'MMM d, yyyy')}
+                                                        </div>
+                                                        <div className="flex items-center gap-1">
+                                                            <Clock className="w-3 h-3" />
+                                                            {formatDateSafe(inq.createdAt?.seconds, 'h:mm a')}
+                                                        </div>
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell className="text-right">
+                                                    <div className="flex items-center justify-end gap-2">
+                                                        <button
+                                                            onClick={() => setViewInquiry(inq)}
+                                                            className="p-2 text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors"
+                                                            title="View Details"
+                                                        >
+                                                            <Eye className="w-4 h-4" />
+                                                        </button>
+                                                        {inq.status !== 'read' && inq.status !== 'archived' && (
+                                                            <button
+                                                                onClick={() => handleStatusUpdate(inq.id, 'read')}
+                                                                className="p-2 text-green-600 bg-green-50 hover:bg-green-100 rounded-lg transition-colors"
+                                                                title="Mark as Read"
+                                                            >
+                                                                <CheckCircle className="w-4 h-4" />
+                                                            </button>
+                                                        )}
+                                                        {inq.status !== 'archived' && (
+                                                            <button
+                                                                onClick={() => confirmAction(inq.id, 'archive')}
+                                                                className="p-2 text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+                                                                title="Archive"
+                                                            >
+                                                                <Archive className="w-4 h-4" />
+                                                            </button>
+                                                        )}
+                                                        <button
+                                                            onClick={() => confirmAction(inq.id, 'delete')}
+                                                            className="p-2 text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors"
+                                                            title="Delete"
+                                                        >
+                                                            <Trash2 className="w-4 h-4" />
+                                                        </button>
+                                                    </div>
+                                                </TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            </div>
+
+                            {/* Mobile View: Cards */}
+                            <div className="md:hidden divide-y divide-gray-100 px-4">
+                                {filteredInquiries.map((inq) => (
+                                    <div key={inq.id} className="py-5 space-y-4">
+                                        <div className="flex justify-between items-start">
+                                            <div className="min-w-0 flex-1 pr-4">
+                                                <h4 className="font-bold text-gray-900 break-words leading-tight">{inq.name}</h4>
+                                                <div className="flex flex-col mt-0.5">
+                                                    <p className="text-xs text-blue-600 truncate">{inq.email}</p>
+                                                    {inq.phone && <p className="text-[10px] text-gray-400 font-medium">{inq.phone}</p>}
+                                                </div>
+                                            </div>
+                                            <span className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${getStatusColor(inq.status)}`}>
+                                                {inq.status}
+                                            </span>
+                                        </div>
+
+                                        <div className="bg-gray-50 p-3 rounded-xl border border-gray-100">
+                                            <p className="text-xs font-bold text-[#0B0B3B] uppercase mb-1">Subject & Message</p>
+                                            <p className="text-sm text-gray-800 font-bold line-clamp-1 leading-relaxed">{inq.subject}</p>
+                                            <p className="text-xs text-gray-600 line-clamp-2 mt-1 leading-relaxed">{inq.message}</p>
+                                        </div>
+
+                                        <div className="flex items-center justify-between gap-4 pt-1">
+                                            <div className="flex flex-col gap-1">
+                                                <div className="flex items-center gap-1.5 text-[10px] text-gray-500">
+                                                    <Calendar className="w-3 h-3" />
+                                                    {formatDateSafe(inq.createdAt?.seconds, 'MMM d, yyyy')}
+                                                </div>
+                                                <div className="flex items-center gap-1.5 text-[10px] text-gray-400">
+                                                    <Clock className="w-3 h-3" />
+                                                    {formatDateSafe(inq.createdAt?.seconds, 'h:mm a')}
+                                                </div>
+                                            </div>
+
+                                            <div className="flex items-center gap-2">
+                                                <button
+                                                    onClick={() => setViewInquiry(inq)}
+                                                    className="p-2.5 text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-xl transition-colors ring-1 ring-blue-100"
+                                                >
+                                                    <Eye className="w-4 h-4" />
+                                                </button>
+                                                {inq.status !== 'read' && inq.status !== 'archived' && (
+                                                    <button
+                                                        onClick={() => handleStatusUpdate(inq.id, 'read')}
+                                                        className="p-2.5 text-green-600 bg-green-50 hover:bg-green-100 rounded-xl transition-colors ring-1 ring-green-100"
+                                                    >
+                                                        <CheckCircle className="w-4 h-4" />
+                                                    </button>
+                                                )}
+                                                <button
+                                                    onClick={() => confirmAction(inq.id, 'delete')}
+                                                    className="p-2.5 text-red-600 bg-red-50 hover:bg-red-100 rounded-xl transition-colors ring-1 ring-red-100"
+                                                >
+                                                    <Trash2 className="w-4 h-4" />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </>
                     )}
                 </div>
 

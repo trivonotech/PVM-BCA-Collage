@@ -40,6 +40,33 @@ export default function SessionManagerModal({ isOpen, onClose }: SessionManagerM
         };
     }, [isOpen]);
 
+    // Real-time Activity Listener
+    useEffect(() => {
+        if (!selectedSession?.id) {
+            setViewingActivities(null);
+            return;
+        }
+
+        setLoading(true);
+        const q = query(
+            collection(db, 'activity_logs'),
+            where('sessionId', '==', selectedSession.id),
+            orderBy('timestamp', 'desc'),
+            limit(50)
+        );
+
+        const unsubscribe = onSnapshot(q, (snapshot) => {
+            setViewingActivities(snapshot.docs.map(d => ({ id: d.id, ...d.data() })));
+            setLoading(false);
+        }, (error) => {
+            console.error("Activity listener failed", error);
+            toast({ title: "Error", description: "Could not sync activity history.", variant: "destructive" });
+            setLoading(false);
+        });
+
+        return () => unsubscribe();
+    }, [selectedSession?.id]);
+
     const [revokingId, setRevokingId] = useState<string | null>(null);
 
     const confirmRevoke = async () => {
@@ -68,19 +95,8 @@ export default function SessionManagerModal({ isOpen, onClose }: SessionManagerM
         }
     };
 
-    const fetchActivities = async (sessionId: string, sessionData: any) => {
-        setLoading(true);
-        setSelectedSession(sessionData);
-        try {
-            const q = query(collection(db, 'activity_logs'), where('sessionId', '==', sessionId), orderBy('timestamp', 'desc'), limit(50));
-            const snap = await getDocs(q);
-            setViewingActivities(snap.docs.map(d => ({ id: d.id, ...d.data() })));
-        } catch (e) {
-            console.error("Failed to fetch activities", e);
-            toast({ title: "Error", description: "Could not load activity history.", variant: "destructive" });
-        } finally {
-            setLoading(false);
-        }
+    const openActivityView = (session: any) => {
+        setSelectedSession(session);
     };
 
     if (!isOpen) return null;
@@ -169,73 +185,74 @@ export default function SessionManagerModal({ isOpen, onClose }: SessionManagerM
                         sessions.map((session) => {
                             const isCurrent = session.id === currentSessionId;
                             return (
-                                <div key={session.id} className={`p-4 rounded-xl border ${isCurrent ? 'border-blue-200 bg-blue-50/30' : 'border-gray-100 bg-white hover:border-gray-200'} transition flex items-center justify-between group`}>
-                                    <div className="flex items-start gap-4 flex-1 min-w-0">
-                                        <div className={`p-3 rounded-xl ${session.device === 'Mobile' ? 'bg-purple-100 text-purple-600' : 'bg-gray-100 text-gray-600'}`}>
+                                <div key={session.id} className={`p-4 rounded-xl border ${isCurrent ? 'border-blue-200 bg-blue-50/30' : 'border-gray-100 bg-white hover:border-gray-200'} transition flex flex-col md:flex-row md:items-center justify-between gap-4 group`}>
+                                    <div className="flex items-start gap-4 min-w-0">
+                                        <div className={`p-3 rounded-xl shrink-0 ${session.device === 'Mobile' ? 'bg-purple-100 text-purple-600' : 'bg-gray-100 text-gray-600'}`}>
                                             {session.device === 'Mobile' ? <Smartphone className="w-6 h-6" /> : <Monitor className="w-6 h-6" />}
                                         </div>
-                                        <div className="flex-1 min-w-0 mr-4">
-                                            <div className="flex items-center gap-2">
-                                                <h4 className="font-bold text-gray-800 truncate">
+                                        <div className="min-w-0 flex-1">
+                                            <div className="flex items-center gap-2 flex-wrap">
+                                                <h4 className="font-bold text-gray-800 break-words">
                                                     {session.adminName || 'Admin'}
-                                                    <span className="ml-2 font-normal text-gray-400 text-xs text-nowrap">({session.device})</span>
-                                                    {isCurrent && <span className="ml-2 text-[10px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">This Device</span>}
                                                 </h4>
+                                                <span className="text-gray-400 text-xs font-normal">({session.device})</span>
+                                                {isCurrent && <span className="text-[10px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">This Device</span>}
                                             </div>
-                                            <div className="flex items-center gap-3 mt-1 text-sm text-gray-500">
-                                                <span className="flex items-center gap-1 shrink-0">
-                                                    <Globe className="w-3 h-3" /> {session.location}
-                                                </span>
-                                                <span className="flex items-center gap-1 shrink-0">
-                                                    <Clock className="w-3 h-3" />
-                                                    {session.timestamp?.toDate ? session.timestamp.toDate().toLocaleString() : 'Just now'}
-                                                </span>
-                                            </div>
-                                            <div className="flex items-center gap-3 mt-2">
-                                                <p className="text-xs text-gray-400 font-mono truncate">{session.ip}</p>
-                                                <button
-                                                    onClick={() => fetchActivities(session.id, session)}
-                                                    className="inline-flex items-center gap-1 text-[10px] font-bold text-blue-600 hover:text-blue-700 bg-blue-50 px-2 py-0.5 rounded-full border border-blue-100 hover:bg-blue-100 transition"
-                                                >
-                                                    <History className="w-3 h-3" /> Activity
-                                                </button>
+
+                                            <div className="flex flex-col gap-1 mt-1">
+                                                <div className="flex items-center gap-3 text-xs text-gray-500 flex-wrap">
+                                                    <span className="flex items-center gap-1">
+                                                        <Globe className="w-3 h-3" /> {session.location}
+                                                    </span>
+                                                    <span className="flex items-center gap-1">
+                                                        <Clock className="w-3 h-3" />
+                                                        {session.timestamp?.toDate ? session.timestamp.toDate().toLocaleString() : 'Just now'}
+                                                    </span>
+                                                </div>
+                                                <div className="flex items-center gap-3 mt-1 flex-wrap">
+                                                    <p className="text-[10px] text-gray-400 font-mono">{session.ip}</p>
+                                                    <button
+                                                        onClick={() => openActivityView(session)}
+                                                        className="inline-flex items-center gap-1 text-[10px] font-bold text-blue-600 hover:text-blue-700 bg-blue-50 px-2 py-0.5 rounded-full border border-blue-100 hover:bg-blue-100 transition whitespace-nowrap"
+                                                    >
+                                                        <History className="w-3 h-3" /> Activity
+                                                    </button>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
 
-                                    <div className="flex items-center gap-4 shrink-0">
+                                    <div className="flex items-center md:flex-col md:items-end gap-3 shrink-0 pt-2 md:pt-0 border-t md:border-t-0 border-gray-50">
                                         {!isCurrent && (
                                             <button
                                                 onClick={() => setRevokingId(session.id)}
-                                                className="px-3 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition flex items-center gap-2 text-sm font-medium border border-transparent hover:border-red-200 whitespace-nowrap opacity-0 group-hover:opacity-100"
+                                                className="px-3 py-1.5 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition flex items-center gap-2 text-xs font-bold border border-red-100 md:opacity-0 md:group-hover:opacity-100 w-full md:w-auto justify-center"
                                             >
-                                                <LogOut className="w-4 h-4" />
+                                                <LogOut className="w-3.5 h-3.5" />
                                                 <span>Logout</span>
                                             </button>
                                         )}
-                                        {isCurrent && (
-                                            <div className="px-4 py-2 text-green-600 font-medium text-sm flex items-center gap-1 whitespace-nowrap">
-                                                <CheckCircle2 className="w-4 h-4" /> Active
-                                            </div>
-                                        )}
-                                        {!isCurrent && (() => {
-                                            const lastActive = session.lastActive?.toDate ? session.lastActive.toDate() : session.timestamp?.toDate();
-                                            const isRecentlyActive = lastActive && (Date.now() - lastActive.getTime() < 15 * 60 * 1000);
 
-                                            if (isRecentlyActive) {
-                                                return (
-                                                    <div className="px-4 py-2 text-green-600 font-medium text-sm flex items-center gap-1 whitespace-nowrap group-hover:hidden">
-                                                        <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" /> Active
+                                        <div className={`flex items-center gap-2 ${!isCurrent ? 'md:group-hover:hidden' : ''}`}>
+                                            {isCurrent ? (
+                                                <div className="px-3 py-1 bg-green-50 text-green-700 rounded-full font-bold text-[10px] flex items-center gap-1 border border-green-100">
+                                                    <CheckCircle2 className="w-3 h-3" /> ACTIVE NOW
+                                                </div>
+                                            ) : (() => {
+                                                const lastActive = session.lastActive?.toDate ? session.lastActive.toDate() : session.timestamp?.toDate();
+                                                const isRecentlyActive = lastActive && (Date.now() - lastActive.getTime() < 15 * 60 * 1000);
+
+                                                return isRecentlyActive ? (
+                                                    <div className="px-3 py-1 bg-green-50 text-green-600 rounded-full font-bold text-[10px] flex items-center gap-1 border border-green-100">
+                                                        <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" /> ONLINE
+                                                    </div>
+                                                ) : (
+                                                    <div className="px-3 py-1 bg-gray-50 text-gray-500 rounded-full font-bold text-[10px] flex items-center gap-1 border border-gray-100">
+                                                        <div className="w-2 h-2 bg-gray-300 rounded-full" /> AWAY
                                                     </div>
                                                 );
-                                            } else {
-                                                return (
-                                                    <div className="px-4 py-2 text-gray-500 font-medium text-sm flex items-center gap-1 whitespace-nowrap group-hover:hidden">
-                                                        <div className="w-2 h-2 bg-gray-300 rounded-full" /> Away
-                                                    </div>
-                                                );
-                                            }
-                                        })()}
+                                            })()}
+                                        </div>
                                     </div>
                                 </div>
                             );

@@ -159,98 +159,179 @@ export default function SubscribersManager() {
 
                 {/* Subscribers List */}
                 <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-left border-collapse">
-                            <thead>
-                                <tr className="bg-gray-50 border-b border-gray-100">
-                                    <th className="p-4 w-12">
-                                        <input
-                                            type="checkbox"
-                                            className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
-                                            checked={filteredSubscribers.length > 0 && selectedEmails.length === filteredSubscribers.length}
-                                            onChange={toggleSelectAll}
-                                        />
-                                    </th>
-                                    <th className="p-4 font-bold text-gray-700">Email Address</th>
-                                    <th className="p-4 font-bold text-gray-700">Status</th>
-                                    <th className="p-4 font-bold text-gray-700">Subscribed On</th>
-                                    <th className="p-4 font-bold text-gray-700 text-right">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-gray-50">
-                                {loading ? (
-                                    <tr>
-                                        <td colSpan={4} className="p-12 text-center text-gray-500">Loading subscribers...</td>
-                                    </tr>
-                                ) : filteredSubscribers.length === 0 ? (
-                                    <tr>
-                                        <td colSpan={4} className="p-12 text-center text-gray-500">
-                                            {searchTerm ? 'No subscribers match your search' : 'No subscribers found'}
-                                        </td>
-                                    </tr>
-                                ) : (
-                                    filteredSubscribers.map((sub) => (
-                                        <tr key={sub.id} className={`hover:bg-gray-50 transition-colors group ${selectedEmails.includes(sub.email) ? 'bg-blue-50' : ''}`}>
-                                            <td className="p-4">
+                    {loading ? (
+                        <div className="p-12 text-center text-gray-500">Loading subscribers...</div>
+                    ) : filteredSubscribers.length === 0 ? (
+                        <div className="p-12 text-center text-gray-500">
+                            {searchTerm ? 'No subscribers match your search' : 'No subscribers found'}
+                        </div>
+                    ) : (
+                        <>
+                            {/* Desktop View: Table */}
+                            <div className="hidden md:block overflow-x-auto">
+                                <table className="w-full text-left border-collapse">
+                                    <thead>
+                                        <tr className="bg-gray-50 border-b border-gray-100">
+                                            <th className="p-4 w-12">
                                                 <input
                                                     type="checkbox"
                                                     className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
-                                                    checked={selectedEmails.includes(sub.email)}
-                                                    onChange={() => toggleSelect(sub.email)}
+                                                    checked={filteredSubscribers.length > 0 && selectedEmails.length === filteredSubscribers.length}
+                                                    onChange={toggleSelectAll}
                                                 />
-                                            </td>
-                                            <td className="p-4">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="w-10 h-10 bg-blue-50 rounded-full flex items-center justify-center">
-                                                        <Mail className="w-5 h-5 text-blue-600" />
+                                            </th>
+                                            <th className="p-4 font-bold text-gray-700">Email Address</th>
+                                            <th className="p-4 font-bold text-gray-700">Status</th>
+                                            <th className="p-4 font-bold text-gray-700">Subscribed On</th>
+                                            <th className="p-4 font-bold text-gray-700 text-right">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-gray-50">
+                                        {loading ? (
+                                            <tr>
+                                                <td colSpan={4} className="p-12 text-center text-gray-500">Loading subscribers...</td>
+                                            </tr>
+                                        ) : filteredSubscribers.length === 0 ? (
+                                            <tr>
+                                                <td colSpan={4} className="p-12 text-center text-gray-500">
+                                                    {searchTerm ? 'No subscribers match your search' : 'No subscribers found'}
+                                                </td>
+                                            </tr>
+                                        ) : (
+                                            filteredSubscribers.map((sub) => (
+                                                <tr key={sub.id} className={`hover:bg-gray-50 transition-colors group ${selectedEmails.includes(sub.email) ? 'bg-blue-50' : ''}`}>
+                                                    <td className="p-4">
+                                                        <input
+                                                            type="checkbox"
+                                                            className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                                                            checked={selectedEmails.includes(sub.email)}
+                                                            onChange={() => toggleSelect(sub.email)}
+                                                        />
+                                                    </td>
+                                                    <td className="p-4">
+                                                        <div className="flex items-center gap-3">
+                                                            <div className="w-10 h-10 bg-blue-50 rounded-full flex items-center justify-center">
+                                                                <Mail className="w-5 h-5 text-blue-600" />
+                                                            </div>
+                                                            <span className="font-medium text-gray-900">{sub.email}</span>
+                                                        </div>
+                                                    </td>
+                                                    <td className="p-4">
+                                                        <span className="px-3 py-1 bg-green-50 text-green-700 rounded-full text-xs font-bold uppercase">
+                                                            {sub.status || 'Active'}
+                                                        </span>
+                                                    </td>
+                                                    <td className="p-4 text-gray-500 text-sm">
+                                                        <div className="flex items-center gap-2">
+                                                            <Calendar className="w-4 h-4" />
+                                                            {sub.subscribedAt?.toDate ? sub.subscribedAt.toDate().toLocaleDateString('en-IN', {
+                                                                day: 'numeric',
+                                                                month: 'short',
+                                                                year: 'numeric',
+                                                                hour: '2-digit',
+                                                                minute: '2-digit'
+                                                            }) : 'N/A'}
+                                                        </div>
+                                                    </td>
+                                                    <td className="p-4 text-right">
+                                                        <div className="flex items-center justify-end gap-2">
+                                                            <button
+                                                                onClick={() => handleBroadcast([sub.email])}
+                                                                className="p-2 text-blue-400 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-colors"
+                                                                title="Mail this subscriber"
+                                                            >
+                                                                <Mail className="w-5 h-5" />
+                                                            </button>
+                                                            <button
+                                                                onClick={() => {
+                                                                    setSubscriberToDelete(sub.id);
+                                                                    setShowDeleteConfirm(true);
+                                                                }}
+                                                                className="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors"
+                                                                title="Remove Subscriber"
+                                                            >
+                                                                <Trash2 className="w-5 h-5" />
+                                                            </button>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            ))
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            {/* Mobile View: Cards */}
+                            <div className="md:hidden">
+                                <div className="bg-gray-50 p-4 border-b border-gray-100 flex items-center justify-between">
+                                    <div className="flex items-center gap-3">
+                                        <input
+                                            type="checkbox"
+                                            className="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                                            checked={filteredSubscribers.length > 0 && selectedEmails.length === filteredSubscribers.length}
+                                            onChange={toggleSelectAll}
+                                        />
+                                        <span className="text-sm font-bold text-gray-700">Select All</span>
+                                    </div>
+                                    <span className="text-xs text-gray-500 font-medium">
+                                        {selectedEmails.length} Selected
+                                    </span>
+                                </div>
+
+                                <div className="divide-y divide-gray-100 px-4">
+                                    {filteredSubscribers.map((sub) => (
+                                        <div key={sub.id} className={`py-5 space-y-4 transition-colors ${selectedEmails.includes(sub.email) ? 'bg-blue-50/30' : ''}`}>
+                                            <div className="flex items-start justify-between">
+                                                <div className="flex items-center gap-3 min-w-0">
+                                                    <input
+                                                        type="checkbox"
+                                                        className="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer shrink-0"
+                                                        checked={selectedEmails.includes(sub.email)}
+                                                        onChange={() => toggleSelect(sub.email)}
+                                                    />
+                                                    <div className="min-w-0">
+                                                        <p className="font-bold text-gray-900 truncate text-sm">{sub.email}</p>
+                                                        <span className="text-[10px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-bold uppercase mt-1 inline-block">
+                                                            {sub.status || 'Active'}
+                                                        </span>
                                                     </div>
-                                                    <span className="font-medium text-gray-900">{sub.email}</span>
                                                 </div>
-                                            </td>
-                                            <td className="p-4">
-                                                <span className="px-3 py-1 bg-green-50 text-green-700 rounded-full text-xs font-bold uppercase">
-                                                    {sub.status || 'Active'}
-                                                </span>
-                                            </td>
-                                            <td className="p-4 text-gray-500 text-sm">
                                                 <div className="flex items-center gap-2">
-                                                    <Calendar className="w-4 h-4" />
-                                                    {sub.subscribedAt?.toDate ? sub.subscribedAt.toDate().toLocaleDateString('en-IN', {
-                                                        day: 'numeric',
-                                                        month: 'short',
-                                                        year: 'numeric',
-                                                        hour: '2-digit',
-                                                        minute: '2-digit'
-                                                    }) : 'N/A'}
-                                                </div>
-                                            </td>
-                                            <td className="p-4 text-right">
-                                                <div className="flex items-center justify-end gap-2">
                                                     <button
                                                         onClick={() => handleBroadcast([sub.email])}
-                                                        className="p-2 text-blue-400 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-colors"
-                                                        title="Mail this subscriber"
+                                                        className="p-2.5 text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-xl transition-colors ring-1 ring-blue-100"
                                                     >
-                                                        <Mail className="w-5 h-5" />
+                                                        <Mail className="w-4 h-4" />
                                                     </button>
                                                     <button
                                                         onClick={() => {
                                                             setSubscriberToDelete(sub.id);
                                                             setShowDeleteConfirm(true);
                                                         }}
-                                                        className="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors"
-                                                        title="Remove Subscriber"
+                                                        className="p-2.5 text-red-600 bg-red-50 hover:bg-red-100 rounded-xl transition-colors ring-1 ring-red-100"
                                                     >
-                                                        <Trash2 className="w-5 h-5" />
+                                                        <Trash2 className="w-4 h-4" />
                                                     </button>
                                                 </div>
-                                            </td>
-                                        </tr>
-                                    ))
-                                )}
-                            </tbody>
-                        </table>
-                    </div>
+                                            </div>
+
+                                            <div className="flex items-center gap-2 text-xs text-gray-500 bg-gray-50/50 p-2 rounded-lg border border-gray-100 flex-wrap">
+                                                <Calendar className="w-3.5 h-3.5" />
+                                                <span className="font-medium">Subscribed:</span>
+                                                {sub.subscribedAt?.toDate ? sub.subscribedAt.toDate().toLocaleDateString('en-IN', {
+                                                    day: 'numeric',
+                                                    month: 'short',
+                                                    year: 'numeric',
+                                                    hour: '2-digit',
+                                                    minute: '2-digit'
+                                                }) : 'N/A'}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </>
+                    )}
                 </div>
             </div>
 
