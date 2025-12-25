@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
-import { X, Smartphone, Monitor, Globe, Clock, LogOut, CheckCircle2 } from 'lucide-react';
+import { X, Smartphone, Monitor, Globe, Clock, LogOut, CheckCircle2, History, ChevronLeft } from 'lucide-react';
 import { db } from '@/lib/firebase';
-import { collection, query, orderBy, limit, onSnapshot, doc, updateDoc, deleteDoc } from 'firebase/firestore';
+import { collection, query, orderBy, limit, onSnapshot, doc, updateDoc, deleteDoc, getDocs, where } from 'firebase/firestore';
 import { useToast } from "@/components/ui/use-toast";
 
 interface SessionManagerModalProps {
@@ -12,6 +12,8 @@ interface SessionManagerModalProps {
 export default function SessionManagerModal({ isOpen, onClose }: SessionManagerModalProps) {
     const [sessions, setSessions] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+    const [viewingActivities, setViewingActivities] = useState<any[] | null>(null);
+    const [selectedSession, setSelectedSession] = useState<any | null>(null);
     const { toast } = useToast();
     const currentSessionId = localStorage.getItem('currentSessionId');
 
@@ -66,6 +68,21 @@ export default function SessionManagerModal({ isOpen, onClose }: SessionManagerM
         }
     };
 
+    const fetchActivities = async (sessionId: string, sessionData: any) => {
+        setLoading(true);
+        setSelectedSession(sessionData);
+        try {
+            const q = query(collection(db, 'activity_logs'), where('sessionId', '==', sessionId), orderBy('timestamp', 'desc'), limit(50));
+            const snap = await getDocs(q);
+            setViewingActivities(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+        } catch (e) {
+            console.error("Failed to fetch activities", e);
+            toast({ title: "Error", description: "Could not load activity history.", variant: "destructive" });
+        } finally {
+            setLoading(false);
+        }
+    };
+
     if (!isOpen) return null;
 
     return (
@@ -88,7 +105,62 @@ export default function SessionManagerModal({ isOpen, onClose }: SessionManagerM
 
                 <div className="flex-1 overflow-y-auto p-6 space-y-4">
                     {loading ? (
-                        <div className="text-center py-8 text-gray-400">Loading sessions...</div>
+                        <div className="text-center py-8 text-gray-400">Loading...</div>
+                    ) : viewingActivities ? (
+                        /* Activity View */
+                        <div className="space-y-4 animate-in slide-in-from-right-4 duration-300">
+                            <button
+                                onClick={() => { setViewingActivities(null); setSelectedSession(null); }}
+                                className="flex items-center gap-2 text-blue-600 font-bold text-sm hover:underline mb-4"
+                            >
+                                <ChevronLeft className="w-4 h-4" /> Back to Sessions
+                            </button>
+
+                            <div className="bg-gray-50 rounded-xl p-4 border border-gray-100 flex items-center justify-between mb-6">
+                                <div>
+                                    <h4 className="font-bold text-gray-900">{selectedSession.adminName || 'Admin'}</h4>
+                                    <p className="text-xs text-gray-500">{selectedSession.email}</p>
+                                </div>
+                                <div className="text-right">
+                                    <p className="text-xs font-bold text-blue-600">{selectedSession.device}</p>
+                                    <p className="text-[10px] text-gray-400">{selectedSession.ip}</p>
+                                </div>
+                            </div>
+
+                            <div className="space-y-3">
+                                <h5 className="text-xs font-bold text-gray-400 uppercase tracking-widest px-1">Session Timeline</h5>
+                                {viewingActivities.length > 0 ? (
+                                    viewingActivities.map((log) => (
+                                        <div key={log.id} className="bg-white border border-gray-100 p-3 rounded-xl flex items-start gap-3">
+                                            <div className="p-2 bg-blue-50 rounded-lg">
+                                                <History className="w-4 h-4 text-blue-600" />
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <div className="flex items-center justify-between">
+                                                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${log.action === 'VIEW_PAGE' ? 'bg-gray-100 text-gray-600' :
+                                                        log.action === 'CREATE_DATA' ? 'bg-green-100 text-green-700' :
+                                                            log.action === 'DELETE_DATA' ? 'bg-red-100 text-red-700' :
+                                                                'bg-blue-100 text-blue-700'
+                                                        }`}>
+                                                        {log.action}
+                                                    </span>
+                                                    <span className="text-[10px] text-gray-400">
+                                                        {log.timestamp?.toDate ? log.timestamp.toDate().toLocaleTimeString() : 'Just now'}
+                                                    </span>
+                                                </div>
+                                                <p className="text-xs font-bold text-gray-800 mt-1">
+                                                    {log.action === 'VIEW_PAGE' ? `Opened ${log.target}` : log.details}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    ))
+                                ) : (
+                                    <div className="text-center py-12 text-gray-500 italic text-sm">
+                                        No actions recorded for this session.
+                                    </div>
+                                )}
+                            </div>
+                        </div>
                     ) : sessions.length === 0 ? (
                         <div className="text-center py-12 text-gray-500">
                             No active sessions found.
@@ -98,44 +170,73 @@ export default function SessionManagerModal({ isOpen, onClose }: SessionManagerM
                             const isCurrent = session.id === currentSessionId;
                             return (
                                 <div key={session.id} className={`p-4 rounded-xl border ${isCurrent ? 'border-blue-200 bg-blue-50/30' : 'border-gray-100 bg-white hover:border-gray-200'} transition flex items-center justify-between group`}>
-                                    <div className="flex items-start gap-4">
+                                    <div className="flex items-start gap-4 flex-1 min-w-0">
                                         <div className={`p-3 rounded-xl ${session.device === 'Mobile' ? 'bg-purple-100 text-purple-600' : 'bg-gray-100 text-gray-600'}`}>
                                             {session.device === 'Mobile' ? <Smartphone className="w-6 h-6" /> : <Monitor className="w-6 h-6" />}
                                         </div>
-                                        <div>
+                                        <div className="flex-1 min-w-0 mr-4">
                                             <div className="flex items-center gap-2">
-                                                <h4 className="font-bold text-gray-800">
-                                                    {session.device}
+                                                <h4 className="font-bold text-gray-800 truncate">
+                                                    {session.adminName || 'Admin'}
+                                                    <span className="ml-2 font-normal text-gray-400 text-xs text-nowrap">({session.device})</span>
                                                     {isCurrent && <span className="ml-2 text-[10px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">This Device</span>}
                                                 </h4>
                                             </div>
                                             <div className="flex items-center gap-3 mt-1 text-sm text-gray-500">
-                                                <span className="flex items-center gap-1">
+                                                <span className="flex items-center gap-1 shrink-0">
                                                     <Globe className="w-3 h-3" /> {session.location}
                                                 </span>
-                                                <span className="flex items-center gap-1">
+                                                <span className="flex items-center gap-1 shrink-0">
                                                     <Clock className="w-3 h-3" />
                                                     {session.timestamp?.toDate ? session.timestamp.toDate().toLocaleString() : 'Just now'}
                                                 </span>
                                             </div>
-                                            <p className="text-xs text-gray-400 mt-1 font-mono">{session.ip}</p>
+                                            <div className="flex items-center gap-3 mt-2">
+                                                <p className="text-xs text-gray-400 font-mono truncate">{session.ip}</p>
+                                                <button
+                                                    onClick={() => fetchActivities(session.id, session)}
+                                                    className="inline-flex items-center gap-1 text-[10px] font-bold text-blue-600 hover:text-blue-700 bg-blue-50 px-2 py-0.5 rounded-full border border-blue-100 hover:bg-blue-100 transition"
+                                                >
+                                                    <History className="w-3 h-3" /> Activity
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
 
-                                    {!isCurrent && (
-                                        <button
-                                            onClick={() => setRevokingId(session.id)}
-                                            className="px-3 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition flex items-center gap-2 text-sm font-medium border border-transparent hover:border-red-200"
-                                        >
-                                            <LogOut className="w-4 h-4" />
-                                            <span>Logout</span>
-                                        </button>
-                                    )}
-                                    {isCurrent && (
-                                        <div className="px-4 py-2 text-green-600 font-medium text-sm flex items-center gap-1">
-                                            <CheckCircle2 className="w-4 h-4" /> Active
-                                        </div>
-                                    )}
+                                    <div className="flex items-center gap-4 shrink-0">
+                                        {!isCurrent && (
+                                            <button
+                                                onClick={() => setRevokingId(session.id)}
+                                                className="px-3 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition flex items-center gap-2 text-sm font-medium border border-transparent hover:border-red-200 whitespace-nowrap opacity-0 group-hover:opacity-100"
+                                            >
+                                                <LogOut className="w-4 h-4" />
+                                                <span>Logout</span>
+                                            </button>
+                                        )}
+                                        {isCurrent && (
+                                            <div className="px-4 py-2 text-green-600 font-medium text-sm flex items-center gap-1 whitespace-nowrap">
+                                                <CheckCircle2 className="w-4 h-4" /> Active
+                                            </div>
+                                        )}
+                                        {!isCurrent && (() => {
+                                            const lastActive = session.lastActive?.toDate ? session.lastActive.toDate() : session.timestamp?.toDate();
+                                            const isRecentlyActive = lastActive && (Date.now() - lastActive.getTime() < 15 * 60 * 1000);
+
+                                            if (isRecentlyActive) {
+                                                return (
+                                                    <div className="px-4 py-2 text-green-600 font-medium text-sm flex items-center gap-1 whitespace-nowrap group-hover:hidden">
+                                                        <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" /> Active
+                                                    </div>
+                                                );
+                                            } else {
+                                                return (
+                                                    <div className="px-4 py-2 text-gray-500 font-medium text-sm flex items-center gap-1 whitespace-nowrap group-hover:hidden">
+                                                        <div className="w-2 h-2 bg-gray-300 rounded-full" /> Away
+                                                    </div>
+                                                );
+                                            }
+                                        })()}
+                                    </div>
                                 </div>
                             );
                         })

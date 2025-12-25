@@ -3,9 +3,10 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Newspaper, Calendar, Megaphone, PlusCircle } from 'lucide-react';
 import { db } from '@/lib/firebase';
-import { collection, query, where, orderBy, onSnapshot } from 'firebase/firestore';
+import { collection, query, where, orderBy, onSnapshot, addDoc, serverTimestamp, getDocs } from 'firebase/firestore';
 import { Link } from 'react-router-dom';
 import { useSectionVisibility } from '@/hooks/useSectionVisibility';
+import { useToast } from "@/components/ui/use-toast";
 
 interface NewsArticle {
     id: string;
@@ -27,8 +28,56 @@ interface NewsArticle {
 
 export default function NewsPage() {
     const { isVisible } = useSectionVisibility();
+    const { toast } = useToast();
     const [approvedNews, setApprovedNews] = useState<NewsArticle[]>([]);
     const [loading, setLoading] = useState(true);
+    const [subscriberEmail, setSubscriberEmail] = useState('');
+    const [submitting, setSubmitting] = useState(false);
+
+    const handleSubscribe = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!subscriberEmail.trim() || submitting) return;
+
+        setSubmitting(true);
+        try {
+            // Check if already subscribed
+            const q = query(collection(db, 'subscribers'), where('email', '==', subscriberEmail.trim().toLowerCase()));
+            const querySnapshot = await getDocs(q);
+
+            if (!querySnapshot.empty) {
+                toast({
+                    title: "Already Subscribed",
+                    description: "This email is already on our list!",
+                    variant: "default",
+                });
+                setSubscriberEmail('');
+                setSubmitting(false);
+                return;
+            }
+
+            // Add to subscribers
+            await addDoc(collection(db, 'subscribers'), {
+                email: subscriberEmail.trim().toLowerCase(),
+                subscribedAt: serverTimestamp(),
+                status: 'active'
+            });
+
+            toast({
+                title: "Success!",
+                description: "You've successfully subscribed to our newsletter.",
+            });
+            setSubscriberEmail('');
+        } catch (error) {
+            console.error('Subscription error:', error);
+            toast({
+                title: "Error",
+                description: "Something went wrong. Please try again later.",
+                variant: "destructive",
+            });
+        } finally {
+            setSubmitting(false);
+        }
+    };
 
     // Fetch only approved news from Firestore
     useEffect(() => {
@@ -291,16 +340,23 @@ export default function NewsPage() {
                                     <p className="text-blue-200 mb-8">
                                         Get the latest news and updates delivered directly to your inbox
                                     </p>
-                                    <div className="flex flex-col md:flex-row gap-4 max-w-xl mx-auto">
+                                    <form onSubmit={handleSubscribe} className="flex flex-col md:flex-row gap-4 max-w-xl mx-auto">
                                         <input
                                             type="email"
+                                            required
+                                            value={subscriberEmail}
+                                            onChange={(e) => setSubscriberEmail(e.target.value)}
                                             placeholder="Enter your email address"
                                             className="flex-1 px-6 py-4 rounded-xl text-gray-800 font-medium focus:outline-none focus:ring-4 focus:ring-[#BFD8FF]"
                                         />
-                                        <button className="px-8 py-4 bg-[#FF4040] text-white rounded-xl font-bold hover:bg-[#c03030] transition-colors whitespace-nowrap">
-                                            Subscribe Now
+                                        <button
+                                            type="submit"
+                                            disabled={submitting}
+                                            className="px-8 py-4 bg-[#FF4040] text-white rounded-xl font-bold hover:bg-[#c03030] transition-colors whitespace-nowrap disabled:opacity-50"
+                                        >
+                                            {submitting ? 'Subscribing...' : 'Subscribe Now'}
                                         </button>
-                                    </div>
+                                    </form>
                                 </div>
                             </div>
                         </div>

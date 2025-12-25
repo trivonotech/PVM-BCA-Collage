@@ -9,6 +9,7 @@ import Modal from '@/components/ui/Modal';
 import ConfirmModal from '@/components/ui/ConfirmModal';
 
 import { useToast } from "@/components/ui/use-toast";
+import { logAdminActivity } from '@/lib/ActivityLogger';
 
 export default function StudentsManager() {
     const { toast } = useToast();
@@ -83,6 +84,11 @@ export default function StudentsManager() {
         if (confirmState.studentId) {
             try {
                 await deleteDoc(doc(db, 'top_students', confirmState.studentId));
+                logAdminActivity({
+                    action: 'DELETE_DATA',
+                    target: 'Top Students',
+                    details: `Deleted student record ID: ${confirmState.studentId}`
+                });
                 setConfirmState({ isOpen: false, studentId: null });
                 toast({
                     title: "Success",
@@ -113,12 +119,22 @@ export default function StudentsManager() {
                     ...formData,
                     updatedAt: serverTimestamp()
                 });
+                logAdminActivity({
+                    action: 'UPDATE_DATA',
+                    target: 'Top Students',
+                    details: `Updated student: ${formData.name}`
+                });
             } else {
                 // Create
                 await addDoc(collection(db, 'top_students'), {
                     ...formData,
                     createdAt: serverTimestamp(),
                     updatedAt: serverTimestamp()
+                });
+                logAdminActivity({
+                    action: 'CREATE_DATA',
+                    target: 'Top Students',
+                    details: `Added new top student: ${formData.name}`
                 });
             }
             setShowModal(false);

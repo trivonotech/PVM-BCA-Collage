@@ -15,12 +15,13 @@ import {
     writeBatch
 } from 'firebase/firestore';
 import { ref, uploadString, getDownloadURL, deleteObject } from 'firebase/storage';
-import { Check, X, Edit, Trash2, Eye, Clock, CheckCircle, XCircle, Upload, Plus } from 'lucide-react';
+import { Check, X, Edit, Trash2, Eye, Clock, CheckCircle, XCircle, Upload, Plus, Bell } from 'lucide-react';
 import AdminLayout from '@/components/admin/AdminLayout';
 import { compressImage } from '@/utils/imageUtils';
 import { useToast } from "@/components/ui/use-toast";
 import Modal from '@/components/ui/Modal';
 import ConfirmModal from '@/components/ui/ConfirmModal';
+import { logAdminActivity } from '@/lib/ActivityLogger';
 
 interface NewsSubmission {
     id: string;
@@ -156,14 +157,29 @@ export default function NewsManager() {
                     approvedBy: getCurrentAdmin(),
                     approvedAt: serverTimestamp()
                 });
+                logAdminActivity({
+                    action: 'UPDATE_DATA',
+                    target: 'News',
+                    details: `Approved news ID: ${itemId}`
+                });
             } else if (type === 'reject') {
                 await updateDoc(doc(db, 'news', itemId), {
                     status: 'rejected',
                     rejectedBy: getCurrentAdmin(),
                     rejectedAt: serverTimestamp()
                 });
+                logAdminActivity({
+                    action: 'UPDATE_DATA',
+                    target: 'News',
+                    details: `Rejected news ID: ${itemId}`
+                });
             } else if (type === 'delete') {
                 await deleteDoc(doc(db, 'news', itemId));
+                logAdminActivity({
+                    action: 'DELETE_DATA',
+                    target: 'News',
+                    details: `Deleted news ID: ${itemId}`
+                });
             }
             setConfirmState(prev => ({ ...prev, isOpen: false }));
         } catch (error) {
@@ -191,15 +207,20 @@ export default function NewsManager() {
         setShowEditModal(true);
     };
 
-    const handleEditSave = async () => {
+    const handleEditSave = async (notify: boolean = false) => {
         if (!editingNews) return;
 
         try {
+            let newsTitle = editingNews.title;
+            let newsContent = editingNews.content;
+
+            let savedId = editingNews.id;
+
             if (editingNews.id === 'new') {
                 // Add new document
-                await addDoc(collection(db, 'news'), {
-                    title: editingNews.title,
-                    content: editingNews.content,
+                const docRef = await addDoc(collection(db, 'news'), {
+                    title: newsTitle,
+                    content: newsContent,
                     category: editingNews.category,
                     imageUrl: editingNews.imageUrl,
                     submittedBy: editingNews.submittedBy,
@@ -208,20 +229,73 @@ export default function NewsManager() {
                     approvedBy: getCurrentAdmin(),
                     approvedAt: serverTimestamp()
                 });
+                savedId = docRef.id;
+                logAdminActivity({
+                    action: 'CREATE_DATA',
+                    target: 'News',
+                    details: `Created new news article: ${newsTitle}`
+                });
             } else {
                 // Update existing
                 await updateDoc(doc(db, 'news', editingNews.id), {
-                    title: editingNews.title,
-                    content: editingNews.content,
+                    title: newsTitle,
+                    content: newsContent,
                     category: editingNews.category,
                     imageUrl: editingNews.imageUrl
                 });
+                logAdminActivity({
+                    action: 'UPDATE_DATA',
+                    target: 'News',
+                    details: `Updated news article: ${newsTitle}`
+                });
             }
+
+            if (notify) {
+                // Fetch all subscribers
+                const subSnapshot = await getDocs(collection(db, 'subscribers'));
+                const subscribers = subSnapshot.docs.map(doc => doc.data().email);
+
+                if (subscribers.length > 0) {
+                    const bccAddresses = subscribers.join(',');
+                    const subject = encodeURIComponent(`🆕 Latest News: ${newsTitle}`);
+                    const newsUrl = `${window.location.origin}/news/${savedId}`;
+
+                    const divider = "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━";
+                    const bodyText =
+                        `🆕 LATEST NEWS UPDATE | PVM BCA COLLEGE\n` +
+                        `${divider}\n\n` +
+                        `📌 ${newsTitle.toUpperCase()}\n\n` +
+                        `${newsContent.substring(0, 400)}...\n\n` +
+                        `${divider}\n` +
+                        `🔗 Read full story here:\n${newsUrl}\n\n` +
+                        `Stay Updated!\n` +
+                        `© PVM BCA College`;
+
+                    const body = encodeURIComponent(bodyText);
+                    window.location.href = `mailto:?bcc=${bccAddresses}&subject=${subject}&body=${body}`;
+                } else {
+                    toast({
+                        title: "No Subscribers",
+                        description: "News saved, but there are no subscribers to notify.",
+                    });
+                }
+            } else {
+                toast({
+                    title: "Success",
+                    description: "News article saved successfully!",
+                    className: "bg-green-500 text-white border-none",
+                });
+            }
+
             setShowEditModal(false);
             setEditingNews(null);
         } catch (error) {
             console.error('Error saving news:', error);
-            alert('Failed to save news');
+            toast({
+                title: "Error",
+                description: "Failed to save news article.",
+                variant: "destructive",
+            });
         }
     };
 
@@ -246,6 +320,12 @@ export default function NewsManager() {
             });
 
             await Promise.all(updates);
+
+            logAdminActivity({
+                action: 'UPDATE_DATA',
+                target: 'News',
+                details: `Restored ${restoredCount} legacy news articles`
+            });
 
             if (restoredCount > 0) {
                 toast({
@@ -610,6 +690,16 @@ export default function NewsManager() {
                                 >
                                     {editingNews.id === 'new' ? 'Add News' : 'Save Changes'}
                                 </button>
+                                {editingNews.id === 'new' && (
+                                    <button
+                                        type="button"
+                                        onClick={() => handleEditSave(true)}
+                                        className="flex-[1.5] bg-green-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-green-700 transition-colors flex items-center justify-center gap-2"
+                                    >
+                                        <Bell className="w-5 h-5" />
+                                        Save & Notify Subscribers
+                                    </button>
+                                )}
                             </div>
                         </form>
                     )}

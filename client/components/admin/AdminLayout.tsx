@@ -1,6 +1,6 @@
 import { ReactNode, useState, useEffect, useRef, useLayoutEffect, UIEvent } from 'react';
 import { db } from '@/lib/firebase';
-import { doc, onSnapshot } from 'firebase/firestore';
+import { doc, onSnapshot, updateDoc } from 'firebase/firestore';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
     LayoutDashboard,
@@ -19,6 +19,7 @@ import {
     Menu,
     LogOut,
     FileText,
+    Mail,
     Activity,
     X,
     ShieldAlert,
@@ -29,6 +30,7 @@ import {
 
 
 import SessionExpiredModal from './SessionExpiredModal';
+import { logAdminActivity } from '@/lib/ActivityLogger';
 
 interface AdminLayoutProps {
     children: ReactNode;
@@ -49,6 +51,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         { icon: Lightbulb, label: 'Workshops', path: '/admin/workshops', permission: 'workshops' },
         { icon: Newspaper, label: 'News', path: '/admin/news', permission: 'news' },
         { icon: MessageSquare, label: 'Inquiries', path: '/admin/inquiries', permission: 'inquiries' },
+        { icon: Mail, label: 'Subscribers', path: '/admin/subscribers', permission: 'subscribers' },
         { icon: Users, label: 'Faculty', path: '/admin/faculty', permission: 'faculty' },
         { icon: Award, label: 'Achievements', path: '/admin/achievements', permission: 'achievements' },
         { icon: Briefcase, label: 'Placements', path: '/admin/placements', permission: 'placements' },
@@ -68,7 +71,11 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
 
     const handleLogout = () => {
         const sessionId = localStorage.getItem('currentSessionId');
-        // Optional: Update session status to 'logout' in DB here if we wanted strict tracking
+        logAdminActivity({
+            action: 'AUTH_EVENT',
+            target: 'Logout',
+            details: 'Admin logged out manually'
+        });
         localStorage.removeItem('isAuthenticated');
         localStorage.removeItem('user');
         localStorage.removeItem('currentSessionId');
@@ -87,6 +94,41 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         });
         return () => unsubSession();
     }, []);
+
+    // Session Activity Tracker (lastActive)
+    useEffect(() => {
+        const sessionId = localStorage.getItem('currentSessionId');
+        if (!sessionId) return;
+
+        const updateActivity = async () => {
+            try {
+                await updateDoc(doc(db, 'admin_sessions', sessionId), {
+                    lastActive: new Date()
+                });
+            } catch (e) {
+                console.error("Failed to update activity", e);
+            }
+        };
+
+        // Initial update
+        updateActivity();
+
+        // Update every 5 minutes
+        const interval = setInterval(updateActivity, 5 * 60 * 1000);
+        return () => clearInterval(interval);
+    }, []);
+
+    // Track Page Views
+    useEffect(() => {
+        const currentItem = menuItems.find(item => item.path === location.pathname);
+        if (currentItem) {
+            logAdminActivity({
+                action: 'VIEW_PAGE',
+                target: currentItem.label,
+                details: `Visited ${location.pathname}`
+            });
+        }
+    }, [location.pathname]);
 
     // Real-time listener for user permissions
     useEffect(() => {
@@ -248,6 +290,8 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                             '/admin': 'dashboard', // Explicitly protect dashboard
                             '/admin/events': 'events',
                             '/admin/students': 'students',
+                            '/admin/admissions': 'admissions',
+                            '/admin/subscribers': 'subscribers',
                             '/admin/sports': 'sports',
                             '/admin/workshops': 'workshops',
                             '/admin/news': 'news',

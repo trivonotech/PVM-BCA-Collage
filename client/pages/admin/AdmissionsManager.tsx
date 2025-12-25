@@ -5,6 +5,7 @@ import { db } from '@/lib/firebase';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 
 import { useToast } from "@/components/ui/use-toast";
+import { logAdminActivity } from '@/lib/ActivityLogger';
 
 export default function AdmissionsManager() {
     const { toast } = useToast();
@@ -50,10 +51,25 @@ export default function AdmissionsManager() {
         try {
             if (type === 'dates') {
                 await setDoc(doc(db, 'admissions_content', 'dates'), dates);
+                logAdminActivity({
+                    action: 'UPDATE_DATA',
+                    target: 'Admissions',
+                    details: 'Updated Admission Dates'
+                });
             } else if (type === 'steps') {
                 await setDoc(doc(db, 'admissions_content', 'steps'), { items: steps });
+                logAdminActivity({
+                    action: 'UPDATE_DATA',
+                    target: 'Admissions',
+                    details: 'Updated Admission Process Steps'
+                });
             } else if (type === 'scholarships') {
                 await setDoc(doc(db, 'admissions_content', 'scholarships'), { items: scholarships });
+                logAdminActivity({
+                    action: 'UPDATE_DATA',
+                    target: 'Admissions',
+                    details: 'Updated Scholarship Information'
+                });
             }
             toast({
                 title: "Success",

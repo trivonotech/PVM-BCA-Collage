@@ -7,8 +7,10 @@ import UsageDetailsModal from '@/components/admin/UsageDetailsModal';
 import SecurityConfigModal from '@/components/admin/SecurityConfigModal';
 import SessionManagerModal from '@/components/admin/SessionManagerModal';
 import AdminLayout from '@/components/admin/AdminLayout';
+import { logAdminActivity } from '@/lib/ActivityLogger';
 
 export default function SystemHealth() {
+    const { toast } = useToast();
     const [stats, setStats] = useState<any>(null);
     const [loading, setLoading] = useState(true);
     const [dbStatus, setDbStatus] = useState<'online' | 'offline'>('offline');
@@ -44,6 +46,11 @@ export default function SystemHealth() {
                 description: `Security ${!securityEnabled ? 'Activated' : 'Deactivated'}`,
                 className: "bg-green-500 text-white border-none",
                 duration: 3000,
+            });
+            logAdminActivity({
+                action: 'SECURITY_TOGGLE',
+                target: 'Security Shield',
+                details: `${!securityEnabled ? 'Activated' : 'Deactivated'} Security Shield`
             });
         } catch (e) {
             console.error(e);
@@ -122,14 +129,26 @@ export default function SystemHealth() {
         // 3.5. Recent Sessions (New)
         const fetchSessions = async () => {
             try {
-                const sessQ = query(collection(db, 'admin_sessions'), orderBy('timestamp', 'desc'), limit(10));
+                // Fetch more than just 10 to ensure we find active ones if there are many old ones
+                const sessQ = query(collection(db, 'admin_sessions'), orderBy('timestamp', 'desc'), limit(50));
                 const snap = await getDocs(sessQ);
-                // Simple deduction of non-revoked count
-                const active = snap.docs.filter(d => d.data().status !== 'revoked');
+
+                // An active session must:
+                // 1. Not be revoked
+                // 2. Have been active in the last 15 minutes
+                const fifteenMinsAgo = new Date(Date.now() - 15 * 60 * 1000);
+
+                const active = snap.docs.filter(d => {
+                    const data = d.data();
+                    const lastActive = data.lastActive?.toDate ? data.lastActive.toDate() : data.timestamp?.toDate();
+                    return data.status !== 'revoked' && lastActive > fifteenMinsAgo;
+                });
+
                 setRecentSessions(active.map(d => ({ id: d.id, ...d.data() })));
             } catch (e) { console.error(e); }
         };
         fetchSessions();
+        const sessionInterval = setInterval(fetchSessions, 60000); // Refresh every minute
 
         // 4. Fetch Item Counts (One-time fetch for this page)
         const fetchCounts = async () => {
@@ -145,6 +164,7 @@ export default function SystemHealth() {
         return () => {
             unsubAnalytics();
             clearInterval(latencyInterval);
+            clearInterval(sessionInterval);
         };
     }, []);
 
@@ -158,7 +178,7 @@ export default function SystemHealth() {
     };
 
     return (
-        <AdminLayout title="System Health & Performance">
+        <AdminLayout>
             <div className="space-y-6">
                 <UsageDetailsModal
                     isOpen={showUsageModal}

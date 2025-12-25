@@ -225,9 +225,11 @@ export default function AdminLogin() {
                     else if (/iPad|Tablet/i.test(ua)) deviceType = "Tablet";
 
                     // 3. Store in 'admin_sessions'
+                    const adminName = userDoc.exists() ? userDoc.data().name : 'Admin';
                     const sessionDoc = await addDoc(collection(db, 'admin_sessions'), {
                         userId: user.uid,
                         email: user.email,
+                        adminName: adminName,
                         timestamp: new Date(),
                         ip: ipData.ip || 'Unknown',
                         location: `${ipData.city || 'Unknown'}, ${ipData.country_name || 'Unknown'}`,
@@ -251,6 +253,7 @@ export default function AdminLogin() {
                 localStorage.setItem('user', JSON.stringify({
                     uid: user.uid,
                     email: user.email,
+                    name: userDoc.exists() ? userDoc.data().name : 'Admin',
                     role: role,
                     permissions: permissions
                 }));

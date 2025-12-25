@@ -28,6 +28,7 @@ import InquiriesManager from "./pages/admin/InquiriesManager";
 import SettingsManager from "./pages/admin/SettingsManager";
 import SectionVisibilityManager from "./pages/admin/SectionVisibilityManager";
 import UserManagement from "./pages/admin/UserManagement";
+import SubscribersManager from "./pages/admin/SubscribersManager";
 import NewsManager from "./pages/admin/NewsManager";
 import ProtectedRoute from "./components/admin/ProtectedRoute";
 import PlaceholderPage from "./pages/admin/PlaceholderPage";
@@ -94,6 +95,7 @@ function AppContent() {
           <Route path="/admin/settings" element={<ProtectedRoute><SettingsManager /></ProtectedRoute>} />
           <Route path="/admin/system" element={<ProtectedRoute><SystemHealth /></ProtectedRoute>} />
           <Route path="/admin/inquiries" element={<ProtectedRoute><InquiriesManager /></ProtectedRoute>} />
+          <Route path="/admin/subscribers" element={<ProtectedRoute><SubscribersManager /></ProtectedRoute>} />
 
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
