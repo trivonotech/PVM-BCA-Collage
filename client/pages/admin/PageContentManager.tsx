@@ -25,25 +25,9 @@ const PAGE_CONFIG: Record<string, any> = {
                 id: 'hero',
                 title: 'Hero Section (Top)',
                 fields: [
-                    { key: 'hero_title', label: 'Main Headline', type: 'text', default: 'Education That Builds <span class="whitespace-nowrap">Capable Professionals</span>' },
-                    { key: 'hero_desc', label: 'Description', type: 'textarea', default: 'Undergraduate Programs In Business Administration And Science Designed To Develop Practical Skills, Analytical Thinking, And Career Readiness.' },
-                    { key: 'hero_image', label: 'Hero Image (Boy)', type: 'image' }
-                ]
-            },
-            {
-                id: 'about',
-                title: 'About Section',
-                fields: [
-                    { key: 'about_title', label: 'Section Title', type: 'text', default: 'About Institute' },
-                    { key: 'about_desc', label: 'Main Text', type: 'textarea', default: 'Our Institute Is Dedicated To Delivering Quality Education Through Well-Structured Academic Programs, Experienced Faculty, And A Student-Focused Learning Environment.' }
-                ]
-            },
-            {
-                id: 'admission',
-                title: 'Admission Section',
-                fields: [
-                    { key: 'admission_title', label: 'Section Title', type: 'text', default: 'Your Admission Journey' },
-                    { key: 'admission_image', label: 'Steps Image', type: 'image' }
+                    { key: 'title', label: 'Main Headline', type: 'text', default: 'Education That Builds Capable Professionals' },
+                    { key: 'description', label: 'Description', type: 'textarea', default: 'Undergraduate Programs In Business Administration And Science Designed To Develop Practical Skills, Analytical Thinking, And Career Readiness.' },
+                    { key: 'hero', label: 'Hero Image (Boy)', type: 'image', default: 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=600&h=400&fit=crop' }
                 ]
             }
         ]
@@ -51,11 +35,65 @@ const PAGE_CONFIG: Record<string, any> = {
     'page_about': {
         sections: [
             {
-                id: 'main',
-                title: 'Main Content',
+                id: 'hero',
+                title: 'Hero Section',
                 fields: [
                     { key: 'title', label: 'Page Title', type: 'text', default: 'About Us' },
-                    { key: 'description', label: 'Description', type: 'textarea', default: 'PVM College is...' }
+                    { key: 'subtitle', label: 'Subtitle', type: 'textarea', default: 'Building Tomorrow\'s Leaders Through Quality Education And Holistic Development' }
+                ]
+            },
+            {
+                id: 'overview',
+                title: 'Institute Overview',
+                fields: [
+                    { key: 'overview_title', label: 'Overview Title', type: 'text', default: 'Institute Overview' },
+                    { key: 'overview_text1', label: 'Text Paragraph 1', type: 'textarea', default: 'Established with a vision to provide world-class education, our institute has been at the forefront of academic excellence for over a decade. We are committed to nurturing young minds and transforming them into capable professionals ready to face global challenges.' },
+                    { key: 'overview_text2', label: 'Text Paragraph 2', type: 'textarea', default: 'Our state-of-the-art infrastructure, experienced faculty, and industry-aligned curriculum ensure that students receive comprehensive education that balances theoretical knowledge with practical skills.' },
+                    { key: 'campus_image', label: 'Campus Image', type: 'image', default: 'https://images.unsplash.com/photo-1562774053-701939374585?w=800&auto=format&fit=crop' }
+                ]
+            },
+            {
+                id: 'vision_mission',
+                title: 'Vision & Mission',
+                fields: [
+                    { key: 'vision', label: 'Vision Statement', type: 'textarea', default: 'To be a globally recognized institution that shapes future leaders through innovative education, research excellence, and character development, while fostering creativity, critical thinking, and social responsibility.' },
+                    { key: 'mission_list', label: 'Mission Points (One per line)', type: 'textarea', default: "Provide quality education with modern teaching methodologies\nDevelop industry-ready professionals with practical skills\nFoster innovation, research, and creative thinking\nBuild strong industry partnerships for placements" }
+                ]
+            }
+        ]
+    },
+    'page_contact': {
+        sections: [
+            {
+                id: 'hero',
+                title: 'Hero Section',
+                fields: [
+                    { key: 'title', label: 'Page Title', type: 'text', default: 'Contact Us' },
+                    { key: 'subtitle', label: 'Subtitle', type: 'textarea', default: "Get In Touch With Us - We're Here To Help With Your Queries And Admissions" }
+                ]
+            }
+        ]
+    },
+    'page_admissions': {
+        sections: [
+            {
+                id: 'hero',
+                title: 'Hero Section',
+                fields: [
+                    { key: 'title', label: 'Page Title', type: 'text', default: 'Admissions' },
+                    { key: 'subtitle', label: 'Subtitle', type: 'textarea', default: 'Start Your Journey Towards A Bright Future - Admission Process Made Simple' }
+                ]
+            }
+        ]
+    },
+    'page_academics': {
+        sections: [
+            {
+                id: 'hero',
+                title: 'Hero Section',
+                fields: [
+                    { key: 'title', label: 'Page Title', type: 'text', default: 'Academics' },
+                    { key: 'subtitle', label: 'Subtitle', type: 'textarea', default: 'Comprehensive Programs Designed For Industry Readiness And Career Success' }
                 ]
             }
         ]
@@ -63,6 +101,7 @@ const PAGE_CONFIG: Record<string, any> = {
 };
 
 export default function PageContentManager() {
+    const { toast } = useToast();
     const [selectedPage, setSelectedPage] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
     const [content, setContent] = useState<any>({});
@@ -78,8 +117,7 @@ export default function PageContentManager() {
         config.sections.forEach((section: any) => {
             section.fields.forEach((field: any) => {
                 if (field.type === 'image') {
-                    if (!defaults.images) defaults.images = {};
-                    // No default image URL, handling in component
+                    defaults.images = { ...defaults.images, [field.key]: field.default || '' };
                 } else {
                     defaults[field.key] = field.default || '';
                 }
@@ -97,11 +135,27 @@ export default function PageContentManager() {
             try {
                 const docRef = doc(db, 'page_content', selectedPage);
                 const docSnap = await getDoc(docRef);
+
                 if (docSnap.exists()) {
-                    setContent(docSnap.data());
-                } else {
-                    setContent(getDefaults(selectedPage));
+                    const fetchedData = docSnap.data();
+                    const defaults = getDefaults(selectedPage);
+                    const mergedData = { ...defaults, ...fetchedData };
+
+                    // Restore defaults if fetched data is empty string
+                    // This fixes the issue where empty "" saved to DB causes blank fields
+                    Object.keys(mergedData).forEach(key => {
+                        if (mergedData[key] === '' && defaults[key]) {
+                            mergedData[key] = defaults[key];
+                        }
+                    });
+                    // Handle images merging specifically
+                    if (fetchedData.images) {
+                        mergedData.images = { ...defaults.images, ...fetchedData.images };
+                    }
+
+                    setContent(mergedData);
                 }
+                // If not exists, defaults were already set on click
             } catch (error) {
                 console.error("Error loading page content:", error);
             } finally {
@@ -111,6 +165,12 @@ export default function PageContentManager() {
 
         loadContent();
     }, [selectedPage]);
+
+    const handlePageClick = (pageId: string) => {
+        setSelectedPage(pageId);
+        // Optimistically set defaults so UI updates instantly
+        setContent(getDefaults(pageId));
+    };
 
     const handleSave = async () => {
         if (!selectedPage) return;
@@ -180,7 +240,7 @@ export default function PageContentManager() {
                         {AVAILABLE_PAGES.map(page => (
                             <button
                                 key={page.id}
-                                onClick={() => { setSelectedPage(page.id); setContent({}); }}
+                                onClick={() => handlePageClick(page.id)}
                                 className={`w-full text-left p-4 rounded-xl transition-all border-2 ${selectedPage === page.id
                                     ? 'border-blue-500 bg-blue-50'
                                     : 'border-gray-100 hover:border-blue-200 hover:bg-gray-50'
@@ -196,10 +256,11 @@ export default function PageContentManager() {
                 {/* Right: Editor */}
                 <div className="lg:col-span-2">
                     {selectedPage && currentConfig ? (
-                        <div className="bg-white rounded-2xl shadow-lg p-8 animate-in fade-in slide-in-from-bottom-4">
+                        <div className={`bg-white rounded-2xl shadow-lg p-8 animate-in fade-in slide-in-from-bottom-4 transition-opacity duration-200 ${loading ? 'opacity-60 pointer-events-none' : 'opacity-100'}`}>
                             <div className="flex justify-between items-center mb-6">
-                                <h2 className="text-2xl font-bold text-gray-900">
+                                <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
                                     Editing: {AVAILABLE_PAGES.find(p => p.id === selectedPage)?.name}
+                                    {loading && <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>}
                                 </h2>
                                 <div className="flex gap-2">
                                     <button
@@ -212,87 +273,83 @@ export default function PageContentManager() {
                                 </div>
                             </div>
 
-                            {loading ? (
-                                <div className="py-20 text-center text-gray-500">Loading content...</div>
-                            ) : (
-                                <div className="space-y-8">
-                                    {currentConfig.sections.map((section: any) => (
-                                        <div key={section.id} className="border-b last:border-0 pb-8 last:pb-0">
-                                            <h3 className="text-lg font-extrabold text-blue-900 mb-4 bg-blue-50 p-2 rounded-lg inline-block">
-                                                {section.title}
-                                            </h3>
+                            <div className="space-y-8">
+                                {currentConfig.sections.map((section: any) => (
+                                    <div key={section.id} className="border-b last:border-0 pb-8 last:pb-0">
+                                        <h3 className="text-lg font-extrabold text-blue-900 mb-4 bg-blue-50 p-2 rounded-lg inline-block">
+                                            {section.title}
+                                        </h3>
 
-                                            <div className="space-y-6">
-                                                {section.fields.map((field: any) => (
-                                                    <div key={field.key}>
-                                                        {field.type === 'text' && (
-                                                            <div>
-                                                                <label className="block text-sm font-bold text-gray-700 mb-2">{field.label}</label>
+                                        <div className="space-y-6">
+                                            {section.fields.map((field: any) => (
+                                                <div key={field.key}>
+                                                    {field.type === 'text' && (
+                                                        <div>
+                                                            <label className="block text-sm font-bold text-gray-700 mb-2">{field.label}</label>
+                                                            <input
+                                                                type="text"
+                                                                value={content[field.key] || ''}
+                                                                onChange={e => setContent({ ...content, [field.key]: e.target.value })}
+                                                                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 outline-none"
+                                                            />
+                                                        </div>
+                                                    )}
+                                                    {field.type === 'textarea' && (
+                                                        <div>
+                                                            <label className="block text-sm font-bold text-gray-700 mb-2">{field.label}</label>
+                                                            <textarea
+                                                                value={content[field.key] || ''}
+                                                                onChange={e => setContent({ ...content, [field.key]: e.target.value })}
+                                                                rows={4}
+                                                                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 outline-none resize-none"
+                                                            />
+                                                        </div>
+                                                    )}
+                                                    {field.type === 'image' && (
+                                                        <div>
+                                                            <label className="block text-xs font-semibold text-gray-500 mb-2 uppercase">{field.label}</label>
+                                                            <div className="relative aspect-video bg-gray-200 rounded-lg overflow-hidden group w-full max-w-sm">
+                                                                {content.images?.[field.key] || field.default ? (
+                                                                    <img src={content.images?.[field.key] || field.default} className="w-full h-full object-cover" />
+                                                                ) : (
+                                                                    <div className="flex items-center justify-center h-full text-gray-400 font-medium">No Image Uploaded</div>
+                                                                )}
                                                                 <input
-                                                                    type="text"
-                                                                    value={content[field.key] || ''}
-                                                                    onChange={e => setContent({ ...content, [field.key]: e.target.value })}
-                                                                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 outline-none"
+                                                                    type="file"
+                                                                    className="absolute inset-0 opacity-0 cursor-pointer z-10 w-full h-full"
+                                                                    onChange={(e) => e.target.files?.[0] && handleImageUpload(field.key, e.target.files[0])}
+                                                                    accept="image/*"
                                                                 />
-                                                            </div>
-                                                        )}
-                                                        {field.type === 'textarea' && (
-                                                            <div>
-                                                                <label className="block text-sm font-bold text-gray-700 mb-2">{field.label}</label>
-                                                                <textarea
-                                                                    value={content[field.key] || ''}
-                                                                    onChange={e => setContent({ ...content, [field.key]: e.target.value })}
-                                                                    rows={4}
-                                                                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 outline-none resize-none"
-                                                                />
-                                                            </div>
-                                                        )}
-                                                        {field.type === 'image' && (
-                                                            <div>
-                                                                <label className="block text-xs font-semibold text-gray-500 mb-2 uppercase">{field.label}</label>
-                                                                <div className="relative aspect-video bg-gray-200 rounded-lg overflow-hidden group cursor-pointer w-full max-w-sm">
-                                                                    {content.images?.[field.key] ? (
-                                                                        <img src={content.images[field.key]} className="w-full h-full object-cover" />
-                                                                    ) : (
-                                                                        <div className="flex items-center justify-center h-full text-gray-400 font-medium">No Image Uploaded</div>
-                                                                    )}
-                                                                    <input
-                                                                        type="file"
-                                                                        className="absolute inset-0 opacity-0 cursor-pointer"
-                                                                        onChange={(e) => e.target.files?.[0] && handleImageUpload(field.key, e.target.files[0])}
-                                                                    />
-                                                                    <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-white font-bold text-sm">
-                                                                        Click to Upload
-                                                                    </div>
+                                                                <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-white font-bold text-sm pointer-events-none">
+                                                                    Click to Upload
                                                                 </div>
                                                             </div>
-                                                        )}
-                                                    </div>
-                                                ))}
-                                            </div>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            ))}
                                         </div>
-                                    ))}
-
-                                    {/* Save Button */}
-                                    <div className="pt-6 border-t border-gray-100 flex justify-end sticky bottom-0 bg-white pb-2">
-                                        <button
-                                            onClick={handleSave}
-                                            disabled={saving}
-                                            className="bg-green-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-green-700 transition-colors shadow-lg flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                                        >
-                                            {saving ? (
-                                                <>Saving...</>
-                                            ) : (
-                                                <>
-                                                    <Save className="w-5 h-5" />
-                                                    Save All Changes
-                                                </>
-                                            )}
-                                        </button>
                                     </div>
-                                </div>
-                            )}
+                                ))}
 
+                                {/* Save Button */}
+                                <div className="pt-6 border-t border-gray-100 flex justify-end sticky bottom-0 bg-white pb-2">
+                                    <button
+                                        onClick={handleSave}
+                                        disabled={saving}
+                                        className="bg-green-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-green-700 transition-colors shadow-lg flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    >
+                                        {saving ? (
+                                            <>Saving...</>
+                                        ) : (
+                                            <>
+                                                <Save className="w-5 h-5" />
+                                                Save All Changes
+                                            </>
+                                        )}
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     ) : (
                         <div className="h-full flex flex-col items-center justify-center text-gray-400 p-12 bg-gray-50/50 rounded-2xl border-2 border-dashed border-gray-200">
@@ -306,3 +363,4 @@ export default function PageContentManager() {
         </AdminLayout>
     );
 }
+

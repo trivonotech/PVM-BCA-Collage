@@ -1,9 +1,32 @@
+import { db } from '@/lib/firebase';
+import { collection, addDoc, serverTimestamp, doc, getDoc, onSnapshot } from 'firebase/firestore';
+import { useToast } from "@/components/ui/use-toast";
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { MapPin, Phone, Mail, Clock } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 export default function ContactPage() {
+    const [content, setContent] = useState<any>(null);
+
+    useEffect(() => {
+        const fetchSettings = async () => {
+            // ... existing settings fetch code ...
+        };
+        fetchSettings();
+
+        // New Page Content Listener
+        const unsub = onSnapshot(doc(db, 'page_content', 'page_contact'), (doc) => {
+            if (doc.exists()) {
+                setContent(doc.data());
+            }
+        });
+        return () => unsub();
+    }, []);
+
+    const { toast } = useToast();
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [mapUrl, setMapUrl] = useState('https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3151.8354345093747!2d144.9537353159042!3d-37.81720974201434!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x6ad65d4c2b349649%3A0xb6899234e561db11!2sEnvato!5e0!3m2!1sen!2sin!4v1234567890123!5m2!1sen!2sin');
     const [formData, setFormData] = useState({
         name: '',
         email: '',
@@ -12,10 +35,40 @@ export default function ContactPage() {
         message: ''
     });
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        console.log('Inquiry submitted:', formData);
-        alert('Thank you for your inquiry! We will contact you soon.');
+        setIsSubmitting(true);
+
+        try {
+            await addDoc(collection(db, 'inquiries'), {
+                ...formData,
+                status: 'new',
+                createdAt: serverTimestamp()
+            });
+
+            toast({
+                title: "Inquiry Sent!",
+                description: "We have received your message and will contact you soon.",
+                className: "bg-green-600 text-white border-none"
+            });
+
+            setFormData({
+                name: '',
+                email: '',
+                phone: '',
+                subject: '',
+                message: ''
+            });
+        } catch (error) {
+            console.error("Error submitting inquiry:", error);
+            toast({
+                title: "Submission Failed",
+                description: "Something went wrong. Please try again later.",
+                variant: "destructive"
+            });
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     const contactInfo = [
@@ -59,9 +112,11 @@ export default function ContactPage() {
                 />
                 <div className="container mx-auto px-4 relative z-10">
                     <div className="max-w-4xl mx-auto text-center">
-                        <h1 className="text-4xl md:text-6xl font-extrabold mb-6">Contact Us</h1>
+                        <h1 className="text-4xl md:text-6xl font-extrabold mb-6">
+                            {content?.title || "Contact Us"}
+                        </h1>
                         <p className="text-lg md:text-xl text-blue-200 leading-relaxed">
-                            Get In Touch With Us - We're Here To Help With Your Queries And Admissions
+                            {content?.subtitle || "Get In Touch With Us - We're Here To Help With Your Queries And Admissions"}
                         </p>
                     </div>
                 </div>
@@ -172,9 +227,10 @@ export default function ContactPage() {
 
                                     <button
                                         type="submit"
-                                        className="w-full py-4 bg-gradient-to-r from-[#0B0B3B] to-[#1a1a5e] text-white rounded-xl font-bold text-lg hover:shadow-xl transition-shadow"
+                                        disabled={isSubmitting}
+                                        className="w-full py-4 bg-gradient-to-r from-[#0B0B3B] to-[#1a1a5e] text-white rounded-xl font-bold text-lg hover:shadow-xl transition-shadow disabled:opacity-70 disabled:cursor-not-allowed"
                                     >
-                                        Send Inquiry
+                                        {isSubmitting ? 'Sending...' : 'Send Inquiry'}
                                     </button>
                                 </form>
                             </div>
@@ -188,9 +244,9 @@ export default function ContactPage() {
                                     <div className="w-24 h-1 bg-[#FF4040] rounded-full mb-6"></div>
 
                                     {/* Google Map Embed */}
-                                    <div className="relative w-full h-96 bg-gradient-to-br from-[#BFD8FF] to-[#E5E7EB] rounded-3xl overflow-hidden shadow-xl">
+                                    <div className="relative w-full h-80 bg-gradient-to-br from-[#BFD8FF] to-[#E5E7EB] rounded-3xl overflow-hidden shadow-xl">
                                         <iframe
-                                            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3151.8354345093747!2d144.9537353159042!3d-37.81720974201434!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x6ad65d4c2b349649%3A0xb6899234e561db11!2sEnvato!5e0!3m2!1sen!2sin!4v1234567890123!5m2!1sen!2sin"
+                                            src={mapUrl}
                                             width="100%"
                                             height="100%"
                                             style={{ border: 0 }}
@@ -203,19 +259,19 @@ export default function ContactPage() {
                                 </div>
 
                                 {/* Quick Contact Card */}
-                                <div className="bg-gradient-to-r from-[#FF4040] to-[#c03030] rounded-3xl p-8 shadow-2xl text-white">
-                                    <h3 className="text-2xl font-bold mb-6">Quick Contacts</h3>
-                                    <div className="space-y-4">
-                                        <div className="bg-white/20 rounded-xl p-4">
-                                            <div className="font-bold mb-1">Admission Office</div>
+                                <div className="bg-gradient-to-r from-[#FF4040] to-[#c03030] rounded-3xl p-6 shadow-2xl text-white">
+                                    <h3 className="text-xl font-bold mb-4">Quick Contacts</h3>
+                                    <div className="space-y-3">
+                                        <div className="bg-white/20 rounded-xl p-3">
+                                            <div className="font-bold mb-1 text-sm">Admission Office</div>
                                             <div className="text-sm">📞 +91-XXXX-XXXXXX</div>
                                         </div>
-                                        <div className="bg-white/20 rounded-xl p-4">
-                                            <div className="font-bold mb-1">Academic Queries</div>
+                                        <div className="bg-white/20 rounded-xl p-3">
+                                            <div className="font-bold mb-1 text-sm">Academic Queries</div>
                                             <div className="text-sm">📧 academic@institute.edu</div>
                                         </div>
-                                        <div className="bg-white/20 rounded-xl p-4">
-                                            <div className="font-bold mb-1">Placement Cell</div>
+                                        <div className="bg-white/20 rounded-xl p-3">
+                                            <div className="font-bold mb-1 text-sm">Placement Cell</div>
                                             <div className="text-sm">📧 placement@institute.edu</div>
                                         </div>
                                     </div>

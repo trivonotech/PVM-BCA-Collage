@@ -3,14 +3,13 @@ import Footer from '@/components/Footer';
 import { ClipboardCheck, DollarSign, CalendarDays, FileCheck } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { db } from '@/lib/firebase';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, onSnapshot } from 'firebase/firestore';
 
 export default function AdmissionsPage() {
     // Default Static Data (Fallback)
-    // Default Static Data (Fallback)
     const [steps, setSteps] = useState<any[]>([]);
-
     const [scholarships, setScholarships] = useState<any[]>([]);
+    const [heroContent, setHeroContent] = useState<any>(null); // New state for Hero
 
     const [dates, setDates] = useState({
         applicationStart: '-',
@@ -42,6 +41,14 @@ export default function AdmissionsPage() {
             }
         };
         loadData();
+
+        // New Page Content Listener for Hero
+        const unsub = onSnapshot(doc(db, 'page_content', 'page_admissions'), (doc) => {
+            if (doc.exists()) {
+                setHeroContent(doc.data());
+            }
+        });
+        return () => unsub();
     }, []);
 
     const ensureAbsoluteUrl = (url: string) => {
@@ -64,9 +71,11 @@ export default function AdmissionsPage() {
                 />
                 <div className="container mx-auto px-4 relative z-10">
                     <div className="max-w-4xl mx-auto text-center">
-                        <h1 className="text-4xl md:text-6xl font-extrabold mb-6">Admissions</h1>
+                        <h1 className="text-4xl md:text-6xl font-extrabold mb-6">
+                            {heroContent?.title || "Admissions"}
+                        </h1>
                         <p className="text-lg md:text-xl text-blue-200 leading-relaxed">
-                            Start Your Journey Towards A Bright Future - Admission Process Made Simple
+                            {heroContent?.subtitle || "Start Your Journey Towards A Bright Future - Admission Process Made Simple"}
                         </p>
                     </div>
                 </div>

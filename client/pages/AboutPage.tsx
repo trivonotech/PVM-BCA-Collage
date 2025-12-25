@@ -1,8 +1,37 @@
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Award, Target, Eye, Trophy, Shield, Star } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { db } from '@/lib/firebase';
+import { doc, onSnapshot } from 'firebase/firestore';
 
 export default function AboutPage() {
+    const [content, setContent] = useState<any>(null);
+    const [missionPoints, setMissionPoints] = useState<string[]>([]);
+
+    useEffect(() => {
+        const unsub = onSnapshot(doc(db, 'page_content', 'page_about'), (doc) => {
+            if (doc.exists()) {
+                const data = doc.data();
+                setContent(data);
+                if (data.mission_list) {
+                    setMissionPoints(data.mission_list.split('\n').filter((line: string) => line.trim() !== ''));
+                }
+            }
+        });
+        return () => unsub();
+    }, []);
+
+    // Default Mission Points if dynamic fail
+    const defaultMission = [
+        "Provide quality education with modern teaching methodologies",
+        "Develop industry-ready professionals with practical skills",
+        "Foster innovation, research, and creative thinking",
+        "Build strong industry partnerships for placements"
+    ];
+
+    const displayMission = missionPoints.length > 0 ? missionPoints : defaultMission;
+
     return (
         <div className="min-h-screen bg-white font-poppins">
             <Header />
@@ -17,9 +46,11 @@ export default function AboutPage() {
                 />
                 <div className="container mx-auto px-4 relative z-10">
                     <div className="max-w-4xl mx-auto text-center">
-                        <h1 className="text-4xl md:text-6xl font-extrabold mb-6">About Us</h1>
+                        <h1 className="text-4xl md:text-6xl font-extrabold mb-6">
+                            {content?.title || "About Us"}
+                        </h1>
                         <p className="text-lg md:text-xl text-blue-200 leading-relaxed">
-                            Building Tomorrow's Leaders Through Quality Education And Holistic Development
+                            {content?.subtitle || "Building Tomorrow's Leaders Through Quality Education And Holistic Development"}
                         </p>
                     </div>
                 </div>
@@ -31,18 +62,18 @@ export default function AboutPage() {
                     <div className="max-w-6xl mx-auto">
                         <div className="text-center mb-12">
                             <h2 className="text-3xl md:text-5xl font-extrabold text-[#0B0B3B] mb-4">
-                                Institute Overview
+                                {content?.overview_title || "Institute Overview"}
                             </h2>
                             <div className="w-24 h-1 bg-[#FF4040] mx-auto rounded-full"></div>
                         </div>
 
                         <div className="grid md:grid-cols-2 gap-12 items-center">
                             <div className="space-y-6">
-                                <p className="text-gray-700 leading-relaxed text-lg">
-                                    Established with a vision to provide world-class education, our institute has been at the forefront of academic excellence for over a decade. We are committed to nurturing young minds and transforming them into capable professionals ready to face global challenges.
+                                <p className="text-gray-700 leading-relaxed text-lg whitespace-pre-line">
+                                    {content?.overview_text1 || "Established with a vision to provide world-class education, our institute has been at the forefront of academic excellence for over a decade. We are committed to nurturing young minds and transforming them into capable professionals ready to face global challenges."}
                                 </p>
-                                <p className="text-gray-700 leading-relaxed text-lg">
-                                    Our state-of-the-art infrastructure, experienced faculty, and industry-aligned curriculum ensure that students receive comprehensive education that balances theoretical knowledge with practical skills.
+                                <p className="text-gray-700 leading-relaxed text-lg whitespace-pre-line">
+                                    {content?.overview_text2 || "Our state-of-the-art infrastructure, experienced faculty, and industry-aligned curriculum ensure that students receive comprehensive education that balances theoretical knowledge with practical skills."}
                                 </p>
                                 <div className="grid grid-cols-2 gap-6 pt-4">
                                     <div className="bg-[#BFD8FF] p-6 rounded-2xl text-center">
@@ -59,7 +90,7 @@ export default function AboutPage() {
                             <div className="relative">
                                 <div className="bg-gradient-to-br from-[#BFD8FF] to-[#E5E7EB] rounded-3xl p-8 shadow-2xl">
                                     <img
-                                        src="https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=600&h=400&fit=crop"
+                                        src={content?.images?.campus_image || "https://images.unsplash.com/photo-1562774053-701939374585?w=800&auto=format&fit=crop"}
                                         alt="Campus"
                                         className="w-full h-80 object-cover rounded-2xl shadow-lg"
                                     />
@@ -79,15 +110,15 @@ export default function AboutPage() {
                             {/* Vision Card */}
                             <div className="relative group">
                                 <div className="absolute inset-0 bg-gradient-to-br from-[#0B0B3B] to-[#1a1a5e] rounded-3xl transform group-hover:scale-105 transition-transform duration-300"></div>
-                                <div className="relative bg-gradient-to-br from-[#0B0B3B] to-[#1a1a5e] rounded-3xl p-10 shadow-2xl">
+                                <div className="relative bg-gradient-to-br from-[#0B0B3B] to-[#1a1a5e] rounded-3xl p-10 shadow-2xl h-full">
                                     <div className="flex items-center gap-4 mb-6">
                                         <div className="p-4 bg-[#BFD8FF] rounded-2xl">
                                             <Eye className="w-8 h-8 text-[#0B0B3B]" />
                                         </div>
                                         <h3 className="text-3xl font-bold text-white">Our Vision</h3>
                                     </div>
-                                    <p className="text-blue-100 leading-relaxed text-lg">
-                                        To be a globally recognized institution that shapes future leaders through innovative education, research excellence, and character development, while fostering creativity, critical thinking, and social responsibility.
+                                    <p className="text-blue-100 leading-relaxed text-lg whitespace-pre-line">
+                                        {content?.vision || "To be a globally recognized institution that shapes future leaders through innovative education, research excellence, and character development, while fostering creativity, critical thinking, and social responsibility."}
                                     </p>
                                     <div className="mt-8 flex gap-3">
                                         <div className="w-3 h-3 bg-[#FACC15] rounded-full animate-pulse"></div>
@@ -100,7 +131,7 @@ export default function AboutPage() {
                             {/* Mission Card */}
                             <div className="relative group">
                                 <div className="absolute inset-0 bg-gradient-to-br from-[#FF4040] to-[#c03030] rounded-3xl transform group-hover:scale-105 transition-transform duration-300"></div>
-                                <div className="relative bg-gradient-to-br from-[#FF4040] to-[#c03030] rounded-3xl p-10 shadow-2xl">
+                                <div className="relative bg-gradient-to-br from-[#FF4040] to-[#c03030] rounded-3xl p-10 shadow-2xl h-full">
                                     <div className="flex items-center gap-4 mb-6">
                                         <div className="p-4 bg-white rounded-2xl">
                                             <Target className="w-8 h-8 text-[#FF4040]" />
@@ -108,22 +139,12 @@ export default function AboutPage() {
                                         <h3 className="text-3xl font-bold text-white">Our Mission</h3>
                                     </div>
                                     <ul className="space-y-4 text-red-50">
-                                        <li className="flex items-start gap-3">
-                                            <span className="text-[#FACC15] mt-1">✓</span>
-                                            <span className="leading-relaxed">Provide quality education with modern teaching methodologies</span>
-                                        </li>
-                                        <li className="flex items-start gap-3">
-                                            <span className="text-[#FACC15] mt-1">✓</span>
-                                            <span className="leading-relaxed">Develop industry-ready professionals with practical skills</span>
-                                        </li>
-                                        <li className="flex items-start gap-3">
-                                            <span className="text-[#FACC15] mt-1">✓</span>
-                                            <span className="leading-relaxed">Foster innovation, research, and creative thinking</span>
-                                        </li>
-                                        <li className="flex items-start gap-3">
-                                            <span className="text-[#FACC15] mt-1">✓</span>
-                                            <span className="leading-relaxed">Build strong industry partnerships for placements</span>
-                                        </li>
+                                        {displayMission.map((item, idx) => (
+                                            <li key={idx} className="flex items-start gap-3">
+                                                <span className="text-[#FACC15] mt-1">✓</span>
+                                                <span className="leading-relaxed">{item}</span>
+                                            </li>
+                                        ))}
                                     </ul>
                                 </div>
                             </div>
@@ -132,7 +153,7 @@ export default function AboutPage() {
                 </div>
             </section>
 
-            {/* Achievements & Accreditations */}
+            {/* Achievements & Accreditations (Static for now) */}
             <section className="py-20 bg-gradient-to-b from-[#FDFDFF] to-white">
                 <div className="container mx-auto px-4">
                     <div className="max-w-6xl mx-auto">

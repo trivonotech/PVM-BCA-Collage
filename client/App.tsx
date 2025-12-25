@@ -18,12 +18,13 @@ import NewsDetailPage from "./pages/NewsDetailPage";
 import StudentCornerPage from "./pages/StudentCornerPage";
 import ContactPage from "./pages/ContactPage";
 import NotFound from "./pages/NotFound";
-import BcaCoursePage from "./pages/BcaCoursePage";
+import CourseDetailPage from "./pages/CourseDetailPage";
 import SubmitNewsPage from "./pages/SubmitNewsPage";
 import AdminLogin from "./pages/admin/AdminLogin";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import EventsManager from "./pages/admin/EventsManager";
 import StudentsManager from "./pages/admin/StudentsManager";
+import InquiriesManager from "./pages/admin/InquiriesManager";
 import SettingsManager from "./pages/admin/SettingsManager";
 import SectionVisibilityManager from "./pages/admin/SectionVisibilityManager";
 import UserManagement from "./pages/admin/UserManagement";
@@ -69,8 +70,8 @@ function AppContent() {
           <Route path="/news/:id" element={<NewsDetailPage />} />
           <Route path="/student-corner" element={<StudentCornerPage />} />
           <Route path="/contact" element={<ContactPage />} />
-          <Route path="/bca" element={<BcaCoursePage />} />
           <Route path="/submit-news" element={<SubmitNewsPage />} />
+          <Route path="/courses/:id" element={<CourseDetailPage />} />
 
           {/* Admin Panel Routes */}
           <Route path="/admin/login" element={<AdminLogin />} />
@@ -92,6 +93,7 @@ function AppContent() {
           <Route path="/admin/users" element={<ProtectedRoute><UserManagement /></ProtectedRoute>} />
           <Route path="/admin/settings" element={<ProtectedRoute><SettingsManager /></ProtectedRoute>} />
           <Route path="/admin/system" element={<ProtectedRoute><SystemHealth /></ProtectedRoute>} />
+          <Route path="/admin/inquiries" element={<ProtectedRoute><InquiriesManager /></ProtectedRoute>} />
 
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />

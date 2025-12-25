@@ -24,7 +24,10 @@ import {
     ShieldAlert,
     Layout,
     School,
+    MessageSquare,
 } from 'lucide-react';
+
+
 import SessionExpiredModal from './SessionExpiredModal';
 
 interface AdminLayoutProps {
@@ -45,6 +48,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         { icon: Dumbbell, label: 'Sports', path: '/admin/sports', permission: 'sports' },
         { icon: Lightbulb, label: 'Workshops', path: '/admin/workshops', permission: 'workshops' },
         { icon: Newspaper, label: 'News', path: '/admin/news', permission: 'news' },
+        { icon: MessageSquare, label: 'Inquiries', path: '/admin/inquiries', permission: 'inquiries' },
         { icon: Users, label: 'Faculty', path: '/admin/faculty', permission: 'faculty' },
         { icon: Award, label: 'Achievements', path: '/admin/achievements', permission: 'achievements' },
         { icon: Briefcase, label: 'Placements', path: '/admin/placements', permission: 'placements' },
@@ -247,6 +251,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                             '/admin/sports': 'sports',
                             '/admin/workshops': 'workshops',
                             '/admin/news': 'news',
+                            '/admin/inquiries': 'inquiries',
                             '/admin/faculty': 'faculty',
                             '/admin/achievements': 'achievements',
                             '/admin/placements': 'placements',

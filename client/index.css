@@ -27,10 +27,27 @@
     }
 }
 
-/* Ensure no thumb is visible if track exists - Global fallback */
+/* Global Scrollbar Reset - Aggressive hiding */
+* {
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+}
+
 ::-webkit-scrollbar {
-    width: 0px;
-    background: transparent;
+    width: 0px !important;
+    height: 0px !important;
+    display: none !important;
+    background: transparent !important;
+}
+
+::-webkit-scrollbar-thumb {
+    background: transparent !important;
+    display: none !important;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent !important;
+    display: none !important;
 }
 
 @keyframes pulse {

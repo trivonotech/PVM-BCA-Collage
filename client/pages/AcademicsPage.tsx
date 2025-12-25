@@ -3,43 +3,131 @@ import Footer from '@/components/Footer';
 import { BookOpen, Download, Calendar, FileText, GraduationCap } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useSectionVisibility } from '@/hooks/useSectionVisibility';
+import { useState, useEffect } from 'react';
+import { db } from '@/lib/firebase';
+import { doc, onSnapshot, collection, query, orderBy, getDocs, setDoc, serverTimestamp } from 'firebase/firestore';
+import { useToast } from "@/components/ui/use-toast";
 
 export default function AcademicsPage() {
     const { isVisible } = useSectionVisibility();
-    const courses = [
+    const [content, setContent] = useState<any>(null);
+    const [courses, setCourses] = useState<any[]>([]);
+    const { toast } = useToast();
+
+    // Enriched Data for Auto-Seeding
+    // NOTE: Added 'link' property to BCA to preserve the custom page connection
+    const INITIAL_COURSES = [
         {
+            id: 'bba-course',
             name: 'Bachelor of Business Administration (BBA)',
+            code: 'BBA',
             duration: '3 Years',
             seats: 120,
             eligibility: '10+2 with minimum 50%',
+            fees: '₹15,000 / Sem',
+            description: 'The BBA program empowers students with fundamental business knowledge, leadership skills, and practical insights into the corporate world.',
             color: 'from-[#BFD8FF] to-[#E5E7EB]',
-            link: '/bba'
+            // No custom link, will default to # or dynamic page
         },
         {
+            id: 'bcom-course',
             name: 'Bachelor of Commerce (B.Com)',
+            code: 'B.Com',
             duration: '3 Years',
             seats: 100,
             eligibility: '10+2 with minimum 45%',
+            fees: '₹12,000 / Sem',
+            description: 'Our B.Com course focuses on financial accounting, business laws, economics, and taxation.',
             color: 'from-[#FFF5F5] to-[#FFE5E5]',
-            link: '/bcom'
         },
         {
+            id: 'bca-course',
             name: 'Bachelor of Computer Applications (BCA)',
+            code: 'BCA',
             duration: '3 Years',
             seats: 80,
-            eligibility: '10+2 with Mathematics',
+            eligibility: '10+2 with Mathematics or Computer Science',
+            fees: '₹18,000 / Sem',
+            description: 'BCA is designed for aspiring tech professionals. It covers programming, database management, web development, and software engineering.',
             color: 'from-[#FFF9E5] to-[#FFEED5]',
-            link: '/bca'
         },
         {
+            id: 'bsc-course',
             name: 'Bachelor of Science (B.Sc)',
+            code: 'B.Sc',
             duration: '3 Years',
             seats: 90,
             eligibility: '10+2 with Science stream',
+            fees: '₹16,500 / Sem',
+            description: 'The B.Sc program offers specialization in Physics, Chemistry, and Mathematics.',
             color: 'from-[#E5F9E5] to-[#D5F5D5]',
-            link: '/bsc'
         }
     ];
+
+    useEffect(() => {
+        const fetchAndSeedCourses = async () => {
+            try {
+                // Fetch all existing courses
+                const q = query(collection(db, 'courses'));
+                const querySnapshot = await getDocs(q);
+
+                const existingCourses = querySnapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
+                const existingIds = new Set(existingCourses.map(c => c.id));
+
+                // Check which default courses are missing
+                const coursesToAdd = [];
+                for (const course of INITIAL_COURSES) {
+                    if (!existingIds.has(course.id)) {
+                        coursesToAdd.push(course);
+                    }
+                }
+
+                // If we have missing courses, add them
+                if (coursesToAdd.length > 0) {
+                    const addedCourses = [];
+                    for (const course of coursesToAdd) {
+                        const courseData = {
+                            ...course,
+                            createdAt: serverTimestamp()
+                        };
+                        try {
+                            await setDoc(doc(db, 'courses', course.id), courseData);
+                            addedCourses.push({ ...courseData, id: course.id });
+                        } catch (err) {
+                            console.error(`Failed to add course ${course.id}:`, err);
+                        }
+                    }
+
+                    if (addedCourses.length > 0) {
+                        toast({
+                            title: "Courses Updated",
+                            description: `${addedCourses.length} default courses were added.`,
+                            className: "bg-green-600 text-white border-none"
+                        });
+
+                        const allCourses = [...existingCourses, ...addedCourses];
+                        setCourses(allCourses);
+                    } else {
+                        setCourses(existingCourses);
+                    }
+                } else {
+                    setCourses(existingCourses);
+                }
+            } catch (error) {
+                console.error("Error fetching/seeding courses:", error);
+            }
+        };
+
+        fetchAndSeedCourses();
+    }, []);
+
+    // Link helper
+    const getCourseLink = (course: any) => {
+        return `/courses/${course.id}`;
+    };
 
     const studyMaterials = [
         { title: 'Semester 1 Notes', subject: 'All Subjects', size: '25 MB' },
@@ -63,9 +151,11 @@ export default function AcademicsPage() {
                     />
                     <div className="container mx-auto px-4 relative z-10">
                         <div className="max-w-4xl mx-auto text-center">
-                            <h1 className="text-4xl md:text-6xl font-extrabold mb-6">Academics</h1>
+                            <h1 className="text-4xl md:text-6xl font-extrabold mb-6">
+                                {content?.title || "Academics"}
+                            </h1>
                             <p className="text-lg md:text-xl text-blue-200 leading-relaxed">
-                                Comprehensive Programs Designed For Industry Readiness And Career Success
+                                {content?.subtitle || "Comprehensive Programs Designed For Industry Readiness And Career Success"}
                             </p>
                         </div>
                     </div>
@@ -107,7 +197,7 @@ export default function AcademicsPage() {
                                                     <span>{course.eligibility}</span>
                                                 </div>
                                             </div>
-                                            <Link to={course.link || '#'} className="block w-full">
+                                            <Link to={getCourseLink(course)} className="block w-full">
                                                 <button className="w-full py-3 bg-[#0B0B3B] text-white rounded-xl font-bold hover:bg-[#1a1a5e] transition-colors">
                                                     View Details →
                                                 </button>
