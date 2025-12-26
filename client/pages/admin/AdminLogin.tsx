@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Lock, User, Eye, EyeOff } from 'lucide-react';
 import { useToast } from "@/components/ui/use-toast";
 import ReCAPTCHA from "react-google-recaptcha";
+import { CONFIG } from '@/lib/config';
 
 export default function AdminLogin() {
     const [username, setUsername] = useState('');
@@ -64,7 +65,7 @@ export default function AdminLogin() {
             const { sendPasswordResetEmail } = await import('firebase/auth');
             const { auth } = await import('@/lib/firebase');
 
-            const emailToReset = username.toLowerCase() === 'admin' ? 'pvm.bca.college01@gmail.com' : username;
+            const emailToReset = username.toLowerCase() === 'admin' ? CONFIG.SUPER_ADMIN_EMAIL : username;
             await sendPasswordResetEmail(auth, emailToReset);
 
             // Replaced alert with toast
@@ -167,7 +168,7 @@ export default function AdminLogin() {
         }
 
         // Security Check 3: Client-side Validation (Email format only)
-        const email = username.toLowerCase() === 'admin' ? 'pvm.bca.college01@gmail.com' : username.trim();
+        const email = username.toLowerCase() === 'admin' ? CONFIG.SUPER_ADMIN_EMAIL : username.trim();
 
         if (!EMAIL_REGEX.test(email)) {
             setLoading(false);
@@ -270,7 +271,7 @@ export default function AdminLogin() {
 
                 // MIGRATION FIX: If profile missing, but it's the Super Admin, grant specific access
                 let permissions = userData.permissions || [];
-                if (permissions.length === 0 && user.email === 'pvm.bca.college01@gmail.com') {
+                if (permissions.length === 0 && user.email === CONFIG.SUPER_ADMIN_EMAIL) {
                     console.warn("Granting temporary Super Admin permissions for migration.");
                     permissions = ['dashboard', 'backup', 'settings', 'user_management'];
                 }

@@ -34,6 +34,8 @@ import {
 
 import SessionExpiredModal from './SessionExpiredModal';
 import { logAdminActivity } from '@/lib/ActivityLogger';
+import { CONFIG } from '@/lib/config';
+import AdminSidebar from './AdminSidebar';
 
 interface AdminLayoutProps {
     children: ReactNode;
@@ -172,7 +174,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
 
                 // SECURITY CHECK: Only Super Admin can enter "Migration Mode" (Empty DB)
                 // Everyone else gets booted out.
-                if (user?.email === 'pvm.bca.college01@gmail.com') {
+                if (user?.email === CONFIG.SUPER_ADMIN_EMAIL) {
                     // Check for ORPHANED PROFILE (Different UID from old database)
                     // If we find a user doc with same email but different ID, migrate it to current UID.
                     (async () => {
@@ -214,7 +216,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         }, (error) => {
             console.warn("Permission listener failed (likely empty DB rules):", error);
             // FAIL-SAFE: If rules are blocking us, and we are the Super Admin, assume we are in Migration Mode
-            if (user?.email === 'pvm.bca.college01@gmail.com') {
+            if (user?.email === CONFIG.SUPER_ADMIN_EMAIL) {
                 const migrationUser = { ...user, permissions: ['backup'], role: 'migration' };
                 if (user.role !== 'migration') {
                     setUser(migrationUser);
@@ -295,61 +297,14 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
             </div>
 
             {/* Sidebar */}
-            <aside
-                className={`fixed top-0 left-0 h-full bg-[#0B0B3B] text-white w-64 transform transition-transform duration-300 z-40 flex flex-col ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'
-                    } lg:translate-x-0`}
-            >
-                {/* Logo Section */}
-                <div className="p-6 border-b border-gray-700 flex-shrink-0">
-                    <h1 className="text-2xl font-bold text-white">PVM BCA</h1>
-                    <p className="text-sm text-gray-400 mt-1">Admin Panel</p>
-                </div>
-
-                {/* Menu Items */}
-                <nav className="flex-1 overflow-y-auto p-4 space-y-2 scrollbar-hide overscroll-contain"
-                    ref={sidebarRef}
-                    onScroll={handleSidebarScroll}
-                >
-                    <style>{`
-            .scrollbar-hide::-webkit-scrollbar {
-              display: none;
-            }
-            .scrollbar-hide {
-              -ms-overflow-style: none;
-              scrollbar-width: none;
-            }
-          `}</style>
-                    {filteredMenuItems.map((item) => {
-                        const Icon = item.icon;
-                        const isActive = location.pathname === item.path;
-                        return (
-                            <Link
-                                key={item.path}
-                                to={item.path}
-                                onClick={() => setSidebarOpen(false)}
-                                className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${isActive
-                                    ? 'bg-blue-600 text-white shadow-lg'
-                                    : 'text-gray-300 hover:bg-gray-800 hover:text-white'
-                                    }`}
-                            >
-                                <Icon className="w-5 h-5" />
-                                <span className="font-medium">{item.label}</span>
-                            </Link>
-                        );
-                    })}
-                </nav>
-
-                {/* Logout Button */}
-                <div className="p-4 border-t border-gray-700 flex-shrink-0">
-                    <button
-                        onClick={handleLogout}
-                        className="flex items-center gap-3 px-4 py-3 rounded-lg w-full text-gray-300 hover:bg-red-600 hover:text-white transition-all"
-                    >
-                        <LogOut className="w-5 h-5" />
-                        <span className="font-medium">Logout</span>
-                    </button>
-                </div>
-            </aside>
+            <AdminSidebar
+                sidebarOpen={sidebarOpen}
+                setSidebarOpen={setSidebarOpen}
+                filteredMenuItems={filteredMenuItems}
+                handleLogout={handleLogout}
+                sidebarRef={sidebarRef}
+                handleSidebarScroll={handleSidebarScroll}
+            />
 
             {/* Overlay for mobile */}
             {sidebarOpen && (

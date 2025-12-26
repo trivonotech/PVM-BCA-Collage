@@ -15,13 +15,15 @@ import {
     writeBatch
 } from 'firebase/firestore';
 import { ref, uploadString, getDownloadURL, deleteObject } from 'firebase/storage';
-import { Check, X, Edit, Trash2, Eye, Clock, CheckCircle, XCircle, Upload, Plus, Bell } from 'lucide-react';
+import { Clock, CheckCircle, XCircle, Plus } from 'lucide-react';
 import AdminLayout from '@/components/admin/AdminLayout';
-import { compressImage } from '@/utils/imageUtils';
 import { useToast } from "@/components/ui/use-toast";
 import Modal from '@/components/ui/Modal';
 import ConfirmModal from '@/components/ui/ConfirmModal';
 import { logAdminActivity } from '@/lib/ActivityLogger';
+import NewsItemCard from '@/components/admin/NewsItemCard';
+import NewsEditForm from '@/components/admin/NewsEditForm';
+import { CONFIG } from '@/lib/config';
 
 interface NewsSubmission {
     id: string;
@@ -197,13 +199,13 @@ export default function NewsManager() {
             imageUrl: '',
             submittedBy: {
                 name: 'PVM BCA College',
-                email: 'admin@pvm.edu',
+                email: CONFIG.SUPER_ADMIN_EMAIL,
                 rollNumber: 'ADMIN',
                 role: 'admin'
             },
             status: 'approved',
             submittedAt: null,
-        } as NewsSubmission);
+        } as any);
         setShowEditModal(true);
     };
 
@@ -451,97 +453,18 @@ export default function NewsManager() {
                 ) : (
                     <div className="grid grid-cols-1 gap-6">
                         {news.map(item => (
-                            <div key={item.id} className="bg-white rounded-xl shadow-md p-4 md:p-6 border border-gray-200">
-                                <div className="flex flex-col md:flex-row gap-4 md:gap-6">
-                                    {/* Image */}
-                                    {item.imageUrl && (
-                                        <div className="flex-shrink-0">
-                                            <img
-                                                src={item.imageUrl}
-                                                alt={item.title}
-                                                className="w-full h-48 md:w-48 md:h-32 object-cover rounded-lg"
-                                            />
-                                        </div>
-                                    )}
-
-                                    {/* Content */}
-                                    <div className="flex-1">
-                                        <div className="flex items-start justify-between mb-2">
-                                            <div>
-                                                <h3 className="text-xl font-bold text-gray-900 mb-1">{item.title}</h3>
-                                                <span className="inline-block bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-sm font-medium">
-                                                    {item.category}
-                                                </span>
-                                            </div>
-                                        </div>
-
-                                        <p className="text-gray-700 mb-4 line-clamp-3">{item.content}</p>
-
-                                        {/* Submitter Info */}
-                                        <div className="bg-gray-50 rounded-lg p-3 mb-4">
-                                            <p className="text-sm text-gray-600">
-                                                <strong>Submitted by:</strong> {item.submittedBy.name} ({item.submittedBy.rollNumber})
-                                            </p>
-                                            <p className="text-sm text-gray-600">
-                                                <strong>Email:</strong> {item.submittedBy.email}
-                                            </p>
-                                            <p className="text-sm text-gray-600">
-                                                <strong>Date:</strong> {item?.submittedAt?.toDate?.().toLocaleString() || 'N/A'}
-                                            </p>
-                                        </div>
-
-                                        {/* Action Buttons */}
-                                        <div className="flex flex-wrap gap-2">
-                                            {activeTab === 'pending' && (
-                                                <>
-                                                    <button
-                                                        onClick={() => requestConfirm('approve', item.id)}
-                                                        className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-all"
-                                                    >
-                                                        <Check className="w-4 h-4" />
-                                                        Approve
-                                                    </button>
-                                                    <button
-                                                        onClick={() => {
-                                                            setEditingNews(item);
-                                                            setShowEditModal(true);
-                                                        }}
-                                                        className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-all"
-                                                    >
-                                                        <Edit className="w-4 h-4" />
-                                                        Edit
-                                                    </button>
-                                                    <button
-                                                        onClick={() => requestConfirm('reject', item.id)}
-                                                        className="flex items-center gap-2 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-all"
-                                                    >
-                                                        <X className="w-4 h-4" />
-                                                        Reject
-                                                    </button>
-                                                </>
-                                            )}
-                                            {activeTab === 'approved' && (
-                                                <button
-                                                    onClick={() => requestConfirm('delete', item.id)}
-                                                    className="flex items-center gap-2 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-all"
-                                                >
-                                                    <Trash2 className="w-4 h-4" />
-                                                    Delete
-                                                </button>
-                                            )}
-                                            {activeTab === 'rejected' && (
-                                                <button
-                                                    onClick={() => requestConfirm('delete', item.id)}
-                                                    className="flex items-center gap-2 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-all"
-                                                >
-                                                    <Trash2 className="w-4 h-4" />
-                                                    Delete
-                                                </button>
-                                            )}
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                            <NewsItemCard
+                                key={item.id}
+                                item={item}
+                                activeTab={activeTab}
+                                onApprove={(id) => requestConfirm('approve', id)}
+                                onReject={(id) => requestConfirm('reject', id)}
+                                onDelete={(id) => requestConfirm('delete', id)}
+                                onEdit={(newsItem) => {
+                                    setEditingNews(newsItem);
+                                    setShowEditModal(true);
+                                }}
+                            />
                         ))}
                     </div>
                 )}
@@ -555,165 +478,15 @@ export default function NewsManager() {
                     hideScrollbar={true}
                 >
                     {editingNews && (
-                        <form onSubmit={(e) => { e.preventDefault(); handleEditSave(); }} className="space-y-6">
-                            {/* Publisher Information - Only for new news or if role is admin */}
-                            {(editingNews.id === 'new' || editingNews.submittedBy?.role === 'admin') && (
-                                <div className="bg-blue-50 p-6 rounded-xl">
-                                    <h3 className="font-semibold text-gray-900 mb-4">Publisher Information</h3>
-                                    <div>
-                                        <label className="block text-sm font-semibold text-gray-700 mb-2">Publisher Name</label>
-                                        <input
-                                            type="text"
-                                            value="PVM BCA College"
-                                            disabled
-                                            className="w-full px-4 py-3 border-2 border-blue-200 bg-white text-gray-500 rounded-xl focus:outline-none"
-                                        />
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* Title */}
-                            <div>
-                                <label className="block text-sm font-semibold text-gray-700 mb-2">Title</label>
-                                <input
-                                    type="text"
-                                    value={editingNews.title}
-                                    onChange={(e) => setEditingNews({ ...editingNews, title: e.target.value })}
-                                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none"
-                                    placeholder="e.g., University Rankings 2024"
-                                />
-                            </div>
-
-                            {/* Category */}
-                            <div>
-                                <label className="block text-sm font-semibold text-gray-700 mb-2">Category</label>
-                                <select
-                                    value={['General', 'Study Resources', 'Courses', 'Study Support'].includes(editingNews.category)
-                                        ? editingNews.category
-                                        : 'Other (Custom)'}
-                                    onChange={(e) => {
-                                        const newValue = e.target.value;
-                                        if (newValue === 'Other (Custom)') {
-                                            // Keep existing if it was already custom, otherwise clear it for input
-                                            const isAlreadyCustom = !['General', 'Study Resources', 'Courses', 'Study Support'].includes(editingNews.category);
-                                            if (!isAlreadyCustom) {
-                                                setEditingNews({ ...editingNews, category: '' });
-                                            }
-                                        } else {
-                                            setEditingNews({ ...editingNews, category: newValue });
-                                        }
-                                    }}
-                                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none"
-                                >
-                                    <option value="General">General</option>
-                                    <option value="Study Resources">Study Resources</option>
-                                    <option value="Courses">Courses</option>
-                                    <option value="Study Support">Study Support</option>
-                                    <option value="Other (Custom)">Other (Custom)</option>
-                                </select>
-
-                                {/* Custom Category Input */}
-                                {!['General', 'Study Resources', 'Courses', 'Study Support'].includes(editingNews.category) && (
-                                    <input
-                                        type="text"
-                                        value={editingNews.category}
-                                        onChange={(e) => setEditingNews({ ...editingNews, category: e.target.value })}
-                                        className="w-full mt-3 px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none"
-                                        placeholder="Enter custom category name"
-                                    />
-                                )}
-                            </div>
-
-                            {/* Content */}
-                            <div>
-                                <label className="block text-sm font-semibold text-gray-700 mb-2">Content</label>
-                                <textarea
-                                    rows={4}
-                                    value={editingNews.content}
-                                    onChange={(e) => setEditingNews({ ...editingNews, content: e.target.value })}
-                                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none resize-none"
-                                    placeholder="Write your news article content..."
-                                />
-                            </div>
-
-                            {/* Image Upload */}
-                            <div>
-                                <label className="block text-sm font-semibold text-gray-700 mb-2">Article Image</label>
-                                <div className="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-blue-500 transition-colors">
-                                    {editingNews.imageUrl ? (
-                                        <div className="relative">
-                                            <img
-                                                src={editingNews.imageUrl}
-                                                alt="Preview"
-                                                className="max-h-96 w-auto mx-auto rounded-lg object-contain shadow-sm"
-                                            />
-                                            <button
-                                                type="button"
-                                                onClick={() => setEditingNews({ ...editingNews, imageUrl: '' })}
-                                                className="absolute top-2 right-2 bg-red-600 text-white p-2 rounded-full hover:bg-red-700"
-                                            >
-                                                <X className="w-4 h-4" />
-                                            </button>
-                                        </div>
-                                    ) : (
-                                        <label className="cursor-pointer block">
-                                            <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                                            <p className="text-gray-600 mb-2">Click to upload or drag and drop</p>
-                                            <p className="text-sm text-gray-500">PNG, JPG up to 1MB</p>
-                                            <input
-                                                type="file"
-                                                accept="image/*"
-                                                onChange={async (e) => {
-                                                    const file = e.target.files?.[0];
-                                                    if (file) {
-                                                        try {
-                                                            const compressedBase64 = await compressImage(file);
-                                                            setEditingNews({ ...editingNews, imageUrl: compressedBase64 });
-                                                        } catch (error) {
-                                                            console.error("Image compression failed:", error);
-                                                            alert("Failed to compress image");
-                                                        }
-                                                    }
-                                                }}
-                                                className="hidden"
-                                            />
-                                            <div className="mt-4 inline-block bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors">
-                                                Choose File
-                                            </div>
-                                        </label>
-                                    )}
-                                </div>
-                            </div>
-
-                            <div className="flex gap-4 pt-4">
-                                <button
-                                    type="button"
-                                    onClick={() => {
-                                        setShowEditModal(false);
-                                        setEditingNews(null);
-                                    }}
-                                    className="flex-1 bg-gray-100 text-gray-700 px-6 py-3 rounded-xl font-semibold hover:bg-gray-200 transition-colors"
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    type="submit"
-                                    className="flex-1 bg-blue-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-blue-700 transition-colors"
-                                >
-                                    {editingNews.id === 'new' ? 'Add News' : 'Save Changes'}
-                                </button>
-                                {editingNews.id === 'new' && (
-                                    <button
-                                        type="button"
-                                        onClick={() => handleEditSave(true)}
-                                        className="flex-[1.5] bg-green-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-green-700 transition-colors flex items-center justify-center gap-2"
-                                    >
-                                        <Bell className="w-5 h-5" />
-                                        Save & Notify Subscribers
-                                    </button>
-                                )}
-                            </div>
-                        </form>
+                        <NewsEditForm
+                            editingNews={editingNews}
+                            setEditingNews={setEditingNews as any}
+                            handleEditSave={handleEditSave}
+                            onClose={() => {
+                                setShowEditModal(false);
+                                setEditingNews(null);
+                            }}
+                        />
                     )}
                 </Modal>
 

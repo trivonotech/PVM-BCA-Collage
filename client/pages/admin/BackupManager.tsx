@@ -4,6 +4,7 @@ import { Database, Download, AlertTriangle, CheckCircle, FileJson, Loader2, Uplo
 import { db } from '@/lib/firebase';
 import { collection, getDocs, doc, setDoc, onSnapshot } from 'firebase/firestore';
 import { useToast } from "@/components/ui/use-toast";
+import { CONFIG } from '@/lib/config';
 
 export default function BackupManager() {
     const { toast } = useToast();
@@ -90,6 +91,7 @@ export default function BackupManager() {
                 metadata: {
                     timestamp: new Date().toISOString(),
                     exportedBy: JSON.parse(localStorage.getItem('user') || '{}').email || 'Unknown',
+                    projectName: CONFIG.APP_NAME,
                     userAgent: navigator.userAgent,
                 },
                 collections: {}
@@ -250,8 +252,12 @@ export default function BackupManager() {
                             <div className="mt-4 bg-yellow-500/20 border border-yellow-500/30 p-3 rounded-lg text-sm text-yellow-200 flex justify-between items-center">
                                 <div>
                                     <strong>Migration Mode Active:</strong> Super Admin can bypass profile checks.
-                                    <br />Turn this OFF once you have restored data to secure the panel.
                                 </div>
+                                {JSON.parse(localStorage.getItem('user') || '{}').email === CONFIG.SUPER_ADMIN_EMAIL && (
+                                    <div className="text-xs bg-yellow-500/20 px-2 py-1 rounded border border-yellow-500/30">
+                                        Super Admin Verified
+                                    </div>
+                                )}
                             </div>
                         )}
                     </div>
@@ -405,7 +411,7 @@ export default function BackupManager() {
                                         </li>
                                         <li><strong>Create Admin User:</strong> In Firebase Console {'>'} Authentication, manually create your admin user.
                                             <ul className="list-disc list-inside ml-4 mt-1 text-xs text-red-600 font-semibold">
-                                                <li>Use the SAME email: <code>pvm.bca.college01@gmail.com</code></li>
+                                                <li>Use the SAME email: <code>{CONFIG.SUPER_ADMIN_EMAIL}</code></li>
                                                 <li>Enter your OLD password (or a new one). <em>Passwords are NOT copied from backup regarding security.</em></li>
                                             </ul>
                                         </li>
