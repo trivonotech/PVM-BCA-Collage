@@ -208,52 +208,78 @@ export default function AdminLogin() {
                 // --- BYPASS MODE (Direct Login) --
                 // Proceed directly to dashboard
 
-                const { doc, getDoc, collection, addDoc } = await import('firebase/firestore');
-                const userDocRef = doc(db, 'users', user.uid);
-                const userDoc = await getDoc(userDocRef);
-
-                // --- RECORD SESSION DATA (For Security Audit) ---
+                let userData: any = {};
                 try {
-                    // 1. Get IP & Location (Public API)
-                    const ipRes = await fetch('https://ipapi.co/json/');
-                    const ipData = await ipRes.json();
+                    const { doc, getDoc, collection, addDoc } = await import('firebase/firestore');
+                    const userDocRef = doc(db, 'users', user.uid);
 
-                    // 2. Parse Device Info (Rudimentary)
-                    const ua = navigator.userAgent;
-                    let deviceType = "Desktop";
-                    if (/Mobi|Android/i.test(ua)) deviceType = "Mobile";
-                    else if (/iPad|Tablet/i.test(ua)) deviceType = "Tablet";
+                    // Attempt to fetch user profile, but don't block login if it fails (e.g. empty DB)
+                    try {
+                        const userDoc = await getDoc(userDocRef);
+                        if (userDoc.exists()) {
+                            userData = userDoc.data();
+                        }
+                    } catch (profileErr) {
+                        console.warn("Profile fetch failed (using defaults):", profileErr);
+                    }
 
-                    // 3. Store in 'admin_sessions'
-                    const adminName = userDoc.exists() ? userDoc.data().name : 'Admin';
-                    const sessionDoc = await addDoc(collection(db, 'admin_sessions'), {
-                        userId: user.uid,
-                        email: user.email,
-                        adminName: adminName,
-                        timestamp: new Date(),
-                        ip: ipData.ip || 'Unknown',
-                        location: `${ipData.city || 'Unknown'}, ${ipData.country_name || 'Unknown'}`,
-                        device: deviceType,
-                        userAgent: ua,
-                        loginMethod: 'Direct Bypass (Security OFF)',
-                        status: 'active'
-                    });
-                    localStorage.setItem('currentSessionId', sessionDoc.id);
-                } catch (sessionErr) {
-                    console.error("Failed to record session:", sessionErr);
-                    // Don't block login if tracking fails, just log it
+                    // --- RECORD SESSION DATA (For Security Audit) ---
+                    // Run in background (don't await critical path)
+                    (async () => {
+                        try {
+                            // 1. Get IP & Location (Public API) with timeout
+                            const controller = new AbortController();
+                            const timeoutId = setTimeout(() => controller.abort(), 2000); // 2s timeout
+                            const ipRes = await fetch('https://ipapi.co/json/', { signal: controller.signal });
+                            clearTimeout(timeoutId);
+                            const ipData = await ipRes.json();
+
+                            // 2. Parse Device Info
+                            const ua = navigator.userAgent;
+                            let deviceType = "Desktop";
+                            if (/Mobi|Android/i.test(ua)) deviceType = "Mobile";
+                            else if (/iPad|Tablet/i.test(ua)) deviceType = "Tablet";
+
+                            // 3. Store in 'admin_sessions'
+                            const adminName = userData.name || 'Admin';
+                            const sessionDoc = await addDoc(collection(db, 'admin_sessions'), {
+                                userId: user.uid,
+                                email: user.email,
+                                adminName: adminName,
+                                timestamp: new Date(),
+                                ip: ipData.ip || 'Unknown',
+                                location: `${ipData.city || 'Unknown'}, ${ipData.country_name || 'Unknown'}`,
+                                device: deviceType,
+                                userAgent: ua,
+                                loginMethod: 'Direct Bypass',
+                                status: 'active'
+                            });
+                            localStorage.setItem('currentSessionId', sessionDoc.id);
+                        } catch (sessionErr) {
+                            console.error("Failed to record session (Non-fatal):", sessionErr);
+                        }
+                    })();
+                    // ---------------------------
+
+                } catch (firestoreErr) {
+                    console.error("Firestore access failed (Non-fatal):", firestoreErr);
                 }
-                // ---------------------------
 
                 // Default fallback role if doc missing (for safety)
-                const role = userDoc.exists() ? userDoc.data().role : 'child_admin';
-                const permissions = userDoc.exists() ? userDoc.data().permissions : [];
+                const role = userData.role || 'child_admin';
+
+                // MIGRATION FIX: If profile missing, but it's the Super Admin, grant specific access
+                let permissions = userData.permissions || [];
+                if (permissions.length === 0 && user.email === 'pvm.bca.college01@gmail.com') {
+                    console.warn("Granting temporary Super Admin permissions for migration.");
+                    permissions = ['dashboard', 'backup', 'settings', 'user_management'];
+                }
 
                 localStorage.setItem('isAuthenticated', 'true');
                 localStorage.setItem('user', JSON.stringify({
                     uid: user.uid,
                     email: user.email,
-                    name: userDoc.exists() ? userDoc.data().name : 'Admin',
+                    name: userData.name || 'Admin',
                     role: role,
                     permissions: permissions
                 }));

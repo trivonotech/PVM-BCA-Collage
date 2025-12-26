@@ -140,8 +140,17 @@ export default function SystemHealth() {
 
                 const active = snap.docs.filter(d => {
                     const data = d.data();
-                    const lastActive = data.lastActive?.toDate ? data.lastActive.toDate() : data.timestamp?.toDate();
-                    return data.status !== 'revoked' && lastActive > fifteenMinsAgo;
+
+                    // Safe Date Conversion Helper (inlined for this effect)
+                    const getSafeDate = (ts: any) => {
+                        if (!ts) return null;
+                        if (typeof ts.toDate === 'function') return ts.toDate();
+                        if (ts instanceof Date) return ts;
+                        return new Date(ts);
+                    };
+
+                    const lastActive = getSafeDate(data.lastActive) || getSafeDate(data.timestamp);
+                    return data.status !== 'revoked' && lastActive && lastActive > fifteenMinsAgo;
                 });
 
                 setRecentSessions(active.map(d => ({ id: d.id, ...d.data() })));

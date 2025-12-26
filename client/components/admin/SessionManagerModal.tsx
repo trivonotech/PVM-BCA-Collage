@@ -17,6 +17,24 @@ export default function SessionManagerModal({ isOpen, onClose }: SessionManagerM
     const { toast } = useToast();
     const currentSessionId = localStorage.getItem('currentSessionId');
 
+    // Helper to safely convert timestamps (Date or Firestore Timestamp)
+    const safeDate = (ts: any) => {
+        if (!ts) return null;
+        if (typeof ts.toDate === 'function') return ts.toDate();
+        if (ts instanceof Date) return ts;
+        return new Date(ts); // Fallback for strings/numbers
+    };
+
+    const formatDate = (ts: any) => {
+        const date = safeDate(ts);
+        return date ? date.toLocaleString() : 'Just now';
+    };
+
+    const formatTime = (ts: any) => {
+        const date = safeDate(ts);
+        return date ? date.toLocaleTimeString() : 'Just now';
+    };
+
     useEffect(() => {
         if (!isOpen) return;
 
@@ -28,6 +46,10 @@ export default function SessionManagerModal({ isOpen, onClose }: SessionManagerM
             }));
             // Filter out already revoked sessions from view if desired, or show them as inactive
             setSessions(sessData.filter((s: any) => s.status !== 'revoked'));
+            setLoading(false);
+        }, (error) => {
+            console.error("Failed to fetch sessions:", error);
+            // Don't show toast here to avoid spamming if permission denied usually works eventually or silent fail
             setLoading(false);
         });
 
@@ -161,7 +183,7 @@ export default function SessionManagerModal({ isOpen, onClose }: SessionManagerM
                                                         {log.action}
                                                     </span>
                                                     <span className="text-[10px] text-gray-400">
-                                                        {log.timestamp?.toDate ? log.timestamp.toDate().toLocaleTimeString() : 'Just now'}
+                                                        {formatTime(log.timestamp)}
                                                     </span>
                                                 </div>
                                                 <p className="text-xs font-bold text-gray-800 mt-1">
@@ -206,7 +228,7 @@ export default function SessionManagerModal({ isOpen, onClose }: SessionManagerM
                                                     </span>
                                                     <span className="flex items-center gap-1">
                                                         <Clock className="w-3 h-3" />
-                                                        {session.timestamp?.toDate ? session.timestamp.toDate().toLocaleString() : 'Just now'}
+                                                        {formatDate(session.timestamp)}
                                                     </span>
                                                 </div>
                                                 <div className="flex items-center gap-3 mt-1 flex-wrap">
@@ -239,7 +261,7 @@ export default function SessionManagerModal({ isOpen, onClose }: SessionManagerM
                                                     <CheckCircle2 className="w-3 h-3" /> ACTIVE NOW
                                                 </div>
                                             ) : (() => {
-                                                const lastActive = session.lastActive?.toDate ? session.lastActive.toDate() : session.timestamp?.toDate();
+                                                const lastActive = safeDate(session.lastActive) || safeDate(session.timestamp);
                                                 const isRecentlyActive = lastActive && (Date.now() - lastActive.getTime() < 15 * 60 * 1000);
 
                                                 return isRecentlyActive ? (

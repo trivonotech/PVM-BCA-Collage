@@ -44,12 +44,31 @@ export default function AdminDashboard() {
 
     useEffect(() => {
         // 1. Snapshot for Counts & Activity
-        // We can use onSnapshot for real-time updates or getDocs for one-time fetch.
-        // For dashboard, real-time is nice.
-
         const unsubs: (() => void)[] = [];
 
-        // Events
+        const safelySubscribe = (colName: string, stateKey: keyof typeof counts, filterFn?: (data: any[]) => number) => {
+            const q = query(collection(db, colName));
+            try {
+                const unsub = onSnapshot(q, (snap) => {
+                    const docs = snap.docs.map(d => d.data());
+                    setCounts(prev => ({
+                        ...prev,
+                        [stateKey]: filterFn ? filterFn(docs) : snap.size
+                    }));
+                    setLoading(false);
+                }, (err) => {
+                    console.warn(`Dashboard: Failed to subscribe to ${colName}`, err);
+                    // setCounts(prev => ({ ...prev, [stateKey]: 0 })); // Optional: reset to 0
+                    setLoading(false);
+                });
+                unsubs.push(unsub);
+            } catch (e) {
+                console.warn(`Dashboard: Error creating query for ${colName}`, e);
+                setLoading(false);
+            }
+        };
+
+        // Events & Specific Categories
         const eventsQ = query(collection(db, 'events'));
         unsubs.push(onSnapshot(eventsQ, (snap) => {
             const allEvents = snap.docs.map(d => d.data());
@@ -59,37 +78,15 @@ export default function AdminDashboard() {
                 sports: allEvents.filter(e => e.category === 'Sports').length,
                 workshops: allEvents.filter(e => e.category === 'Workshop').length
             }));
-        }));
+            setLoading(false);
+        }, (err) => { console.warn("Events sub failed", err); setLoading(false); }));
 
-        // News
-        const newsQ = query(collection(db, 'news'));
-        unsubs.push(onSnapshot(newsQ, (snap) => {
-            setCounts(prev => ({ ...prev, news: snap.size }));
-        }));
-
-        // Top Students
-        const studentsQ = query(collection(db, 'students'));
-        unsubs.push(onSnapshot(studentsQ, (snap) => {
-            setCounts(prev => ({ ...prev, students: snap.size }));
-        }));
-
-        // Users (Faculty/Admin)
-        const usersQ = query(collection(db, 'users'));
-        unsubs.push(onSnapshot(usersQ, (snap) => {
-            setCounts(prev => ({ ...prev, faculty: snap.size }));
-        }));
-
-        // Courses
-        const coursesQ = query(collection(db, 'courses'));
-        unsubs.push(onSnapshot(coursesQ, (snap) => {
-            setCounts(prev => ({ ...prev, courses: snap.size }));
-        }));
-
-        // Placements
-        const placementsQ = query(collection(db, 'placements'));
-        unsubs.push(onSnapshot(placementsQ, (snap) => {
-            setCounts(prev => ({ ...prev, placements: snap.size }));
-        }));
+        // Standard Collections
+        safelySubscribe('news', 'news');
+        safelySubscribe('students', 'students');
+        safelySubscribe('users', 'faculty');
+        safelySubscribe('courses', 'courses');
+        safelySubscribe('placements', 'placements');
 
         return () => unsubs.forEach(u => u());
     }, []);
@@ -100,7 +97,8 @@ export default function AdminDashboard() {
             try {
                 // Fetch last 5 events
                 const eventsQ = query(collection(db, 'events'), orderBy('createdAt', 'desc'), limit(5));
-                const eventsSnap = await getDocs(eventsQ);
+                const eventsSnap = await getDocs(eventsQ).catch(e => ({ docs: [] })); // Fail safe
+                // @ts-ignore
                 const eventsData = eventsSnap.docs.map(doc => ({
                     id: doc.id,
                     action: 'New event added',
@@ -112,7 +110,8 @@ export default function AdminDashboard() {
 
                 // Fetch last 5 news
                 const newsQ = query(collection(db, 'news'), orderBy('submittedAt', 'desc'), limit(5));
-                const newsSnap = await getDocs(newsQ);
+                const newsSnap = await getDocs(newsQ).catch(e => ({ docs: [] })); // Fail safe
+                // @ts-ignore
                 const newsData = newsSnap.docs.map(doc => ({
                     id: doc.id,
                     action: 'News published',
@@ -129,12 +128,12 @@ export default function AdminDashboard() {
                 setRecentActivity(combined);
             } catch (error) {
                 console.error("Error fetching recent activity:", error);
+            } finally {
+                setLoading(false);
             }
         };
 
         fetchActivity();
-        // Since this is just a quick fetch, we won't make it real-time to avoid complex merging logic on every snapshot for now.
-        // Or we could trigger this when counts change.
     }, [counts.events, counts.news]);
 
 

@@ -309,10 +309,22 @@ export default function NewsManager() {
 
             const updates = querySnapshot.docs.map(async (docSnapshot) => {
                 const data = docSnapshot.data();
-                if (!data.status) {
+                const currentStatus = data.status;
+
+                // Fix missing status OR fix case sensitivity (e.g. 'Approved' -> 'approved')
+                if (!currentStatus || !['pending', 'approved', 'rejected'].includes(currentStatus)) {
                     restoredCount++;
+
+                    let newStatus = 'approved'; // Default fallback
+                    if (currentStatus && typeof currentStatus === 'string') {
+                        const lower = currentStatus.toLowerCase();
+                        if (['pending', 'approved', 'rejected'].includes(lower)) {
+                            newStatus = lower;
+                        }
+                    }
+
                     return updateDoc(doc(db, 'news', docSnapshot.id), {
-                        status: 'approved',
+                        status: newStatus,
                         approvedBy: 'system_migration',
                         approvedAt: serverTimestamp()
                     });

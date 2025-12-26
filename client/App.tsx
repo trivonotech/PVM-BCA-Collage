@@ -34,6 +34,7 @@ import ProtectedRoute from "./components/admin/ProtectedRoute";
 import PlaceholderPage from "./pages/admin/PlaceholderPage";
 import PlacementsManager from "./pages/admin/PlacementsManager";
 import SEOManager from "./pages/admin/SEOManager";
+import BackupManager from "./pages/admin/BackupManager";
 
 
 import ScrollToTop from "./components/ScrollToTop";
@@ -99,6 +100,7 @@ function AppContent() {
           <Route path="/admin/inquiries" element={<ProtectedRoute><InquiriesManager /></ProtectedRoute>} />
           <Route path="/admin/subscribers" element={<ProtectedRoute><SubscribersManager /></ProtectedRoute>} />
           <Route path="/admin/seo" element={<ProtectedRoute><SEOManager /></ProtectedRoute>} />
+          <Route path="/admin/backup" element={<ProtectedRoute><BackupManager /></ProtectedRoute>} />
 
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />

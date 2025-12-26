@@ -1,6 +1,7 @@
 import { ReactNode, useState, useEffect, useRef, useLayoutEffect, UIEvent } from 'react';
-import { db } from '@/lib/firebase';
-import { doc, onSnapshot, updateDoc } from 'firebase/firestore';
+import { db, auth } from '@/lib/firebase';
+import { doc, onSnapshot, updateDoc, query, collection, where, getDocs, setDoc, deleteDoc } from 'firebase/firestore';
+import { onAuthStateChanged } from 'firebase/auth';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
     LayoutDashboard,
@@ -27,6 +28,7 @@ import {
     School,
     MessageSquare,
     Search,
+    Database,
 } from 'lucide-react';
 
 
@@ -62,6 +64,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         { icon: Layout, label: 'Page Content', path: '/admin/pages', permission: 'pages' },
         { icon: Settings, label: 'Settings', id: 'settings', path: '/admin/settings', permission: 'settings' },
         { icon: Search, label: 'SEO Manager', path: '/admin/seo', permission: 'seo' },
+        { icon: Database, label: 'Data Backup', path: '/admin/backup', permission: 'backup' },
         { icon: Activity, label: 'System Health', id: 'system', path: '/admin/system', permission: 'system_health' },
     ];
 
@@ -83,6 +86,18 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         localStorage.removeItem('currentSessionId');
         navigate('/admin/login');
     };
+
+    // Verify Firebase Auth state (Project change detection)
+    useEffect(() => {
+        const unsubscribeAuth = onAuthStateChanged(auth, (fbUser) => {
+            const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
+            if (!fbUser && isAuthenticated) {
+                console.warn("Firebase Auth session invalid for this project. Logging out...");
+                handleLogout();
+            }
+        });
+        return () => unsubscribeAuth();
+    }, []);
 
     // Session Revocation Listener
     useEffect(() => {
@@ -143,18 +158,68 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                 const updatedUser = {
                     ...user,
                     ...userData,
-                    // Ensure local fields like uid don't get overwritten if missing in doc (usually they are consistent)
+                    // Ensure local fields like uid don't get overwritten if missing in doc
                 };
 
-                // Only update if changes detected to avoid loops (though onSnapshot is usually smart)
+                // Only update if changes detected
                 if (JSON.stringify(updatedUser.permissions) !== JSON.stringify(user.permissions) ||
                     updatedUser.role !== user.role) {
                     setUser(updatedUser);
                     localStorage.setItem('user', JSON.stringify(updatedUser));
                 }
             } else {
-                // User document deleted (ban/remove)
-                handleLogout();
+                // User document missing.
+
+                // SECURITY CHECK: Only Super Admin can enter "Migration Mode" (Empty DB)
+                // Everyone else gets booted out.
+                if (user?.email === 'pvm.bca.college01@gmail.com') {
+                    // Check for ORPHANED PROFILE (Different UID from old database)
+                    // If we find a user doc with same email but different ID, migrate it to current UID.
+                    (async () => {
+                        const q = query(collection(db, 'users'), where('email', '==', user.email));
+                        const querySnapshot = await getDocs(q);
+                        if (!querySnapshot.empty) {
+                            const oldDoc = querySnapshot.docs[0];
+                            if (oldDoc.id !== user.uid) {
+                                console.log("Migration: Linking old admin profile to new UID...");
+                                const oldData = oldDoc.data();
+                                // 1. Create new doc with current UID
+                                await setDoc(doc(db, 'users', user.uid), { ...oldData, uid: user.uid });
+                                // 2. Delete old doc
+                                await deleteDoc(doc(db, 'users', oldDoc.id));
+                                console.log("Migration: Profile linked successfully.");
+                                return; // Listener will re-trigger
+                            }
+                        }
+
+                        console.warn("Super Admin recognized. Entering Migration Mode (Profile Missing).");
+                        // Grant temporary access ONLY to Backup (to restore data)
+                        const migrationUser = { ...user, permissions: ['backup'], role: 'migration' };
+                        // FIXED: Check both role and permissions
+                        if (user.role !== 'migration' || JSON.stringify(migrationUser.permissions) !== JSON.stringify(user.permissions)) {
+                            setUser(migrationUser);
+                            localStorage.setItem('user', JSON.stringify(migrationUser));
+                            // Redirect to backup if not already there
+                            if (location.pathname !== '/admin/backup') {
+                                navigate('/admin/backup');
+                            }
+                        }
+                    })();
+                } else {
+                    // Strict Security for everyone else
+                    console.warn("Security Access Denied: Profile missing for non-super admin.");
+                    handleLogout();
+                }
+            }
+        }, (error) => {
+            console.warn("Permission listener failed (likely empty DB rules):", error);
+            // FAIL-SAFE: If rules are blocking us, and we are the Super Admin, assume we are in Migration Mode
+            if (user?.email === 'pvm.bca.college01@gmail.com') {
+                const migrationUser = { ...user, permissions: ['backup'], role: 'migration' };
+                if (user.role !== 'migration') {
+                    setUser(migrationUser);
+                    localStorage.setItem('user', JSON.stringify(migrationUser));
+                }
             }
         });
 
@@ -192,11 +257,22 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     const userPermissions = user?.permissions || [];
     const isSuperAdmin = user?.role === 'super_admin';
 
+    // FOOLPROOF MIGRATION LOCKDOWN: If role is migration, ONLY show backup.
+    const isMigrationMode = user?.role === 'migration' || (userPermissions.length === 1 && userPermissions[0] === 'backup');
+
     const filteredMenuItems = menuItems.filter(item => {
-        if (isSuperAdmin) return true;
+        if (isMigrationMode) return item.permission === 'backup';
+        if (isSuperAdmin && !isMigrationMode) return true;
         if (userPermissions.includes('all')) return true;
         return userPermissions.includes(item.permission);
     });
+
+    // Forced Redirect if on unauthorized page during migration
+    useEffect(() => {
+        if (isMigrationMode && location.pathname !== '/admin/backup') {
+            navigate('/admin/backup');
+        }
+    }, [isMigrationMode, location.pathname]);
 
     // If session is revoked, ONLY render the security modal, blocking everything else
     if (isSessionRevoked) {
@@ -306,7 +382,8 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                             '/admin/visibility': 'visibility',
                             '/admin/users': 'user_management',
                             '/admin/settings': 'settings',
-                            '/admin/seo': 'seo'
+                            '/admin/seo': 'seo',
+                            '/admin/backup': 'backup'
                         };
 
                         let hasAccess = true;
