@@ -36,8 +36,6 @@ export default function AdminLogin() {
 
     // ReCAPTCHA Configuration
     // const TEST_SITE_KEY = "6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI";
-
-    // TODO: PASTE YOUR REAL GOOGLE RECAPTCHA V2 (CHECKBOX) SITE KEY BELOW
     const REAL_SITE_KEY = "6LcdBDEsAAAAAEqVv6ZR_kXnmxqWH-wafq-aHYdx";
 
     const SITE_KEY = REAL_SITE_KEY;

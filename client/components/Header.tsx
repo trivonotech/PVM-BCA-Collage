@@ -95,6 +95,7 @@ export default function Header() {
                   ) : (
                     <>
                       <button
+                        type="button"
                         className={`text-sm font-bold whitespace-nowrap flex items-center gap-1 ${isActiveMenu(item) ? 'text-[#FF4040]' : 'text-[#2e2e2e]'
                           }`}
                       >
@@ -137,6 +138,7 @@ export default function Header() {
 
             {/* Mobile Menu Button */}
             <button
+              type="button"
               className="lg:hidden p-2"
               onClick={() => setMobileOpen(!mobileOpen)}
             >
@@ -229,7 +231,9 @@ export default function Header() {
                     {['f', 'in', 'tw', 'ig'].map((social, i) => (
                       <a
                         key={i}
-                        href="#"
+                        href={`https://www.${social === 'f' ? 'facebook' : social === 'in' ? 'linkedin' : social === 'tw' ? 'twitter' : 'instagram'}.com`}
+                        target="_blank"
+                        rel="noopener noreferrer"
                         className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center text-sm font-bold text-gray-600 hover:bg-[#BFD8FF] hover:text-[#0B0B3B] transition-colors"
                       >
                         {social}

@@ -91,7 +91,7 @@ export default function AdmissionsPage() {
     }, []);
 
     const ensureAbsoluteUrl = (url: string) => {
-        if (!url) return '#';
+        if (!url) return 'javascript:void(0)';
         if (url.startsWith('http://') || url.startsWith('https://')) return url;
         return `https://${url}`;
     };

@@ -383,13 +383,13 @@ export default function BackupManager() {
                                     <h3 className="font-bold text-blue-900 mb-2">How to Migrate to a New Firebase Account</h3>
 
                                     <div className="flex gap-2 mb-4 flex-wrap">
-                                        <a href="https://console.firebase.google.com/" target="_blank" rel="noreferrer" className="px-3 py-1 bg-yellow-100 text-yellow-800 rounded text-xs font-bold hover:bg-yellow-200 border border-yellow-200">
+                                        <a href="https://console.firebase.google.com/" target="_blank" rel="noopener noreferrer" className="px-3 py-1 bg-yellow-100 text-yellow-800 rounded text-xs font-bold hover:bg-yellow-200 border border-yellow-200">
                                             Open Firebase Console
                                         </a>
-                                        <a href="https://vercel.com/dashboard" target="_blank" rel="noreferrer" className="px-3 py-1 bg-black text-white rounded text-xs font-bold hover:bg-gray-800 border border-black">
+                                        <a href="https://vercel.com/dashboard" target="_blank" rel="noopener noreferrer" className="px-3 py-1 bg-black text-white rounded text-xs font-bold hover:bg-gray-800 border border-black">
                                             Open Vercel Dashboard
                                         </a>
-                                        <a href="https://app.netlify.com/" target="_blank" rel="noreferrer" className="px-3 py-1 bg-teal-100 text-teal-800 rounded text-xs font-bold hover:bg-teal-200 border border-teal-200">
+                                        <a href="https://app.netlify.com/" target="_blank" rel="noopener noreferrer" className="px-3 py-1 bg-teal-100 text-teal-800 rounded text-xs font-bold hover:bg-teal-200 border border-teal-200">
                                             Open Netlify Dashboard
                                         </a>
                                     </div>

@@ -18,7 +18,7 @@ export default function Footer() {
             </div>
 
             {/* Apply Button */}
-            <button className="w-full px-4 py-3 border border-gray-700 rounded-full text-sm font-medium text-gray-900 bg-white hover:bg-gray-100 transition-colors">
+            <button type="button" className="w-full px-4 py-3 border border-gray-700 rounded-full text-sm font-medium text-gray-900 bg-white hover:bg-gray-100 transition-colors">
               Admissions Open — Apply Now
             </button>
           </div>
@@ -29,13 +29,24 @@ export default function Footer() {
               Quick Links
             </h4>
             <ul className="space-y-2 md:space-y-3 text-sm">
-              {['Home', 'About', 'Academics', 'Admission', 'Campus', 'Placement', 'Updates'].map((link) => (
-                <li key={link}>
-                  <a href="#" className="hover:text-white transition-colors">
-                    {link}
-                  </a>
-                </li>
-              ))}
+              {['Home', 'About', 'Academics', 'Admission', 'Campus', 'Placement', 'Updates'].map((link) => {
+                const routes: Record<string, string> = {
+                  'Home': '/',
+                  'About': '/about',
+                  'Academics': '/academics',
+                  'Admission': '/admissions',
+                  'Campus': '/student-life',
+                  'Placement': '/placements',
+                  'Updates': '/news'
+                };
+                return (
+                  <li key={link}>
+                    <a href={routes[link]} className="hover:text-white transition-colors">
+                      {link}
+                    </a>
+                  </li>
+                );
+              })}
             </ul>
           </div>
 
@@ -56,9 +67,9 @@ export default function Footer() {
                 </a>
               </li>
               <li>
-                <a href="#" className="hover:text-white transition-colors">
+                <button className="hover:text-white transition-colors text-left" onClick={() => window.open('https://maps.google.com', '_blank')}>
                   Location
-                </a>
+                </button>
               </li>
             </ul>
           </div>
@@ -72,7 +83,9 @@ export default function Footer() {
               {['f', 'in', 'tw', 'ig'].map((social, i) => (
                 <a
                   key={i}
-                  href="#"
+                  href={`https://www.${social === 'f' ? 'facebook' : social === 'in' ? 'linkedin' : social === 'tw' ? 'twitter' : 'instagram'}.com`}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center text-sm font-bold hover:bg-blue-600 transition-colors"
                 >
                   {social}
