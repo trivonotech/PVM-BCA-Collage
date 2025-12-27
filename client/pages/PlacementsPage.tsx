@@ -83,7 +83,7 @@ export default function PlacementsPage() {
     // Memoized Derived Data
     const topStudents = useMemo(() => placements.filter(p => p.type === 'Top Student').slice(0, 4), [placements]);
     const successStories = useMemo(() => placements.filter(p => p.type === 'Success Story'), [placements]);
-    const recruiters = useMemo(() => [...new Set(placements.map(p => p.company))].sort((a, b) => a.localeCompare(b)), [placements]);
+    const recruiters = useMemo(() => [...new Set(placements.map(p => p.company))].sort(), [placements]);
 
     // Memoized Stats Calculations
     const displayHighest = useMemo(() => {

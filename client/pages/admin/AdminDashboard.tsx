@@ -27,18 +27,6 @@ interface Activity {
 
 import { useNavigate } from 'react-router-dom';
 
-// Helper to manage subscriptions without deep nesting
-const createCountSub = (
-    colName: string,
-    onUpdate: (size: number, docs: any[]) => void,
-    onError: () => void
-) => {
-    const q = query(collection(db, colName));
-    return onSnapshot(q, (snap) => {
-        onUpdate(snap.size, snap.docs.map(d => d.data()));
-    }, onError);
-};
-
 export default function AdminDashboard() {
     const navigate = useNavigate();
     const [counts, setCounts] = useState({
@@ -55,36 +43,48 @@ export default function AdminDashboard() {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
+        // 1. Snapshot for Counts & Activity
         const unsubs: (() => void)[] = [];
-        const handleError = () => setLoading(false);
 
-        // Subscriptions
-        const collections: [string, keyof typeof counts][] = [
-            ['news', 'news'],
-            ['students', 'students'],
-            ['users', 'faculty'],
-            ['courses', 'courses'],
-            ['placements', 'placements']
-        ];
-
-        // 1. Standard Collections
-        collections.forEach(([col, key]) => {
-            unsubs.push(createCountSub(col, (size) => {
-                setCounts(prev => ({ ...prev, [key]: size }));
+        const safelySubscribe = (colName: string, stateKey: keyof typeof counts, filterFn?: (data: unknown[]) => number) => {
+            const q = query(collection(db, colName));
+            try {
+                const unsub = onSnapshot(q, (snap) => {
+                    const docs = snap.docs.map(d => d.data());
+                    setCounts(prev => ({
+                        ...prev,
+                        [stateKey]: filterFn ? filterFn(docs) : snap.size
+                    }));
+                    setLoading(false);
+                }, (err) => {
+                    // Fail gracefully
+                    setLoading(false);
+                });
+                unsubs.push(unsub);
+            } catch (e) {
                 setLoading(false);
-            }, handleError));
-        });
+            }
+        };
 
-        // 2. Events with Category Breakdown
-        unsubs.push(createCountSub('events', (size, docs) => {
+        // Events & Specific Categories
+        const eventsQ = query(collection(db, 'events'));
+        unsubs.push(onSnapshot(eventsQ, (snap) => {
+            const allEvents = snap.docs.map(d => d.data());
             setCounts(prev => ({
                 ...prev,
-                events: size,
-                sports: docs.filter(e => e.category === 'Sports').length,
-                workshops: docs.filter(e => e.category === 'Workshop').length
+                events: snap.size,
+                sports: allEvents.filter(e => e.category === 'Sports').length,
+                workshops: allEvents.filter(e => e.category === 'Workshop').length
             }));
             setLoading(false);
-        }, handleError));
+        }, () => { setLoading(false); }));
+
+        // Standard Collections
+        safelySubscribe('news', 'news');
+        safelySubscribe('students', 'students');
+        safelySubscribe('users', 'faculty');
+        safelySubscribe('courses', 'courses');
+        safelySubscribe('placements', 'placements');
 
         return () => unsubs.forEach(u => u());
     }, []);
