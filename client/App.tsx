@@ -49,14 +49,13 @@ const PageContentManager = lazy(() => import("./pages/admin/PageContentManager")
 const AdmissionsManager = lazy(() => import("./pages/admin/AdmissionsManager"));
 const CoursesManager = lazy(() => import("./pages/admin/CoursesManager"));
 const WorkshopsManager = lazy(() => import("./pages/admin/WorkshopsManager"));
-const SystemHealth = lazy(() => import("./pages/admin/SystemHealth"));
+const SystemHealth = lazy(() => import("@/pages/admin/SystemHealth"));
 
 const PageEditor = lazy(() => import("./pages/admin/editors/PageEditor"));
 
 const queryClient = new QueryClient();
 
 function AppContent() {
-  const { pathname } = useLocation();
   usePageTracker();
   return (
     <>
@@ -127,4 +126,7 @@ const App = () => (
   </QueryClientProvider>
 );
 
-createRoot(document.getElementById("root")!).render(<App />);
+const rootElement = document.getElementById("root");
+if (rootElement) {
+  createRoot(rootElement).render(<App />);
+}

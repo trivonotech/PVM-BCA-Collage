@@ -7,9 +7,9 @@ export function cn(...inputs: ClassValue[]) {
 
 export function getEventStatus(dateStr: string): 'Upcoming' | 'Completed' {
   try {
-    // 1. Remove ordinal suffixes (st, nd, rd, th) from the day
+    // 1. Remove ordinal suffixes (st, nd, rd, th) from the day (max 2 digits to prevent ReDoS)
     // e.g., "15th Jan 2024" -> "15 Jan 2024"
-    let cleanedDate = dateStr.replace(/(\d+)(st|nd|rd|th)/, '$1');
+    let cleanedDate = dateStr.replace(/(\d{1,2})(?:st|nd|rd|th)/i, '$1');
 
     let eventDate = new Date(cleanedDate);
 

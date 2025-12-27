@@ -61,7 +61,7 @@ export default function AcademicsSection() {
               Academics Snapshot
             </h2>
           </div>
-          <a href="#" className="inline-flex items-center gap-2 text-gray-900 font-medium text-sm md:text-base hover:gap-3 transition-all">
+          <a href="/academics" className="inline-flex items-center gap-2 text-gray-900 font-medium text-sm md:text-base hover:gap-3 transition-all">
             view more
             <svg className="w-3 h-4 md:w-4 md:h-5" viewBox="0 0 8 15" fill="none">
               <path
