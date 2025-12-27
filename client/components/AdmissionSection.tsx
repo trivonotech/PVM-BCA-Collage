@@ -29,8 +29,8 @@ export default function AdmissionSection() {
 
             {/* Steps */}
             <div className="space-y-8 md:space-y-12">
-              {steps.map((step, index) => (
-                <div key={index} className="flex gap-4 md:gap-6">
+              {steps.map((step) => (
+                <div key={step.title} className="flex gap-4 md:gap-6">
                   <div className="flex-shrink-0">
                     <div className="flex items-center justify-center w-8 h-8 md:w-10 md:h-10 rounded-full bg-purple-800 text-white font-bold text-sm md:text-base">
                       ✓

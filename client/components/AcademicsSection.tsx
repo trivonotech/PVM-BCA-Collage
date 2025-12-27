@@ -17,7 +17,7 @@ export default function AcademicsSection() {
       description: 'Lorem ipsum is simply dummy text of the printing and typesetting industry.',
     },
     {
-      title: 'BBA',
+      title: 'BCA',
       duration: '4 Years',
       description: 'Lorem ipsum is simply dummy text of the printing and typesetting industry.',
     },
@@ -78,9 +78,9 @@ export default function AcademicsSection() {
           onScroll={handleScroll}
           className="flex overflow-x-auto gap-12 md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-8 md:items-stretch snap-x snap-mandatory no-scrollbar hide-scrollbar py-4 md:pb-0 px-4 md:px-0"
         >
-          {courses.map((course, index) => (
+          {courses.map((course) => (
             <div
-              key={index}
+              key={course.title}
               className="rounded-3xl shadow-sm hover:shadow-lg transition-shadow w-[calc(100vw-2rem)] md:w-full shrink-0 snap-center flex flex-col"
             >
               {/* Card Content */}
@@ -115,9 +115,9 @@ export default function AcademicsSection() {
 
         {/* Carousel Dots (Mobile Only) */}
         <div className="flex justify-center gap-2 mt-4 md:hidden">
-          {courses.map((_, index) => (
+          {courses.map((course, index) => (
             <button
-              key={index}
+              key={course.title}
               onClick={() => scrollToIndex(index)}
               className={`w-2 h-2 rounded-full transition-all duration-300 ${activeIndex === index ? 'bg-gray-900 w-6' : 'bg-gray-300'
                 }`}
