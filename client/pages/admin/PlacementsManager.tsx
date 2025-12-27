@@ -375,7 +375,7 @@ export default function PlacementsManager() {
                             <label className="block text-sm font-semibold text-gray-700 mb-2">Type</label>
                             <select
                                 value={formData.type}
-                                onChange={(e) => setFormData({ ...formData, type: e.target.value as any })}
+                                onChange={(e) => setFormData({ ...formData, type: e.target.value as Placement['type'] })}
                                 className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none"
                             >
                                 <option value="Regular">Regular</option>

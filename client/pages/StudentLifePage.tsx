@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Trophy, Lightbulb, Image as ImageIcon, X, Download, ChevronLeft, ChevronRight } from 'lucide-react';
@@ -11,10 +11,19 @@ import { getEventStatus } from "@/lib/utils";
 export default function StudentLifePage() {
     const { isVisible } = useSectionVisibility();
     const [selectedImage, setSelectedImage] = useState<Event | null>(null);
-    const [events, setEvents] = useState<Event[]>([]);
-    const [workshops, setWorkshops] = useState<any[]>([]);
+    const [events, setEvents] = useState<Event[]>(() => {
+        const cached = localStorage.getItem('cache_sl_events');
+        return cached ? JSON.parse(cached) : [];
+    });
+    const [workshops, setWorkshops] = useState<any[]>(() => {
+        const cached = localStorage.getItem('cache_sl_workshops');
+        return cached ? JSON.parse(cached) : [];
+    });
     const [loading, setLoading] = useState(true);
-    const [categories, setCategories] = useState<string[]>(['All']);
+    const [categories, setCategories] = useState<string[]>(() => {
+        const cached = localStorage.getItem('cache_sl_categories');
+        return cached ? JSON.parse(cached) : ['All'];
+    });
     const [selectedCategory, setSelectedCategory] = useState('All');
 
     const [workshopsLoading, setWorkshopsLoading] = useState(true);
@@ -28,6 +37,7 @@ export default function StudentLifePage() {
                 ...doc.data()
             }));
             setWorkshops(data);
+            localStorage.setItem('cache_sl_workshops', JSON.stringify(data));
             setWorkshopsLoading(false);
         }, (err) => {
             console.error(err);
@@ -45,6 +55,7 @@ export default function StudentLifePage() {
                 ...doc.data()
             })) as Event[];
             setEvents(eventsData);
+            localStorage.setItem('cache_sl_events', JSON.stringify(eventsData));
             setLoading(false);
         }, (error) => {
             console.error("Error fetching events:", error);
@@ -59,7 +70,9 @@ export default function StudentLifePage() {
         const unsubscribe = onSnapshot(q, (snapshot) => {
             const cats = snapshot.docs.map(doc => doc.data().name as string);
             if (cats.length > 0) {
-                setCategories(['All', ...cats]);
+                const updatedCats = ['All', ...cats];
+                setCategories(updatedCats);
+                localStorage.setItem('cache_sl_categories', JSON.stringify(updatedCats));
             }
         });
         return () => unsubscribe();
@@ -77,14 +90,16 @@ export default function StudentLifePage() {
         };
     }, [selectedImage]);
 
-    const filteredEvents = events.filter(event => {
-        if (!event || !event.category) return false;
-        // Explicitly exclude categories containing "Workshop" (case-insensitive)
-        if (String(event.category).toLowerCase().includes('workshop')) return false;
+    const filteredEvents = useMemo(() => {
+        return events.filter(event => {
+            if (!event || !event.category) return false;
+            // Explicitly exclude categories containing "Workshop" (case-insensitive)
+            if (String(event.category).toLowerCase().includes('workshop')) return false;
 
-        if (selectedCategory === 'All') return true;
-        return String(event.category).trim().toLowerCase() === String(selectedCategory).trim().toLowerCase();
-    });
+            if (selectedCategory === 'All') return true;
+            return String(event.category).trim().toLowerCase() === String(selectedCategory).trim().toLowerCase();
+        });
+    }, [events, selectedCategory]);
 
     const handleNext = (e: React.MouseEvent) => {
         e.stopPropagation();
@@ -104,14 +119,14 @@ export default function StudentLifePage() {
         setSelectedImage(filteredEvents[prevIndex]);
     };
 
-    const sports = [
+    const sports = useMemo(() => [
         { name: 'Cricket', facilities: 'Professional Ground', icon: '🏏' },
         { name: 'Basketball', facilities: 'Indoor Court', icon: '🏀' },
         { name: 'Volleyball', facilities: 'Outdoor Court', icon: '🏐' },
         { name: 'Table Tennis', facilities: 'Indoor Tables', icon: '🏓' },
         { name: 'Badminton', facilities: 'Indoor Court', icon: '🏸' },
         { name: 'Athletics', facilities: 'Running Track', icon: '🏃' }
-    ];
+    ], []);
 
 
     return (
@@ -139,7 +154,7 @@ export default function StudentLifePage() {
             )}
 
             {/* Festivals & Cultural Events */}
-            {isVisible('studentClubs') && (
+            {isVisible('festivalsEvents') && (
                 <section className="py-20 bg-[#FDFDFF]">
                     <div className="container mx-auto px-4">
                         <div className="max-w-6xl mx-auto">
@@ -170,11 +185,12 @@ export default function StudentLifePage() {
                             </div>
 
                             <div className="grid md:grid-cols-3 gap-6">
-                                {loading ? (
-                                    <div className="col-span-3 text-center py-12">
-                                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-                                        <p className="text-gray-600 mt-4">Loading events...</p>
-                                    </div>
+                                {loading && events.length === 0 ? (
+                                    <>
+                                        {[1, 2, 3, 4, 5, 6].map((i) => (
+                                            <div key={i} className="h-64 bg-gray-100 animate-pulse rounded-3xl"></div>
+                                        ))}
+                                    </>
                                 ) : filteredEvents.length === 0 ? (
                                     <div className="col-span-3 text-center py-12 bg-gray-50 rounded-3xl">
                                         <p className="text-gray-500 text-lg">No events found in this category.</p>
@@ -202,7 +218,7 @@ export default function StudentLifePage() {
             )}
 
             {/* Sports Activities */}
-            {isVisible('campusFacilities') && (
+            {isVisible('sportsActivities') && (
                 <section className="py-20 bg-white">
                     <div className="container mx-auto px-4">
                         <div className="max-w-6xl mx-auto">
@@ -251,7 +267,7 @@ export default function StudentLifePage() {
             )}
 
             {/* Workshops & Seminars */}
-            {isVisible('studentCouncil') && (
+            {isVisible('workshopsSeminars') && (
                 <section className="py-20 bg-gradient-to-b from-[#FDFDFF] to-white">
                     <div className="container mx-auto px-4">
                         <div className="max-w-6xl mx-auto">
@@ -266,11 +282,12 @@ export default function StudentLifePage() {
                             </div>
 
                             <div className="space-y-6">
-                                {workshopsLoading ? (
-                                    <div className="text-center py-12">
-                                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-                                        <p className="text-gray-600 mt-4">Loading workshops...</p>
-                                    </div>
+                                {workshopsLoading && workshops.length === 0 ? (
+                                    <>
+                                        {[1, 2, 3].map((i) => (
+                                            <div key={i} className="h-32 bg-gray-100 animate-pulse rounded-2xl"></div>
+                                        ))}
+                                    </>
                                 ) : (
                                     <>
                                         {workshops.map((workshop) => {

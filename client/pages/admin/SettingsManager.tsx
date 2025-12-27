@@ -26,7 +26,27 @@ export default function SettingsManager() {
         heroCTA: 'Apply Now',
     });
 
-    const [saved, setSaved] = useState(false);
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({ ...prev, [name]: value }));
+    };
+
+    const handleMapExtract = (val: string) => {
+        let extracted = val;
+        // Smart extract if user pastes full iframe code
+        if (val.includes('<iframe')) {
+            const srcMatch = val.match(/src="([^"]+)"/);
+            if (srcMatch && srcMatch[1]) {
+                extracted = srcMatch[1];
+                toast({
+                    title: "Link Extracted",
+                    description: "We automatically extracted the correct URL from the embed code.",
+                    className: "bg-blue-600 text-white border-none"
+                });
+            }
+        }
+        setFormData(prev => ({ ...prev, mapUrl: extracted }));
+    };
 
     useEffect(() => {
         const fetchSettings = async () => {
@@ -49,13 +69,11 @@ export default function SettingsManager() {
         e.preventDefault();
         try {
             await setDoc(doc(db, 'settings', 'general'), formData);
-            setSaved(true);
             toast({
                 title: "Settings Saved",
                 description: "Website configuration has been updated.",
                 className: "bg-green-600 text-white border-none"
             });
-            setTimeout(() => setSaved(false), 3000);
         } catch (error) {
             console.error("Error saving settings:", error);
             toast({
@@ -120,8 +138,9 @@ export default function SettingsManager() {
                                 <label className="block text-sm font-semibold text-gray-700 mb-2">Site Name</label>
                                 <input
                                     type="text"
+                                    name="siteName"
                                     value={formData.siteName}
-                                    onChange={(e) => setFormData({ ...formData, siteName: e.target.value })}
+                                    onChange={handleInputChange}
                                     className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none"
                                 />
                             </div>
@@ -132,8 +151,9 @@ export default function SettingsManager() {
                                     </label>
                                     <input
                                         type="email"
+                                        name="siteEmail"
                                         value={formData.siteEmail}
-                                        onChange={(e) => setFormData({ ...formData, siteEmail: e.target.value })}
+                                        onChange={handleInputChange}
                                         className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none"
                                     />
                                 </div>
@@ -143,8 +163,9 @@ export default function SettingsManager() {
                                     </label>
                                     <input
                                         type="tel"
+                                        name="sitePhone"
                                         value={formData.sitePhone}
-                                        onChange={(e) => setFormData({ ...formData, sitePhone: e.target.value })}
+                                        onChange={handleInputChange}
                                         className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none"
                                     />
                                 </div>
@@ -154,8 +175,9 @@ export default function SettingsManager() {
                                     <MapPin className="w-4 h-4" /> Address
                                 </label>
                                 <textarea
+                                    name="siteAddress"
                                     value={formData.siteAddress}
-                                    onChange={(e) => setFormData({ ...formData, siteAddress: e.target.value })}
+                                    onChange={handleInputChange}
                                     className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none resize-none"
                                     rows={3}
                                 />
@@ -167,26 +189,12 @@ export default function SettingsManager() {
                                 <div className="space-y-2">
                                     <input
                                         type="text"
+                                        name="mapUrl"
                                         value={formData.mapUrl}
-                                        onChange={(e) => {
-                                            let val = e.target.value;
-                                            // Smart extract if user pastes full iframe code
-                                            if (val.includes('<iframe')) {
-                                                const srcMatch = val.match(/src="([^"]+)"/);
-                                                if (srcMatch && srcMatch[1]) {
-                                                    val = srcMatch[1];
-                                                    toast({
-                                                        title: "Link Extracted",
-                                                        description: "We automatically extracted the correct URL from the embed code.",
-                                                        className: "bg-blue-600 text-white border-none"
-                                                    });
-                                                }
-                                            }
-                                            setFormData({ ...formData, mapUrl: val });
-                                        }}
+                                        onChange={(e) => handleMapExtract(e.target.value)}
                                         className={`w-full px-4 py-3 border-2 rounded-xl focus:outline-none text-sm font-mono transition-colors ${formData.mapUrl && !formData.mapUrl.includes('embed')
-                                                ? 'border-yellow-400 focus:border-yellow-500 bg-yellow-50'
-                                                : 'border-gray-200 focus:border-blue-500'
+                                            ? 'border-yellow-400 focus:border-yellow-500 bg-yellow-50'
+                                            : 'border-gray-200 focus:border-blue-500'
                                             }`}
                                         placeholder="https://www.google.com/maps/embed?..."
                                     />
@@ -224,8 +232,9 @@ export default function SettingsManager() {
                                     </label>
                                     <input
                                         type="url"
-                                        value={formData[key as keyof typeof formData] as string}
-                                        onChange={(e) => setFormData({ ...formData, [key]: e.target.value })}
+                                        name={key}
+                                        value={(formData as any)[key]}
+                                        onChange={handleInputChange}
                                         className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none"
                                         placeholder={`https://${key}.com/yourpage`}
                                     />
@@ -242,8 +251,9 @@ export default function SettingsManager() {
                                 <label className="block text-sm font-semibold text-gray-700 mb-2">Hero Title</label>
                                 <input
                                     type="text"
+                                    name="heroTitle"
                                     value={formData.heroTitle}
-                                    onChange={(e) => setFormData({ ...formData, heroTitle: e.target.value })}
+                                    onChange={handleInputChange}
                                     className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none"
                                 />
                             </div>
@@ -251,8 +261,9 @@ export default function SettingsManager() {
                                 <label className="block text-sm font-semibold text-gray-700 mb-2">Hero Subtitle</label>
                                 <input
                                     type="text"
+                                    name="heroSubtitle"
                                     value={formData.heroSubtitle}
-                                    onChange={(e) => setFormData({ ...formData, heroSubtitle: e.target.value })}
+                                    onChange={handleInputChange}
                                     className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none"
                                 />
                             </div>
@@ -260,8 +271,9 @@ export default function SettingsManager() {
                                 <label className="block text-sm font-semibold text-gray-700 mb-2">CTA Button Text</label>
                                 <input
                                     type="text"
+                                    name="heroCTA"
                                     value={formData.heroCTA}
-                                    onChange={(e) => setFormData({ ...formData, heroCTA: e.target.value })}
+                                    onChange={handleInputChange}
                                     className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none"
                                 />
                             </div>

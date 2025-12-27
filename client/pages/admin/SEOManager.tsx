@@ -28,7 +28,7 @@ export default function SEOManager() {
     useEffect(() => {
         const unsub = onSnapshot(doc(db, 'settings', 'seo'), (docSnap) => {
             if (docSnap.exists()) {
-                setSeoData(prev => ({ ...prev, ...docSnap.data() }));
+                setSeoData(prev => ({ ...prev, ...(docSnap.data() as any) }));
             }
             setLoading(false);
         });
@@ -137,7 +137,7 @@ export default function SEOManager() {
                             <div>
                                 <label className="block text-sm font-bold text-gray-700 mb-2 uppercase flex items-center gap-2">
                                     Global Keywords
-                                    <Info className="w-4 h-4 text-gray-400" title="Comma separated keywords for search engines" />
+                                    <Info className="w-4 h-4 text-gray-400" />
                                 </label>
                                 <textarea
                                     value={seoData.keywords}

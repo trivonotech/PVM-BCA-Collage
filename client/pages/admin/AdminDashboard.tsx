@@ -46,7 +46,7 @@ export default function AdminDashboard() {
         // 1. Snapshot for Counts & Activity
         const unsubs: (() => void)[] = [];
 
-        const safelySubscribe = (colName: string, stateKey: keyof typeof counts, filterFn?: (data: any[]) => number) => {
+        const safelySubscribe = (colName: string, stateKey: keyof typeof counts, filterFn?: (data: unknown[]) => number) => {
             const q = query(collection(db, colName));
             try {
                 const unsub = onSnapshot(q, (snap) => {
@@ -57,13 +57,11 @@ export default function AdminDashboard() {
                     }));
                     setLoading(false);
                 }, (err) => {
-                    console.warn(`Dashboard: Failed to subscribe to ${colName}`, err);
-                    // setCounts(prev => ({ ...prev, [stateKey]: 0 })); // Optional: reset to 0
+                    // Fail gracefully
                     setLoading(false);
                 });
                 unsubs.push(unsub);
             } catch (e) {
-                console.warn(`Dashboard: Error creating query for ${colName}`, e);
                 setLoading(false);
             }
         };
@@ -79,7 +77,7 @@ export default function AdminDashboard() {
                 workshops: allEvents.filter(e => e.category === 'Workshop').length
             }));
             setLoading(false);
-        }, (err) => { console.warn("Events sub failed", err); setLoading(false); }));
+        }, () => { setLoading(false); }));
 
         // Standard Collections
         safelySubscribe('news', 'news');
@@ -97,29 +95,33 @@ export default function AdminDashboard() {
             try {
                 // Fetch last 5 events
                 const eventsQ = query(collection(db, 'events'), orderBy('createdAt', 'desc'), limit(5));
-                const eventsSnap = await getDocs(eventsQ).catch(e => ({ docs: [] })); // Fail safe
-                // @ts-ignore
-                const eventsData = eventsSnap.docs.map(doc => ({
-                    id: doc.id,
-                    action: 'New event added',
-                    item: doc.data().name,
-                    time: new Date(doc.data().createdAt).toLocaleDateString(),
-                    type: 'event' as const,
-                    timestamp: new Date(doc.data().createdAt)
-                }));
+                const eventsSnap = await getDocs(eventsQ).catch(() => ({ docs: [] })); // Fail safe
+                const eventsData = eventsSnap.docs.map(doc => {
+                    const d = doc.data();
+                    return {
+                        id: doc.id,
+                        action: 'New event added',
+                        item: d.name,
+                        time: d.createdAt?.toDate?.().toLocaleDateString() || new Date(d.createdAt).toLocaleDateString(),
+                        type: 'event' as const,
+                        timestamp: d.createdAt?.toDate?.() || new Date(d.createdAt)
+                    };
+                });
 
                 // Fetch last 5 news
                 const newsQ = query(collection(db, 'news'), orderBy('submittedAt', 'desc'), limit(5));
-                const newsSnap = await getDocs(newsQ).catch(e => ({ docs: [] })); // Fail safe
-                // @ts-ignore
-                const newsData = newsSnap.docs.map(doc => ({
-                    id: doc.id,
-                    action: 'News published',
-                    item: doc.data().title,
-                    time: doc.data().submittedAt?.toDate?.().toLocaleDateString() || 'Recently',
-                    type: 'news' as const,
-                    timestamp: doc.data().submittedAt?.toDate?.() || new Date()
-                }));
+                const newsSnap = await getDocs(newsQ).catch(() => ({ docs: [] })); // Fail safe
+                const newsData = newsSnap.docs.map(doc => {
+                    const d = doc.data();
+                    return {
+                        id: doc.id,
+                        action: 'News published',
+                        item: d.title,
+                        time: d.submittedAt?.toDate?.().toLocaleDateString() || 'Recently',
+                        type: 'news' as const,
+                        timestamp: d.submittedAt?.toDate?.() || new Date()
+                    };
+                });
 
                 const combined = [...eventsData, ...newsData]
                     .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())

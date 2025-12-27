@@ -6,12 +6,17 @@ import { db } from "@/lib/firebase";
 import { doc, onSnapshot } from "firebase/firestore";
 
 export function Hero() {
-    const [content, setContent] = useState<any>(null);
+    const [content, setContent] = useState<any>(() => {
+        const cached = localStorage.getItem('cache_page_home');
+        return cached ? JSON.parse(cached) : null;
+    });
 
     useEffect(() => {
         const unsub = onSnapshot(doc(db, 'page_content', 'page_home'), (doc) => {
             if (doc.exists()) {
-                setContent(doc.data());
+                const data = doc.data();
+                setContent(data);
+                localStorage.setItem('cache_page_home', JSON.stringify(data));
             }
         });
         return () => unsub();

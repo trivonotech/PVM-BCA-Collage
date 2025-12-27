@@ -5,15 +5,24 @@ import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import AdminLayout from '@/components/admin/AdminLayout';
 import { Save, ArrowLeft, Loader2, Link as LinkIcon, Image as ImageIcon } from 'lucide-react';
 import { compressImage } from '@/utils/imageUtils';
+import { useToast } from "@/components/ui/use-toast";
+
+interface PageContent {
+    title: string;
+    content: string;
+    metaDescription: string;
+    heroImage: string;
+}
 
 export default function PageEditor() {
     const { pageId } = useParams();
     const navigate = useNavigate();
+    const { toast } = useToast();
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
 
     // Generic Schema
-    const [data, setData] = useState({
+    const [data, setData] = useState<PageContent>({
         title: '',
         content: '',
         metaDescription: '',
@@ -26,7 +35,7 @@ export default function PageEditor() {
             const docRef = doc(db, 'pages', pageId);
             const snap = await getDoc(docRef);
             if (snap.exists()) {
-                setData(snap.data() as any);
+                setData(snap.data() as PageContent);
             } else {
                 // Should load defaults based on ID if new
                 setData(prev => ({ ...prev, title: pageId?.toUpperCase() || '' }));
@@ -52,7 +61,6 @@ export default function PageEditor() {
                 duration: 3000,
             });
         } catch (e) {
-            console.error(e);
             toast({
                 title: "Error",
                 description: "Failed to save.",
@@ -83,7 +91,7 @@ export default function PageEditor() {
     if (loading) return <div className="p-12 text-center">Loading editor...</div>;
 
     return (
-        <AdminLayout title={`Editing: ${pageId}`}>
+        <AdminLayout>
             <div className="max-w-4xl mx-auto">
                 {/* Toolbar */}
                 <div className="flex items-center justify-between mb-6 sticky top-4 z-10 bg-white/80 p-4 rounded-xl shadow-sm backdrop-blur-md border border-gray-100">

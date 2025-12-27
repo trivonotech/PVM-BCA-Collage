@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import AdminLayout from '@/components/admin/AdminLayout';
 import { Plus, Search, Edit, Trash2, X, Upload, Trophy } from 'lucide-react';
 import type { Student } from '@/../../shared/types';
@@ -55,6 +55,11 @@ export default function StudentsManager() {
         achievement: '',
         image: '',
     });
+
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({ ...prev, [name]: value }));
+    };
 
     const handleAddNew = () => {
         setEditingStudent(null);
@@ -174,10 +179,13 @@ export default function StudentsManager() {
         }
     };
 
-    const filteredStudents = students.filter((student) =>
-        student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        student.course.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const filteredStudents = useMemo(() => {
+        const term = searchTerm.toLowerCase();
+        return students.filter((student) =>
+            student.name.toLowerCase().includes(term) ||
+            student.course.toLowerCase().includes(term)
+        );
+    }, [students, searchTerm]);
 
     return (
         <AdminLayout>
@@ -277,8 +285,9 @@ export default function StudentsManager() {
                             </label>
                             <input
                                 type="text"
+                                name="rank"
                                 value={formData.rank}
-                                onChange={(e) => setFormData({ ...formData, rank: e.target.value })}
+                                onChange={handleInputChange}
                                 className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-yellow-500 focus:outline-none"
                                 placeholder="e.g., 1"
                             />
@@ -289,8 +298,9 @@ export default function StudentsManager() {
                             </label>
                             <input
                                 type="text"
+                                name="name"
                                 value={formData.name}
-                                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                onChange={handleInputChange}
                                 className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-yellow-500 focus:outline-none"
                                 placeholder="e.g., MOHIT"
                             />
@@ -303,8 +313,9 @@ export default function StudentsManager() {
                         </label>
                         <input
                             type="text"
+                            name="course"
                             value={formData.course}
-                            onChange={(e) => setFormData({ ...formData, course: e.target.value })}
+                            onChange={handleInputChange}
                             className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-yellow-500 focus:outline-none"
                             placeholder="e.g., Environmental Science"
                         />
@@ -316,8 +327,9 @@ export default function StudentsManager() {
                         </label>
                         <input
                             type="text"
+                            name="achievement"
                             value={formData.achievement}
-                            onChange={(e) => setFormData({ ...formData, achievement: e.target.value })}
+                            onChange={handleInputChange}
                             className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-yellow-500 focus:outline-none"
                             placeholder="e.g., First Rank in University"
                         />

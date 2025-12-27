@@ -31,7 +31,7 @@ type Inquiry = {
     subject: string;
     message: string;
     status: 'new' | 'read' | 'archived';
-    createdAt: any;
+    createdAt: unknown;
 };
 
 export default function InquiriesManager() {
@@ -129,7 +129,7 @@ export default function InquiriesManager() {
         const csvRows = [headers.join(',')];
 
         filteredInquiries.forEach(inq => {
-            const dateStr = formatDateSafe(inq.createdAt?.seconds, 'yyyy-MM-dd HH:mm:ss');
+            const dateStr = formatDateSafe((inq.createdAt as any)?.seconds, 'yyyy-MM-dd HH:mm:ss');
             // Escape quotes and commas for CSV format
             const clean = (str: string) => `"${(str || '').replace(/"/g, '""')}"`;
 
@@ -279,11 +279,11 @@ export default function InquiriesManager() {
                                                     <div className="flex flex-col text-xs text-gray-500">
                                                         <div className="flex items-center gap-1">
                                                             <Calendar className="w-3 h-3" />
-                                                            {formatDateSafe(inq.createdAt?.seconds, 'MMM d, yyyy')}
+                                                            {formatDateSafe((inq.createdAt as any)?.seconds, 'MMM d, yyyy')}
                                                         </div>
                                                         <div className="flex items-center gap-1">
                                                             <Clock className="w-3 h-3" />
-                                                            {formatDateSafe(inq.createdAt?.seconds, 'h:mm a')}
+                                                            {formatDateSafe((inq.createdAt as any)?.seconds, 'h:mm a')}
                                                         </div>
                                                     </div>
                                                 </TableCell>
@@ -356,11 +356,11 @@ export default function InquiriesManager() {
                                             <div className="flex flex-col gap-1">
                                                 <div className="flex items-center gap-1.5 text-[10px] text-gray-500">
                                                     <Calendar className="w-3 h-3" />
-                                                    {formatDateSafe(inq.createdAt?.seconds, 'MMM d, yyyy')}
+                                                    {formatDateSafe((inq.createdAt as any)?.seconds, 'MMM d, yyyy')}
                                                 </div>
                                                 <div className="flex items-center gap-1.5 text-[10px] text-gray-400">
                                                     <Clock className="w-3 h-3" />
-                                                    {formatDateSafe(inq.createdAt?.seconds, 'h:mm a')}
+                                                    {formatDateSafe((inq.createdAt as any)?.seconds, 'h:mm a')}
                                                 </div>
                                             </div>
 
@@ -402,7 +402,7 @@ export default function InquiriesManager() {
                                 <span>Inquiry Details</span>
                             </DialogTitle>
                             <DialogDescription>
-                                Received on {formatDateSafe(viewInquiry?.createdAt?.seconds, 'MMMM d, yyyy')} at {formatDateSafe(viewInquiry?.createdAt?.seconds, 'h:mm a')}
+                                Received on {formatDateSafe((viewInquiry?.createdAt as any)?.seconds, 'MMMM d, yyyy')} at {formatDateSafe((viewInquiry?.createdAt as any)?.seconds, 'h:mm a')}
                             </DialogDescription>
                         </DialogHeader>
 

@@ -8,17 +8,26 @@ import { compressImage } from '@/utils/imageUtils';
 import { useToast } from "@/components/ui/use-toast";
 import { useNavigate } from 'react-router-dom';
 
-// Define the pages available for editing
-const AVAILABLE_PAGES = [
-    { id: 'page_home', name: 'Home Page', path: '/', description: 'Hero section, highlights, etc.' },
-    { id: 'page_about', name: 'About Us', path: '/about', description: 'Mission, history, principal message.' },
-    { id: 'page_contact', name: 'Contact Page', path: '/contact', description: 'Address, map link, emails.' },
-    { id: 'page_admissions', name: 'Admissions', path: '/admissions', description: 'Process, requirements.' },
-    { id: 'page_academics', name: 'Academics', path: '/academics', description: 'Course details overview.' },
-];
+// --- Types ---
+interface PageField {
+    key: string;
+    label: string;
+    type: 'text' | 'textarea' | 'image';
+    default?: string;
+}
+
+interface PageSection {
+    id: string;
+    title: string;
+    fields: PageField[];
+}
+
+interface PageConfig {
+    sections: PageSection[];
+}
 
 // Configuration for each page's editable fields
-const PAGE_CONFIG: Record<string, any> = {
+const PAGE_CONFIG: Record<string, PageConfig> = {
     'page_home': {
         sections: [
             {
@@ -100,11 +109,19 @@ const PAGE_CONFIG: Record<string, any> = {
     }
 };
 
+const AVAILABLE_PAGES = [
+    { id: 'page_home', name: 'Home Page', description: 'Hero, stats, and promotional sections', path: '/' },
+    { id: 'page_about', name: 'About Us', description: 'Overview, Vision, and Mission statements', path: '/about' },
+    { id: 'page_academics', name: 'Academics', description: 'Program overviews and descriptions', path: '/academics' },
+    { id: 'page_admissions', name: 'Admissions', description: 'Process details and hero section', path: '/admissions' },
+    { id: 'page_contact', name: 'Contact Page', description: 'Headlines and contact information', path: '/contact' }
+];
+
 export default function PageContentManager() {
     const { toast } = useToast();
     const [selectedPage, setSelectedPage] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
-    const [content, setContent] = useState<any>({});
+    const [content, setContent] = useState<Record<string, any>>({});
     const [saving, setSaving] = useState(false);
     const navigate = useNavigate();
 
@@ -113,9 +130,9 @@ export default function PageContentManager() {
         const config = PAGE_CONFIG[pageId];
         if (!config) return {};
 
-        const defaults: any = {};
-        config.sections.forEach((section: any) => {
-            section.fields.forEach((field: any) => {
+        const defaults: Record<string, any> = {};
+        config.sections.forEach((section) => {
+            section.fields.forEach((field) => {
                 if (field.type === 'image') {
                     defaults.images = { ...defaults.images, [field.key]: field.default || '' };
                 } else {
@@ -199,7 +216,7 @@ export default function PageContentManager() {
     const handleImageUpload = async (key: string, file: File) => {
         try {
             const base64 = await compressImage(file);
-            setContent((prev: any) => ({
+            setContent((prev) => ({
                 ...prev,
                 images: {
                     ...prev.images,
@@ -274,14 +291,14 @@ export default function PageContentManager() {
                             </div>
 
                             <div className="space-y-8">
-                                {currentConfig.sections.map((section: any) => (
+                                {currentConfig.sections.map((section) => (
                                     <div key={section.id} className="border-b last:border-0 pb-8 last:pb-0">
                                         <h3 className="text-lg font-extrabold text-blue-900 mb-4 bg-blue-50 p-2 rounded-lg inline-block">
                                             {section.title}
                                         </h3>
 
                                         <div className="space-y-6">
-                                            {section.fields.map((field: any) => (
+                                            {section.fields.map((field) => (
                                                 <div key={field.key}>
                                                     {field.type === 'text' && (
                                                         <div>

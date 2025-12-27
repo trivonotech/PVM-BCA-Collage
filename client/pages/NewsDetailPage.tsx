@@ -5,6 +5,7 @@ import { doc, getDoc } from 'firebase/firestore';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Calendar, User, ArrowLeft, Tag, Newspaper } from 'lucide-react';
+import { useToast } from "@/components/ui/use-toast";
 
 interface NewsArticle {
     id: string;
@@ -28,7 +29,17 @@ interface NewsArticle {
 export default function NewsDetailPage() {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
-    const [article, setArticle] = useState<NewsArticle | null>(null);
+    const { toast } = useToast();
+    const [article, setArticle] = useState<NewsArticle | null>(() => {
+        if (!id) return null;
+        try {
+            const cached = localStorage.getItem(`cache_news_article_${id}`);
+            return cached ? JSON.parse(cached) : null;
+        } catch (e) {
+            console.error("Cache parsing error:", e);
+            return null;
+        }
+    });
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -40,13 +51,19 @@ export default function NewsDetailPage() {
                 const docSnap = await getDoc(docRef);
 
                 if (docSnap.exists() && docSnap.data().status === 'approved') {
-                    setArticle({ id: docSnap.id, ...docSnap.data() } as NewsArticle);
+                    const data = { id: docSnap.id, ...docSnap.data() } as NewsArticle;
+                    setArticle(data);
+                    localStorage.setItem(`cache_news_article_${id}`, JSON.stringify(data));
                 } else {
                     navigate('/news');
                 }
                 setLoading(false);
             } catch (error) {
-                console.error('Error fetching article:', error);
+                toast({
+                    title: "Error",
+                    description: "Failed to load news article. Please try again later.",
+                    variant: "destructive",
+                });
                 setLoading(false);
                 navigate('/news');
             }
@@ -55,13 +72,30 @@ export default function NewsDetailPage() {
         fetchArticle();
     }, [id, navigate]);
 
-    if (loading) {
+    if (loading && !article) {
         return (
-            <div className="min-h-screen bg-white font-poppins">
+            <div className="min-h-screen bg-gray-50 font-poppins">
                 <Header />
-                <div className="container mx-auto px-4 py-20">
-                    <div className="flex justify-center items-center min-h-[400px]">
-                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+                <div className="container mx-auto px-4 py-8 lg:py-12">
+                    <div className="max-w-7xl mx-auto">
+                        <div className="grid lg:grid-cols-2 gap-8 lg:gap-16">
+                            {/* Left Side Skeleton */}
+                            <div className="space-y-6 animate-pulse">
+                                <div className="h-6 w-32 bg-gray-200 rounded"></div>
+                                <div className="h-[40vh] w-full bg-gray-200 rounded-3xl"></div>
+                                <div className="h-32 w-full bg-gray-100 rounded-2xl"></div>
+                            </div>
+                            {/* Right Side Skeleton */}
+                            <div className="space-y-8 animate-pulse">
+                                <div className="h-10 w-full bg-gray-200 rounded"></div>
+                                <div className="h-4 w-40 bg-gray-100 rounded"></div>
+                                <div className="space-y-4">
+                                    {[1, 2, 3, 4, 5].map(i => (
+                                        <div key={i} className="h-4 w-full bg-gray-100 rounded"></div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <Footer />
@@ -136,11 +170,19 @@ export default function NewsDetailPage() {
                                         <div className="flex items-center gap-3">
                                             <Calendar className="w-4 h-4 text-gray-400" />
                                             <span className="text-gray-600 text-sm font-medium">
-                                                {article.submittedAt?.toDate().toLocaleDateString('en-US', {
-                                                    year: 'numeric',
-                                                    month: 'long',
-                                                    day: 'numeric'
-                                                })}
+                                                {article.submittedAt?.toDate
+                                                    ? article.submittedAt.toDate().toLocaleDateString('en-US', {
+                                                        year: 'numeric',
+                                                        month: 'long',
+                                                        day: 'numeric'
+                                                    })
+                                                    : (article.submittedAt?.seconds
+                                                        ? new Date(article.submittedAt.seconds * 1000).toLocaleDateString('en-US', {
+                                                            year: 'numeric',
+                                                            month: 'long',
+                                                            day: 'numeric'
+                                                        })
+                                                        : 'Recent News')}
                                             </span>
                                         </div>
                                         <div className="flex items-center gap-3">

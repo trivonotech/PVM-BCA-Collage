@@ -7,18 +7,40 @@ import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { useToast } from "@/components/ui/use-toast";
 import { logAdminActivity } from '@/lib/ActivityLogger';
 
+interface AdmissionDates {
+    applicationStart: string;
+    applicationEnd: string;
+    examDate: string;
+    meritDate: string;
+}
+
+interface AdmissionStep {
+    step: string;
+    title: string;
+    desc: string;
+    color: string;
+}
+
+interface Scholarship {
+    name: string;
+    eligibility: string;
+    amount: string;
+    link: string;
+    icon: string;
+}
+
 export default function AdmissionsManager() {
     const { toast } = useToast();
     const [loading, setLoading] = useState(false);
     const [activeTab, setActiveTab] = useState('dates');
-    const [dates, setDates] = useState<any>({
+    const [dates, setDates] = useState<AdmissionDates>({
         applicationStart: '',
         applicationEnd: '',
         examDate: '',
         meritDate: ''
     });
-    const [steps, setSteps] = useState<any[]>([]);
-    const [scholarships, setScholarships] = useState<any[]>([]);
+    const [steps, setSteps] = useState<AdmissionStep[]>([]);
+    const [scholarships, setScholarships] = useState<Scholarship[]>([]);
 
     useEffect(() => {
         loadData();
@@ -29,7 +51,7 @@ export default function AdmissionsManager() {
         try {
             // Load Dates
             const datesSnap = await getDoc(doc(db, 'admissions_content', 'dates'));
-            if (datesSnap.exists()) setDates(datesSnap.data());
+            if (datesSnap.exists()) setDates(datesSnap.data() as any);
 
             // Load Steps
             const stepsSnap = await getDoc(doc(db, 'admissions_content', 'steps'));

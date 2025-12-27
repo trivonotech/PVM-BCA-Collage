@@ -18,8 +18,6 @@ import {
     Eye,
     Settings,
     Menu,
-    LogOut,
-    FileText,
     Mail,
     Activity,
     X,
@@ -183,13 +181,11 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                         if (!querySnapshot.empty) {
                             const oldDoc = querySnapshot.docs[0];
                             if (oldDoc.id !== user.uid) {
-                                console.log("Migration: Linking old admin profile to new UID...");
                                 const oldData = oldDoc.data();
                                 // 1. Create new doc with current UID
                                 await setDoc(doc(db, 'users', user.uid), { ...oldData, uid: user.uid });
                                 // 2. Delete old doc
                                 await deleteDoc(doc(db, 'users', oldDoc.id));
-                                console.log("Migration: Profile linked successfully.");
                                 return; // Listener will re-trigger
                             }
                         }

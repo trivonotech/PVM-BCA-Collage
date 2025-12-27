@@ -18,11 +18,11 @@ export default function SessionManagerModal({ isOpen, onClose }: SessionManagerM
     const currentSessionId = localStorage.getItem('currentSessionId');
 
     // Helper to safely convert timestamps (Date or Firestore Timestamp)
-    const safeDate = (ts: any) => {
+    const safeDate = (ts: unknown) => {
         if (!ts) return null;
-        if (typeof ts.toDate === 'function') return ts.toDate();
+        if (ts && typeof (ts as any).toDate === 'function') return (ts as any).toDate();
         if (ts instanceof Date) return ts;
-        return new Date(ts); // Fallback for strings/numbers
+        return new Date(ts as string | number); // Fallback for strings/numbers
     };
 
     const formatDate = (ts: any) => {
@@ -47,9 +47,8 @@ export default function SessionManagerModal({ isOpen, onClose }: SessionManagerM
             // Filter out already revoked sessions from view if desired, or show them as inactive
             setSessions(sessData.filter((s: any) => s.status !== 'revoked'));
             setLoading(false);
-        }, (error) => {
-            console.error("Failed to fetch sessions:", error);
-            // Don't show toast here to avoid spamming if permission denied usually works eventually or silent fail
+        }, () => {
+            // Silently fail or handle gracefully
             setLoading(false);
         });
 
@@ -80,8 +79,7 @@ export default function SessionManagerModal({ isOpen, onClose }: SessionManagerM
         const unsubscribe = onSnapshot(q, (snapshot) => {
             setViewingActivities(snapshot.docs.map(d => ({ id: d.id, ...d.data() })));
             setLoading(false);
-        }, (error) => {
-            console.error("Activity listener failed", error);
+        }, () => {
             toast({ title: "Error", description: "Could not sync activity history.", variant: "destructive" });
             setLoading(false);
         });
@@ -106,7 +104,6 @@ export default function SessionManagerModal({ isOpen, onClose }: SessionManagerM
                 className: "bg-green-500 text-white border-none",
             });
         } catch (error) {
-            console.error("Revoke failed", error);
             toast({
                 title: "Action Failed",
                 description: "Could not revoke session.",

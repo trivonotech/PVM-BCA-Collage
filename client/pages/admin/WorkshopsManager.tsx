@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import AdminLayout from '@/components/admin/AdminLayout';
 import { Plus, Search, Edit, Trash2, X, Upload, Calendar as CalendarIcon, User, Mic } from 'lucide-react';
+import { compressImage } from '@/utils/imageUtils';
 import { db } from '@/lib/firebase';
-import { collection, query, orderBy, onSnapshot, addDoc, updateDoc, deleteDoc, doc } from 'firebase/firestore';
+import { collection, query, orderBy, onSnapshot, addDoc, updateDoc, deleteDoc, doc, serverTimestamp } from 'firebase/firestore';
 import Modal from '@/components/ui/Modal';
 import ConfirmModal from '@/components/ui/ConfirmModal';
 import { useToast } from "@/components/ui/use-toast";
@@ -14,8 +15,8 @@ interface Workshop {
     date: string;
     speaker: string;
     image?: string;
-    createdAt?: any;
-    updatedAt?: any;
+    createdAt?: unknown;
+    updatedAt?: unknown;
 }
 
 export default function WorkshopsManager() {
@@ -55,8 +56,7 @@ export default function WorkshopsManager() {
             })) as Workshop[];
             setWorkshops(data);
             setLoading(false);
-        }, (error) => {
-            console.error("Error fetching workshops:", error);
+        }, () => {
             setLoading(false);
         });
         return () => unsubscribe();
@@ -97,16 +97,20 @@ export default function WorkshopsManager() {
         }
     };
 
-    const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                const base64 = reader.result as string;
+            try {
+                const base64 = await compressImage(file);
                 setImagePreview(base64);
                 setFormData(prev => ({ ...prev, image: base64 }));
-            };
-            reader.readAsDataURL(file);
+            } catch (error) {
+                toast({
+                    title: "Error",
+                    description: "Failed to process image",
+                    variant: "destructive",
+                });
+            }
         }
     };
 
@@ -117,20 +121,19 @@ export default function WorkshopsManager() {
             if (editingItem) {
                 await updateDoc(doc(db, 'workshops', editingItem.id), {
                     ...formData,
-                    updatedAt: new Date().toISOString()
+                    updatedAt: serverTimestamp()
                 });
                 toast({ title: "Updated", description: "Workshop updated successfully." });
             } else {
                 await addDoc(workshopsCollection, {
                     ...formData,
-                    createdAt: new Date().toISOString(),
-                    updatedAt: new Date().toISOString()
+                    createdAt: serverTimestamp(),
+                    updatedAt: serverTimestamp()
                 });
                 toast({ title: "Created", description: "Workshop created successfully." });
             }
             setShowModal(false);
         } catch (error) {
-            console.error(error);
             toast({ title: "Error", description: "Failed to save workshop.", variant: "destructive" });
         } finally {
             setIsSubmitting(false);

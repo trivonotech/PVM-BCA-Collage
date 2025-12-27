@@ -11,6 +11,7 @@ export interface SectionVisibility {
     admissionJourney?: boolean;
     eventHighlights?: boolean;
     topStudents?: boolean;
+    homeStats?: boolean;
 
     // About Page
     aboutHero?: boolean;

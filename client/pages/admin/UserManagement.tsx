@@ -13,7 +13,7 @@ import {
     Plus,
     Key
 } from 'lucide-react';
-import { db } from '@/lib/firebase';
+import { db, firebaseConfig } from '@/lib/firebase';
 import {
     collection,
     onSnapshot,
@@ -26,18 +26,9 @@ import {
 } from 'firebase/firestore';
 import { initializeApp } from 'firebase/app';
 import { getAuth, createUserWithEmailAndPassword, sendEmailVerification } from 'firebase/auth';
-
-// Firebase config for secondary app (needs to be same as main)
-const firebaseConfig = {
-    apiKey: "AIzaSyBb3LfSUpqeB3HyJD-Fl0jNpe_yermr6E0",
-    authDomain: "pvm-bca-college.firebaseapp.com",
-    projectId: "pvm-bca-college",
-    storageBucket: "pvm-bca-college.firebasestorage.app",
-    messagingSenderId: "761323612048",
-    appId: "1:761323612048:web:1346dee241edb3a1613515",
-    measurementId: "G-NB03CTWS3Y"
-};
-
+import { getCurrentUserRole } from '@/lib/authUtils';
+import { CONFIG } from '@/lib/config';
+import { useToast } from "@/components/ui/use-toast";
 interface AdminUser {
     id: string;
     username: string;
@@ -50,10 +41,9 @@ interface AdminUser {
 
 export default function UserManagement() {
     const [users, setUsers] = useState<AdminUser[]>([]);
-    const [loading, setLoading] = useState(true); // Added loading state
+    const [loading, setLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
     const [editingUser, setEditingUser] = useState<AdminUser | null>(null);
-    const [searchQuery, setSearchQuery] = useState(''); // Added search
     const [formData, setFormData] = useState({
         username: '',
         email: '',
@@ -61,23 +51,11 @@ export default function UserManagement() {
         role: 'child_admin' as 'super_admin' | 'child_admin',
         permissions: [] as string[],
     });
+    const { toast } = useToast();
 
     // Get current logged-in user's role for security checks
-    const getCurrentUserRole = () => {
-        try {
-            const userStr = localStorage.getItem('user');
-            if (userStr) {
-                const user = JSON.parse(userStr);
-                return user.role || 'child_admin';
-            }
-        } catch (e) {
-            console.error('Error getting current user role:', e);
-        }
-        return 'child_admin';
-    };
-
     const currentUserRole = getCurrentUserRole();
-    const isSuperAdmin = currentUserRole === 'super_admin';
+    const isSuperAdmin = currentUserRole === CONFIG.ROLES.SUPER_ADMIN;
 
     // Real-time Users Sync
     useEffect(() => {

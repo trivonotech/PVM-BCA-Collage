@@ -4,7 +4,7 @@ import { doc, onSnapshot } from 'firebase/firestore';
 import { BarChart3, Globe } from 'lucide-react';
 
 export default function AnalyticsDashboard() {
-    const [stats, setStats] = useState<any>(null);
+    const [stats, setStats] = useState<unknown>(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -15,8 +15,7 @@ export default function AnalyticsDashboard() {
                 setStats({ totalVisits: 0, pageViews: {} });
             }
             setLoading(false);
-        }, (error) => {
-            console.error("Analytics Error:", error);
+        }, () => {
             setLoading(false);
         });
 
@@ -25,9 +24,9 @@ export default function AnalyticsDashboard() {
 
     if (loading) return <div className="h-40 bg-gray-100 rounded-2xl animate-pulse"></div>;
 
-    const pageViews = stats?.pageViews || {};
+    const pageViews = (stats as any)?.pageViews || {};
     const sortedPages = Object.entries(pageViews)
-        .sort(([, a]: any, [, b]: any) => b - a)
+        .sort(([, a]: [string, any], [, b]: [string, any]) => (b as number) - (a as number))
         .slice(0, 5); // Top 5 Pages
 
     return (
@@ -37,7 +36,7 @@ export default function AnalyticsDashboard() {
                 <div className="flex items-start justify-between mb-4">
                     <div>
                         <p className="text-blue-100 text-sm font-medium mb-1">Total Site Visits</p>
-                        <h3 className="text-3xl font-bold">{stats?.totalVisits || 0}</h3>
+                        <h3 className="text-3xl font-bold">{(stats as any)?.totalVisits || 0}</h3>
                     </div>
                     <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
                         <Globe className="w-6 h-6 text-white" />
@@ -56,7 +55,7 @@ export default function AnalyticsDashboard() {
                 </div>
                 <div className="space-y-4">
                     {sortedPages.length > 0 ? (
-                        sortedPages.map(([page, views]: any) => (
+                        sortedPages.map(([page, views]) => (
                             <div key={page} className="flex items-center justify-between">
                                 <div className="flex items-center gap-3">
                                     <div className="w-2 h-2 rounded-full bg-blue-400"></div>
@@ -64,7 +63,7 @@ export default function AnalyticsDashboard() {
                                         {page.replace(/_/g, ' ')}
                                     </span>
                                 </div>
-                                <span className="text-sm font-bold text-gray-900">{views}</span>
+                                <span className="text-sm font-bold text-gray-900">{(views as any)}</span>
                             </div>
                         ))
                     ) : (

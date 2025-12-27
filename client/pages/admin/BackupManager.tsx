@@ -6,10 +6,24 @@ import { collection, getDocs, doc, setDoc, onSnapshot } from 'firebase/firestore
 import { useToast } from "@/components/ui/use-toast";
 import { CONFIG } from '@/lib/config';
 
+import { getCurrentAdminEmail } from '@/lib/authUtils';
+
+interface BackupMetadata {
+    timestamp: string;
+    exportedBy: string;
+    projectName: string;
+    userAgent: string;
+}
+
+interface BackupStructure {
+    metadata: BackupMetadata;
+    collections: Record<string, any[]>;
+}
+
 export default function BackupManager() {
     const { toast } = useToast();
     const [loading, setLoading] = useState(false);
-    const [stats, setStats] = useState<any>(null);
+    const [stats, setStats] = useState<Record<string, number> | null>(null);
     const [copied, setCopied] = useState<string | null>(null);
 
     const handleCopy = (text: string, id: string) => {
@@ -87,17 +101,17 @@ export default function BackupManager() {
         setLoading(true);
         setStats(null);
         try {
-            const backupData: any = {
+            const backupData: BackupStructure = {
                 metadata: {
                     timestamp: new Date().toISOString(),
-                    exportedBy: JSON.parse(localStorage.getItem('user') || '{}').email || 'Unknown',
+                    exportedBy: getCurrentAdminEmail(),
                     projectName: CONFIG.APP_NAME,
                     userAgent: navigator.userAgent,
                 },
                 collections: {}
             };
 
-            const collectionStats: any = {};
+            const collectionStats: Record<string, number> = {};
 
             for (const collectionName of collectionsToBackup) {
                 const querySnapshot = await getDocs(collection(db, collectionName));
@@ -165,12 +179,11 @@ export default function BackupManager() {
                 for (const [collectionName, docs] of collections) {
                     setRestoreProgress(`Restoring ${collectionName}...`);
 
-                    // @ts-ignore
-                    for (const docData of docs) {
+                    for (const docData of docs as any[]) {
                         const { id, ...data } = docData;
                         // Use setDoc to overwrite/create with specific ID
-                        const { doc, setDoc } = await import('firebase/firestore');
-                        await setDoc(doc(db, collectionName, id), data);
+                        const { doc: firestoreDoc, setDoc: firestoreSetDoc } = await import('firebase/firestore');
+                        await firestoreSetDoc(firestoreDoc(db, collectionName, id), data);
                         totalRestored++;
                     }
                 }
@@ -253,7 +266,7 @@ export default function BackupManager() {
                                 <div>
                                     <strong>Migration Mode Active:</strong> Super Admin can bypass profile checks.
                                 </div>
-                                {JSON.parse(localStorage.getItem('user') || '{}').email === CONFIG.SUPER_ADMIN_EMAIL && (
+                                {getCurrentAdminEmail() === CONFIG.SUPER_ADMIN_EMAIL && (
                                     <div className="text-xs bg-yellow-500/20 px-2 py-1 rounded border border-yellow-500/30">
                                         Super Admin Verified
                                     </div>

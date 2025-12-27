@@ -93,7 +93,6 @@ export default function AdminLogin() {
         //     expiresAt: Date.now() + duration,
         //     reason: reason
         // }));
-        console.warn("Security Lockout Triggered:", reason);
         setError(`Security Lockout: ${reason}. Please wait for admin reset.`);
     };
 
@@ -147,10 +146,8 @@ export default function AdminLogin() {
         checkEmailLink();
     }, [navigate]);
 
-    const handleLogin = async (e: any) => {
+    const handleLogin = async (e: FormEvent) => {
         if (e && e.preventDefault) e.preventDefault();
-        // alert("Login Clicked!"); // Debug Alert
-        console.log("Login sequence started");
         setError('');
         setLoading(true);
 

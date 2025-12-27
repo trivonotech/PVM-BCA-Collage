@@ -7,6 +7,7 @@ import { collection, query, orderBy, onSnapshot, addDoc, updateDoc, deleteDoc, d
 import Modal from '@/components/ui/Modal';
 import ConfirmModal from '@/components/ui/ConfirmModal';
 import { useToast } from "@/components/ui/use-toast";
+import { compressImage } from '@/utils/imageUtils';
 
 interface EventsManagerProps {
     pageTitle?: string;
@@ -224,33 +225,6 @@ export default function EventsManager({ pageTitle = 'Events Management', default
         }
     };
 
-    const compressImage = (file: File): Promise<string> => {
-        return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.readAsDataURL(file);
-            reader.onload = (event) => {
-                const img = new Image();
-                img.src = event.target?.result as string;
-                img.onload = () => {
-                    const canvas = document.createElement('canvas');
-                    const MAX_WIDTH = 1200;
-                    const scaleSize = MAX_WIDTH / img.width;
-                    const width = scaleSize < 1 ? MAX_WIDTH : img.width;
-                    const height = scaleSize < 1 ? img.height * scaleSize : img.height;
-
-                    canvas.width = width;
-                    canvas.height = height;
-                    const ctx = canvas.getContext('2d');
-                    ctx?.drawImage(img, 0, 0, width, height);
-
-                    const dataUrl = canvas.toDataURL('image/webp', 0.8);
-                    resolve(dataUrl);
-                };
-                img.onerror = (err) => reject(err);
-            };
-            reader.onerror = (err) => reject(err);
-        });
-    };
 
     const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const files = e.target.files;

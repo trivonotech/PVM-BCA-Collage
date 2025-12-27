@@ -10,7 +10,7 @@ interface Subscriber {
     id: string;
     email: string;
     status: string;
-    subscribedAt: any;
+    subscribedAt: unknown;
 }
 
 export default function SubscribersManager() {
@@ -96,7 +96,6 @@ export default function SubscribersManager() {
             setShowDeleteConfirm(false);
             setSubscriberToDelete(null);
         } catch (error) {
-            console.error("Error deleting subscriber:", error);
             toast({
                 title: "Error",
                 description: "Failed to remove subscriber",
@@ -224,13 +223,14 @@ export default function SubscribersManager() {
                                                     <td className="p-4 text-gray-500 text-sm">
                                                         <div className="flex items-center gap-2">
                                                             <Calendar className="w-4 h-4" />
-                                                            {sub.subscribedAt?.toDate ? sub.subscribedAt.toDate().toLocaleDateString('en-IN', {
-                                                                day: 'numeric',
-                                                                month: 'short',
-                                                                year: 'numeric',
-                                                                hour: '2-digit',
-                                                                minute: '2-digit'
-                                                            }) : 'N/A'}
+                                                            {sub.subscribedAt && typeof (sub.subscribedAt as any).toDate === 'function'
+                                                                ? (sub.subscribedAt as any).toDate().toLocaleDateString('en-IN', {
+                                                                    day: 'numeric',
+                                                                    month: 'short',
+                                                                    year: 'numeric',
+                                                                    hour: '2-digit',
+                                                                    minute: '2-digit'
+                                                                }) : 'N/A'}
                                                         </div>
                                                     </td>
                                                     <td className="p-4 text-right">
@@ -318,13 +318,14 @@ export default function SubscribersManager() {
                                             <div className="flex items-center gap-2 text-xs text-gray-500 bg-gray-50/50 p-2 rounded-lg border border-gray-100 flex-wrap">
                                                 <Calendar className="w-3.5 h-3.5" />
                                                 <span className="font-medium">Subscribed:</span>
-                                                {sub.subscribedAt?.toDate ? sub.subscribedAt.toDate().toLocaleDateString('en-IN', {
-                                                    day: 'numeric',
-                                                    month: 'short',
-                                                    year: 'numeric',
-                                                    hour: '2-digit',
-                                                    minute: '2-digit'
-                                                }) : 'N/A'}
+                                                {sub.subscribedAt && typeof (sub.subscribedAt as any).toDate === 'function'
+                                                    ? (sub.subscribedAt as any).toDate().toLocaleDateString('en-IN', {
+                                                        day: 'numeric',
+                                                        month: 'short',
+                                                        year: 'numeric',
+                                                        hour: '2-digit',
+                                                        minute: '2-digit'
+                                                    }) : 'N/A'}
                                             </div>
                                         </div>
                                     ))}

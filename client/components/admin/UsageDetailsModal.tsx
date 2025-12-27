@@ -51,7 +51,14 @@ export default function UsageDetailsModal({ isOpen, onClose, counts }: UsageDeta
 
     const getPercentage = (val: number, limit: number) => Math.min((val / limit) * 100, 100);
 
-    const UsageBar = ({ label, icon: Icon, val, limit, unit, color }: any) => {
+    const UsageBar = ({ label, icon: Icon, val, limit, unit, color }: {
+        label: string;
+        icon: React.ElementType;
+        val: number;
+        limit: number;
+        unit: string;
+        color: string;
+    }) => {
         const pct = getPercentage(val, limit);
         return (
             <div className="mb-6">

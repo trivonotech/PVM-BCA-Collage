@@ -10,8 +10,15 @@ import { useToast } from "@/components/ui/use-toast";
 
 export default function AcademicsPage() {
     const { isVisible } = useSectionVisibility();
-    const [content, setContent] = useState<any>(null);
-    const [courses, setCourses] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [content, setContent] = useState<any>(() => {
+        const cached = localStorage.getItem('cache_academics_content');
+        return cached ? JSON.parse(cached) : null;
+    });
+    const [courses, setCourses] = useState<any[]>(() => {
+        const cached = localStorage.getItem('cache_courses');
+        return cached ? JSON.parse(cached) : [];
+    });
     const { toast } = useToast();
 
     // Enriched Data for Auto-Seeding
@@ -78,28 +85,26 @@ export default function AcademicsPage() {
                 const existingIds = new Set(existingCourses.map(c => c.id));
 
                 // Check which default courses are missing
-                const coursesToAdd = [];
-                for (const course of INITIAL_COURSES) {
-                    if (!existingIds.has(course.id)) {
-                        coursesToAdd.push(course);
-                    }
-                }
+                const coursesToAdd = INITIAL_COURSES.filter(course => !existingIds.has(course.id));
 
-                // If we have missing courses, add them
+                // If we have missing courses, add them in parallel
                 if (coursesToAdd.length > 0) {
-                    const addedCourses = [];
-                    for (const course of coursesToAdd) {
+                    const addPromises = coursesToAdd.map(async (course) => {
                         const courseData = {
                             ...course,
                             createdAt: serverTimestamp()
                         };
                         try {
                             await setDoc(doc(db, 'courses', course.id), courseData);
-                            addedCourses.push({ ...courseData, id: course.id });
+                            return { ...courseData, id: course.id };
                         } catch (err) {
                             console.error(`Failed to add course ${course.id}:`, err);
+                            return null;
                         }
-                    }
+                    });
+
+                    const addedResults = await Promise.all(addPromises);
+                    const addedCourses = addedResults.filter((c): c is any => c !== null);
 
                     if (addedCourses.length > 0) {
                         toast({
@@ -110,18 +115,35 @@ export default function AcademicsPage() {
 
                         const allCourses = [...existingCourses, ...addedCourses];
                         setCourses(allCourses);
+                        localStorage.setItem('cache_courses', JSON.stringify(allCourses));
                     } else {
                         setCourses(existingCourses);
+                        localStorage.setItem('cache_courses', JSON.stringify(existingCourses));
                     }
                 } else {
                     setCourses(existingCourses);
+                    localStorage.setItem('cache_courses', JSON.stringify(existingCourses));
                 }
+                setLoading(false);
             } catch (error) {
                 console.error("Error fetching/seeding courses:", error);
+                setLoading(false);
             }
         };
 
         fetchAndSeedCourses();
+    }, []);
+
+    // Also fetch content
+    useEffect(() => {
+        const unsub = onSnapshot(doc(db, 'page_content', 'page_academics'), (doc) => {
+            if (doc.exists()) {
+                const data = doc.data();
+                setContent(data);
+                localStorage.setItem('cache_academics_content', JSON.stringify(data));
+            }
+        });
+        return () => unsub();
     }, []);
 
     // Link helper
@@ -163,7 +185,7 @@ export default function AcademicsPage() {
             )}
 
             {/* Courses Offered */}
-            {isVisible('undergraduatePrograms') && (
+            {isVisible('coursesList') && (
                 <section className="py-20 bg-[#FDFDFF]">
                     <div className="container mx-auto px-4">
                         <div className="max-w-6xl mx-auto">
@@ -174,45 +196,53 @@ export default function AcademicsPage() {
                                 <div className="w-24 h-1 bg-[#FF4040] mx-auto rounded-full"></div>
                             </div>
 
-                            <div className="grid md:grid-cols-2 gap-8">
-                                {courses.map((course, idx) => (
-                                    <div key={idx} className="group">
-                                        <div className={`bg-gradient-to-br ${course.color} rounded-3xl p-8 shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-2`}>
-                                            <div className="flex items-start justify-between mb-4">
-                                                <div className="p-3 bg-white rounded-2xl shadow-md">
-                                                    <GraduationCap className="w-6 h-6 text-[#0B0B3B]" />
+                            {loading && courses.length === 0 ? (
+                                <div className="grid md:grid-cols-2 gap-8">
+                                    {[1, 2, 3, 4].map(i => (
+                                        <div key={i} className="h-80 bg-gray-100 animate-pulse rounded-3xl"></div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="grid md:grid-cols-2 gap-8">
+                                    {courses.map((course, idx) => (
+                                        <div key={idx} className="group">
+                                            <div className={`bg-gradient-to-br ${course.color} rounded-3xl p-8 shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-2`}>
+                                                <div className="flex items-start justify-between mb-4">
+                                                    <div className="p-3 bg-white rounded-2xl shadow-md">
+                                                        <GraduationCap className="w-6 h-6 text-[#0B0B3B]" />
+                                                    </div>
+                                                    <span className="px-4 py-2 bg-white rounded-full text-sm font-bold text-[#0B0B3B]">
+                                                        {course.duration}
+                                                    </span>
                                                 </div>
-                                                <span className="px-4 py-2 bg-white rounded-full text-sm font-bold text-[#0B0B3B]">
-                                                    {course.duration}
-                                                </span>
+                                                <h3 className="text-2xl font-bold text-[#0B0B3B] mb-4">{course.name}</h3>
+                                                <div className="space-y-3 mb-6">
+                                                    <div className="flex items-center gap-3 text-gray-700">
+                                                        <span className="font-semibold">Seats:</span>
+                                                        <span>{course.seats}</span>
+                                                    </div>
+                                                    <div className="flex items-start gap-3 text-gray-700">
+                                                        <span className="font-semibold">Eligibility:</span>
+                                                        <span>{course.eligibility}</span>
+                                                    </div>
+                                                </div>
+                                                <Link to={getCourseLink(course)} className="block w-full">
+                                                    <button className="w-full py-3 bg-[#0B0B3B] text-white rounded-xl font-bold hover:bg-[#1a1a5e] transition-colors">
+                                                        View Details →
+                                                    </button>
+                                                </Link>
                                             </div>
-                                            <h3 className="text-2xl font-bold text-[#0B0B3B] mb-4">{course.name}</h3>
-                                            <div className="space-y-3 mb-6">
-                                                <div className="flex items-center gap-3 text-gray-700">
-                                                    <span className="font-semibold">Seats:</span>
-                                                    <span>{course.seats}</span>
-                                                </div>
-                                                <div className="flex items-start gap-3 text-gray-700">
-                                                    <span className="font-semibold">Eligibility:</span>
-                                                    <span>{course.eligibility}</span>
-                                                </div>
-                                            </div>
-                                            <Link to={getCourseLink(course)} className="block w-full">
-                                                <button className="w-full py-3 bg-[#0B0B3B] text-white rounded-xl font-bold hover:bg-[#1a1a5e] transition-colors">
-                                                    View Details →
-                                                </button>
-                                            </Link>
                                         </div>
-                                    </div>
-                                ))}
-                            </div>
+                                    ))}
+                                </div>
+                            )}
                         </div>
                     </div>
                 </section>
             )}
 
             {/* Study Materials */}
-            {isVisible('libraryResources') && (
+            {isVisible('departmentInfo') && (
                 <section className="py-20 bg-white">
                     <div className="container mx-auto px-4">
                         <div className="max-w-6xl mx-auto">
@@ -248,7 +278,7 @@ export default function AcademicsPage() {
             )}
 
             {/* Academic Calendar */}
-            {isVisible('academicCalendar') && (
+            {isVisible('syllabusSection') && (
                 <section className="py-20 bg-gradient-to-b from-[#FDFDFF] to-white">
                     <div className="container mx-auto px-4">
                         <div className="max-w-6xl mx-auto">
@@ -318,7 +348,7 @@ export default function AcademicsPage() {
             )}
 
             {/* Online Resources */}
-            {isVisible('libraryResources') && (
+            {isVisible('departmentInfo') && (
                 <section className="py-20 bg-white">
                     <div className="container mx-auto px-4">
                         <div className="max-w-6xl mx-auto">

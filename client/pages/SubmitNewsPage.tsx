@@ -5,10 +5,12 @@ import { Upload, X, Check, ArrowLeft } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import { useToast } from "@/components/ui/use-toast";
 import { compressImage } from '@/utils/imageUtils';
 
 export default function SubmitNewsPage() {
     const navigate = useNavigate();
+    const { toast } = useToast();
     const [submitLoading, setSubmitLoading] = useState(false);
     const [submitSuccess, setSubmitSuccess] = useState(false);
     const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -37,8 +39,11 @@ export default function SubmitNewsPage() {
                 setFormData(prev => ({ ...prev, imageData: compressedBase64 }));
                 setImagePreview(compressedBase64);
             } catch (error) {
-                console.error('Image compression failed:', error);
-                alert('Failed to process image. Please try a different one.');
+                toast({
+                    title: "Error",
+                    description: "Failed to process image. Please try a different one.",
+                    variant: "destructive",
+                });
             }
         }
     };
@@ -81,8 +86,11 @@ export default function SubmitNewsPage() {
             setSubmitLoading(false);
             window.scrollTo(0, 0);
         } catch (error) {
-            console.error('Error submitting news:', error);
-            alert('Failed to submit news. Please try again.');
+            toast({
+                title: "Error",
+                description: "Failed to submit news. Please try again.",
+                variant: "destructive",
+            });
             setSubmitLoading(false);
         }
     };

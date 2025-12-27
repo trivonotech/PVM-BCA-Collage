@@ -5,6 +5,13 @@ import { db } from '@/lib/firebase';
 import { doc, getDoc, setDoc, onSnapshot } from 'firebase/firestore';
 import { useToast } from "@/components/ui/use-toast";
 
+interface SectionToggle {
+    key: string;
+    label: string;
+    page: string;
+    description: string;
+}
+
 export default function SectionVisibilityManager() {
     const { toast } = useToast();
     const [formData, setFormData] = useState({
@@ -16,6 +23,7 @@ export default function SectionVisibilityManager() {
         admissionJourney: true,
         eventHighlights: true,
         topStudents: true,
+        homeStats: true,
         // About Page
         aboutHero: true,
         instituteOverview: true,
@@ -92,7 +100,7 @@ export default function SectionVisibilityManager() {
         }
     };
 
-    const sectionToggles = [
+    const sectionToggles: SectionToggle[] = [
         // Home Page Sections
         { key: 'homeHero', label: 'Hero Section', page: 'Home', description: 'Main hero banner with CTA button' },
         { key: 'featureCards', label: 'Feature Cards', page: 'Home', description: 'Highlight feature cards section' },
@@ -101,6 +109,7 @@ export default function SectionVisibilityManager() {
         { key: 'admissionJourney', label: 'Admission Journey', page: 'Home', description: 'Admission process timeline' },
         { key: 'eventHighlights', label: 'Event Highlights Carousel', page: 'Home', description: 'Auto-scrolling event carousel' },
         { key: 'topStudents', label: 'Top Students Section', page: 'Home', description: 'Top performing students showcase' },
+        { key: 'homeStats', label: 'Stats Section', page: 'Home', description: 'Counter section for students, events, etc.' },
 
         // About Page Sections  
         { key: 'aboutHero', label: 'Hero Section', page: 'About', description: 'About page hero banner' },
@@ -155,7 +164,7 @@ export default function SectionVisibilityManager() {
         sectionToggles
             .filter(s => s.page === page)
             .forEach(s => {
-                updatedData[s.key as keyof typeof formData] = value as never;
+                (updatedData as any)[s.key] = value;
             });
         setFormData(updatedData);
     };

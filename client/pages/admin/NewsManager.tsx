@@ -12,9 +12,7 @@ import {
     serverTimestamp,
     addDoc,
     getDocs,
-    writeBatch
 } from 'firebase/firestore';
-import { ref, uploadString, getDownloadURL, deleteObject } from 'firebase/storage';
 import { Clock, CheckCircle, XCircle, Plus } from 'lucide-react';
 import AdminLayout from '@/components/admin/AdminLayout';
 import { useToast } from "@/components/ui/use-toast";
@@ -24,6 +22,7 @@ import { logAdminActivity } from '@/lib/ActivityLogger';
 import NewsItemCard from '@/components/admin/NewsItemCard';
 import NewsEditForm from '@/components/admin/NewsEditForm';
 import { CONFIG } from '@/lib/config';
+import { getCurrentAdminEmail, getCurrentAdmin } from '@/lib/authUtils';
 
 interface NewsSubmission {
     id: string;
@@ -74,19 +73,6 @@ export default function NewsManager() {
         confirmText: 'Confirm'
     });
 
-    // Get current admin email
-    const getCurrentAdmin = () => {
-        try {
-            const userStr = localStorage.getItem('user');
-            if (userStr) {
-                const user = JSON.parse(userStr);
-                return user.email || 'admin';
-            }
-        } catch (e) {
-            console.error('Error getting current admin:', e);
-        }
-        return 'admin';
-    };
 
     // Real-time news sync based on active tab
     useEffect(() => {
@@ -156,7 +142,7 @@ export default function NewsManager() {
             if (type === 'approve') {
                 await updateDoc(doc(db, 'news', itemId), {
                     status: 'approved',
-                    approvedBy: getCurrentAdmin(),
+                    approvedBy: getCurrentAdminEmail(),
                     approvedAt: serverTimestamp()
                 });
                 logAdminActivity({
@@ -167,7 +153,7 @@ export default function NewsManager() {
             } else if (type === 'reject') {
                 await updateDoc(doc(db, 'news', itemId), {
                     status: 'rejected',
-                    rejectedBy: getCurrentAdmin(),
+                    rejectedBy: getCurrentAdminEmail(),
                     rejectedAt: serverTimestamp()
                 });
                 logAdminActivity({
@@ -205,7 +191,7 @@ export default function NewsManager() {
             },
             status: 'approved',
             submittedAt: null,
-        } as any);
+        });
         setShowEditModal(true);
     };
 
@@ -480,7 +466,7 @@ export default function NewsManager() {
                     {editingNews && (
                         <NewsEditForm
                             editingNews={editingNews}
-                            setEditingNews={setEditingNews as any}
+                            setEditingNews={setEditingNews}
                             handleEditSave={handleEditSave}
                             onClose={() => {
                                 setShowEditModal(false);

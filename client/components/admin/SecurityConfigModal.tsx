@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { X, Save, RotateCcw, Shield } from 'lucide-react';
 import { db } from '@/lib/firebase';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { useToast } from "@/components/ui/use-toast";
 
 interface SecurityConfigModalProps {
     isOpen: boolean;
@@ -9,6 +10,7 @@ interface SecurityConfigModalProps {
 }
 
 export default function SecurityConfigModal({ isOpen, onClose }: SecurityConfigModalProps) {
+    const { toast } = useToast();
     const [loading, setLoading] = useState(false);
     const [config, setConfig] = useState({
         maxRefreshes: 5,
@@ -37,7 +39,7 @@ export default function SecurityConfigModal({ isOpen, onClose }: SecurityConfigM
                         }));
                     }
                 } catch (e) {
-                    console.error("Failed to load security settings", e);
+                    /* Silent fail */
                 }
             };
             loadSettings();
@@ -61,8 +63,11 @@ export default function SecurityConfigModal({ isOpen, onClose }: SecurityConfigM
             }, { merge: true });
             onClose();
         } catch (e) {
-            console.error(e);
-            alert("Failed to save settings");
+            toast({
+                title: "Error",
+                description: "Failed to save settings",
+                variant: "destructive",
+            });
         } finally {
             setLoading(false);
         }
@@ -186,7 +191,7 @@ export default function SecurityConfigModal({ isOpen, onClose }: SecurityConfigM
 
                 <div className="p-4 bg-gray-50 border-t border-gray-100 flex gap-3">
                     <button
-                        onClick={() => setConfig({ maxRefreshes: 5, refreshWindow: 15, blockDuration: 30, enableRefreshCheck: true, enableRateLimit: true })}
+                        onClick={() => setConfig({ maxRefreshes: 5, refreshWindow: 15, blockDuration: 30, enableRefreshCheck: true, enableRateLimit: true, maintenanceMode: false, isActive: true })}
                         className="p-2.5 text-gray-500 hover:bg-white hover:text-gray-700 rounded-lg border border-transparent hover:border-gray-200 transition"
                         title="Reset Defaults"
                     >

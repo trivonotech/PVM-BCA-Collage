@@ -42,7 +42,7 @@ interface Course {
     objectives: string[];
     careerOpportunities: string[];
     syllabus: SyllabusSemester[];
-    createdAt?: any;
+    createdAt?: unknown;
 }
 
 // --- Components ---
@@ -270,7 +270,6 @@ export default function CoursesManager() {
             const compressed = await compressImage(file);
             setFormData(prev => ({ ...prev, image: compressed }));
         } catch (error) {
-            console.error("Image upload failed:", error);
             toast({ title: "Error", description: "Failed to upload image.", variant: "destructive" });
         }
     };
@@ -296,7 +295,6 @@ export default function CoursesManager() {
             resetForm();
             toast({ title: "Success", description: "Course saved successfully!", className: "bg-green-500 text-white border-none" });
         } catch (error) {
-            console.error("Error saving course:", error);
             toast({ title: "Error", description: "Failed to save course.", variant: "destructive" });
         }
     };
@@ -314,7 +312,7 @@ export default function CoursesManager() {
             await deleteDoc(doc(db, 'courses', deleteId));
             setDeleteId(null);
         } catch (error) {
-            console.error("Error deleting course:", error);
+            toast({ title: "Error", description: "Failed to delete course.", variant: "destructive" });
         }
     };
 

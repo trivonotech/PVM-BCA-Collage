@@ -29,7 +29,10 @@ interface NewsArticle {
 export default function NewsPage() {
     const { isVisible } = useSectionVisibility();
     const { toast } = useToast();
-    const [approvedNews, setApprovedNews] = useState<NewsArticle[]>([]);
+    const [approvedNews, setApprovedNews] = useState<NewsArticle[]>(() => {
+        const cached = localStorage.getItem('cache_news_approved');
+        return cached ? JSON.parse(cached) : [];
+    });
     const [loading, setLoading] = useState(true);
     const [subscriberEmail, setSubscriberEmail] = useState('');
     const [submitting, setSubmitting] = useState(false);
@@ -68,7 +71,6 @@ export default function NewsPage() {
             });
             setSubscriberEmail('');
         } catch (error) {
-            console.error('Subscription error:', error);
             toast({
                 title: "Error",
                 description: "Something went wrong. Please try again later.",
@@ -91,11 +93,24 @@ export default function NewsPage() {
                 id: doc.id,
                 ...doc.data()
             })) as NewsArticle[];
+
+            // Sort by date (newest first) - handling both Timestamp and plain objects
+            newsData.sort((a, b) => {
+                const dateA = a.submittedAt?.toDate ? a.submittedAt.toDate().getTime() : (a.submittedAt?.seconds ? a.submittedAt.seconds * 1000 : Date.now());
+                const dateB = b.submittedAt?.toDate ? b.submittedAt.toDate().getTime() : (b.submittedAt?.seconds ? b.submittedAt.seconds * 1000 : Date.now());
+                return dateB - dateA;
+            });
+
             setApprovedNews(newsData);
+            localStorage.setItem('cache_news_approved', JSON.stringify(newsData));
             setLoading(false);
         }, (error) => {
-            console.error('Error fetching approved news:', error);
             setLoading(false);
+            toast({
+                title: "Error",
+                description: "Failed to load news. Please try again later.",
+                variant: "destructive",
+            });
         });
 
         return () => unsubscribe();
@@ -191,10 +206,22 @@ export default function NewsPage() {
                                 </p>
                             </div>
 
-                            {loading ? (
-                                <div className="text-center py-12">
-                                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-                                    <p className="text-gray-600 mt-4">Loading news...</p>
+                            {loading && approvedNews.length === 0 ? (
+                                <div className="grid md:grid-cols-3 gap-8">
+                                    {[1, 2, 3, 4, 5, 6].map(i => (
+                                        <div key={i} className="bg-white rounded-3xl shadow-md overflow-hidden animate-pulse">
+                                            <div className="w-full h-48 bg-gray-200"></div>
+                                            <div className="p-6 space-y-4">
+                                                <div className="flex justify-between">
+                                                    <div className="h-6 w-20 bg-gray-200 rounded-full"></div>
+                                                    <div className="h-4 w-24 bg-gray-100 rounded"></div>
+                                                </div>
+                                                <div className="h-8 bg-gray-200 rounded w-3/4"></div>
+                                                <div className="h-4 bg-gray-100 rounded w-1/2"></div>
+                                                <div className="h-4 bg-gray-200 rounded w-1/2 mt-4"></div>
+                                            </div>
+                                        </div>
+                                    ))}
                                 </div>
                             ) : approvedNews.length === 0 ? (
                                 <div className="text-center py-12 bg-gray-50 rounded-3xl">
@@ -225,7 +252,11 @@ export default function NewsPage() {
                                                         {news.category}
                                                     </span>
                                                     <span className="text-sm text-gray-500">
-                                                        {news.submittedAt?.toDate().toLocaleDateString()}
+                                                        {news.submittedAt?.toDate
+                                                            ? news.submittedAt.toDate().toLocaleDateString()
+                                                            : (news.submittedAt?.seconds
+                                                                ? new Date(news.submittedAt.seconds * 1000).toLocaleDateString()
+                                                                : 'Recently')}
                                                     </span>
                                                 </div>
                                                 <h3 className="text-xl font-bold text-[#0B0B3B] mb-3">{news.title}</h3>

@@ -1,0 +1,13 @@
+﻿client/components/admin/AnalyticsDashboard.tsx(39,68): error TS2339: Property 'totalVisits' does not exist on type 'unknown'.
+client/components/admin/AnalyticsDashboard.tsx(66,83): error TS2322: Type 'unknown' is not assignable to type 'ReactNode'.
+client/components/admin/SecurityConfigModal.tsx(194,50): error TS2345: Argument of type '{ maxRefreshes: number; refreshWindow: number; blockDuration: number; enableRefreshCheck: true; enableRateLimit: true; }' is not assignable to parameter of type 'SetStateAction<{ maxRefreshes: number; refreshWindow: number; blockDuration: number; enableRefreshCheck: boolean; enableRateLimit: boolean; maintenanceMode: boolean; isActive: boolean; }>'.
+  Type '{ maxRefreshes: number; refreshWindow: number; blockDuration: number; enableRefreshCheck: true; enableRateLimit: true; }' is missing the following properties from type '{ maxRefreshes: number; refreshWindow: number; blockDuration: number; enableRefreshCheck: boolean; enableRateLimit: boolean; maintenanceMode: boolean; isActive: boolean; }': maintenanceMode, isActive
+client/pages/admin/AdmissionsManager.tsx(54,46): error TS2345: Argument of type 'DocumentData' is not assignable to parameter of type 'SetStateAction<AdmissionDates>'.
+  Type 'DocumentData' is missing the following properties from type 'AdmissionDates': applicationStart, applicationEnd, examDate, meritDate
+client/pages/admin/InquiriesManager.tsx(132,59): error TS2339: Property 'seconds' does not exist on type 'unknown'.
+client/pages/admin/InquiriesManager.tsx(282,92): error TS2339: Property 'seconds' does not exist on type 'unknown'.
+client/pages/admin/InquiriesManager.tsx(286,92): error TS2339: Property 'seconds' does not exist on type 'unknown'.
+client/pages/admin/InquiriesManager.tsx(359,84): error TS2339: Property 'seconds' does not exist on type 'unknown'.
+client/pages/admin/InquiriesManager.tsx(363,84): error TS2339: Property 'seconds' does not exist on type 'unknown'.
+client/pages/admin/InquiriesManager.tsx(405,85): error TS2339: Property 'seconds' does not exist on type 'unknown'.
+client/pages/admin/InquiriesManager.tsx(405,154): error TS2339: Property 'seconds' does not exist on type 'unknown'.
