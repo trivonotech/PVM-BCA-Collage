@@ -1,8 +1,4 @@
-﻿
-> typecheck
-> tsc
-
-client/components/admin/SessionManagerModal.tsx(177,78): error TS18047: 'selectedSession' is possibly 'null'.
+﻿client/components/admin/SessionManagerModal.tsx(177,78): error TS18047: 'selectedSession' is possibly 'null'.
 client/components/admin/SessionManagerModal.tsx(178,75): error TS18047: 'selectedSession' is possibly 'null'.
 client/components/admin/SessionManagerModal.tsx(181,85): error TS18047: 'selectedSession' is possibly 'null'.
 client/components/admin/SessionManagerModal.tsx(182,79): error TS18047: 'selectedSession' is possibly 'null'.

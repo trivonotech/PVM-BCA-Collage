@@ -1,0 +1,32 @@
+﻿C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\ContactPage.tsx:45:    const [mapUrl, setMapUrl] = useState('https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3151.8354345093747!2d144.9537353159042!3d-37.81720974201434!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x6ad65d4c2b349649%3A0xb6899234e561db11!2sEnvato!5e0!3m2!1sen!2sin!4v1234567890123!5m2!1sen!2sin');
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\ContactPage.tsx:66:                title: "Inquiry Sent!",
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\CourseDetailPage.tsx:613:                                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3717.689454355406!2d70.24696867384532!3d21.28375677897427!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bfd51c1a044a10f%3A0xe5fda820639d2d32!2sPVM%20Computer%20Science%20College%20Keshod!5e0!3m2!1sen!2sin!4v1765452591100!5m2!1sen!2sin"
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\NewsDetailPage.tsx:245:                                                    btn.innerHTML = '<span class="text-xs font-bold text-green-600">Copied!</span>';
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\NewsPage.tsx:53:                    description: "This email is already on our list!",
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\NewsPage.tsx:69:                title: "Success!",
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\NewsPage.tsx:234:                                        Be the first to submit news!
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\NotFound.tsx:30:              Oops! You've drifted <br />
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\StudentCornerPage.tsx:34:                title: "Feedback Submitted!",
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\SubmitNewsPage.tsx:108:                            <h2 className="text-3xl font-extrabold text-gray-900 mb-4">Submission Received!</h2>
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\admin\AdminDashboard.tsx:159:                    <p className="text-gray-600 mt-2">Welcome back! Here's what's happening with your website.</p>
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\admin\AdmissionsManager.tsx:98:                description: "Changes saved successfully!",
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\admin\BackupManager.tsx:291:                                        <strong>Yes, Photos Included!</strong> Since images are stored as encoded text in the database, they will also be included in this backup file.
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\admin\CoursesManager.tsx:296:            toast({ title: "Success", description: "Course saved successfully!", className: "bg-green-500 text-white border-none" });
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\admin\EventsManager.tsx:95:                    description: "Category added successfully!",
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\admin\EventsManager.tsx:167:                    description: "Event updated successfully!",
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\admin\EventsManager.tsx:193:                        description: `Successfully created ${processedCount} events!`,
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\admin\EventsManager.tsx:208:                        description: "Event created successfully!",
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\admin\NewsManager.tsx:259:                        `Stay Updated!\n` +
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\admin\NewsManager.tsx:273:                    description: "News article saved successfully!",
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\admin\NewsManager.tsx:333:                    description: `Successfully restored ${restoredCount} legacy news articles!`,
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\admin\PageContentManager.tsx:199:                description: "Page content saved successfully!",
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\admin\SectionVisibilityManager.tsx:86:                description: "Visibility settings saved successfully!",
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\admin\SectionVisibilityManager.tsx:225:                        <p className="font-semibold">✓ Visibility settings saved successfully!</p>
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\admin\SettingsManager.tsx:18:        mapUrl: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3151.8354345093747!2d144.9537353159042!3d-37.81720974201434!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x6ad65d4c2b349649%3A0xb6899234e561db11!2sEnvato!5e0!3m2!1sen!2sin!4v1234567890123!5m2!1sen!2sin',
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\admin\StudentsManager.tsx:148:                description: "Student saved successfully!",
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\admin\SubscribersManager.tsx:60:            `We have some exciting new updates for you! Stay informed about the latest campus news, results, and announcements.\n\n` +
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\admin\SubscribersManager.tsx:63:            `Thank you for staying connected!\n` +
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\admin\UserManagement.tsx:138:                description: "Admin user created successfully!",
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\admin\UserManagement.tsx:180:                description: "Admin user updated successfully!",
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\admin\UserManagement.tsx:206:                    description: "Admin user deleted successfully!",
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\admin\editors\PageEditor.tsx:59:                description: "Page saved successfully!",

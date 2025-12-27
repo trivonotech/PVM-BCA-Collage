@@ -1,0 +1,73 @@
+﻿C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\components\admin\AdminLayout.tsx:120:        const updateActivity = async () => {
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\components\admin\AdminLayout.tsx:178:                    (async () => {
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\components\admin\NewsEditForm.tsx:146:                                onChange={async (e) => {
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\components\admin\SecurityConfigModal.tsx:39:            const loadSettings = async () => {
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\components\admin\SecurityConfigModal.tsx:62:    const handleSave = async () => {
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\components\admin\SessionManagerModal.tsx:113:    const confirmRevoke = async () => {
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\AcademicsPage.tsx:75:        const fetchAndSeedCourses = async () => {
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\AcademicsPage.tsx:92:                    const addPromises = coursesToAdd.map(async (course) => {
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\AdmissionsPage.tsx:69:        const loadData = async () => {
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\ContactPage.tsx:15:        const fetchSettings = async () => {
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\ContactPage.tsx:54:    const handleSubmit = async (e: React.FormEvent) => {
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\CourseDetailPage.tsx:80:        const fetchCourse = async () => {
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\NewsDetailPage.tsx:46:        const fetchArticle = async () => {
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\NewsPage.tsx:40:    const handleSubscribe = async (e: React.FormEvent) => {
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\PlacementsPage.tsx:65:        const fetchStats = async () => {
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\StudentCornerPage.tsx:22:    const handleSubmit = async (e: React.FormEvent) => {
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\SubmitNewsPage.tsx:34:    const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\SubmitNewsPage.tsx:56:    const handleSubmit = async (e: React.FormEvent) => {
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\admin\AdminDashboard.tsx:94:        const fetchActivity = async () => {
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\admin\AdminLogin.tsx:24:        const initListener = async () => {
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\admin\AdminLogin.tsx:49:    const handleForgotPassword = async () => {
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\admin\AdminLogin.tsx:100:        const checkEmailLink = async () => {
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\admin\AdminLogin.tsx:149:    const handleLogin = async (e: FormEvent) => {
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\admin\AdminLogin.tsx:226:                    (async () => {
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\admin\AdmissionsManager.tsx:49:    const loadData = async () => {
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\admin\AdmissionsManager.tsx:71:    const saveData = async (type: string) => {
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\admin\BackupManager.tsx:67:    const toggleSecurityMode = async () => {
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\admin\BackupManager.tsx:101:    const handleBackup = async () => {
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\admin\BackupManager.tsx:159:    const handleRestore = async (event: React.ChangeEvent<HTMLInputElement>) => {
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\admin\BackupManager.tsx:167:        reader.onload = async (e) => {
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\admin\CoursesManager.tsx:265:    const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\admin\CoursesManager.tsx:277:    const handleSubmit = async (e: React.FormEvent) => {
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\admin\CoursesManager.tsx:309:    const handleDelete = async () => {
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\admin\EventsManager.tsx:78:    const handleAddCategory = async (e: React.FormEvent) => {
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\admin\EventsManager.tsx:123:    const executeDelete = async () => {
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\admin\EventsManager.tsx:152:    const handleSubmit = async (e: React.FormEvent) => {
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\admin\EventsManager.tsx:229:    const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\admin\InquiriesManager.tsx:72:    const handleStatusUpdate = async (id: string, newStatus: Inquiry['status']) => {
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\admin\InquiriesManager.tsx:95:    const executeAction = async () => {
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\admin\NewsManager.tsx:137:    const handleConfirmAction = async () => {
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\admin\NewsManager.tsx:198:    const handleEditSave = async (notify: boolean = false) => {
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\admin\NewsManager.tsx:290:    const handleRestoreLegacy = async () => {
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\admin\NewsManager.tsx:298:            const updates = querySnapshot.docs.map(async (docSnapshot) => {
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\admin\PageContentManager.tsx:150:        const loadContent = async () => {
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\admin\PageContentManager.tsx:192:    const handleSave = async () => {
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\admin\PageContentManager.tsx:216:    const handleImageUpload = async (key: string, file: File) => {
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\admin\PlacementsManager.tsx:76:        const loadStats = async () => {
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\admin\PlacementsManager.tsx:126:    const executeDelete = async () => {
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\admin\PlacementsManager.tsx:146:    const handleSubmit = async (e: React.FormEvent) => {
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\admin\PlacementsManager.tsx:180:    const handleStatsSubmit = async (e: React.FormEvent) => {
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\admin\SectionVisibilityManager.tsx:80:    const handleSave = async () => {
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\admin\SEOManager.tsx:38:    const handleSave = async () => {
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\admin\SettingsManager.tsx:52:        const fetchSettings = async () => {
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\admin\SettingsManager.tsx:68:    const handleSubmit = async (e: React.FormEvent) => {
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\admin\StudentsManager.tsx:88:    const executeDelete = async () => {
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\admin\StudentsManager.tsx:116:    const handleSubmit = async (e: React.FormEvent) => {
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\admin\StudentsManager.tsx:163:    const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\admin\SubscribersManager.tsx:86:    const handleDelete = async () => {
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\admin\SystemHealth.tsx:90:    const toggleSecurity = async () => {
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\admin\SystemHealth.tsx:136:        const checkLatency = async () => {
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\admin\SystemHealth.tsx:149:        const fetchErrors = async () => {
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\admin\SystemHealth.tsx:159:        const fetchSessions = async () => {
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\admin\SystemHealth.tsx:177:        const fetchCounts = async () => {
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\admin\SystemHealth.tsx:178:            const getFastCount = async (col: string) => {
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\admin\UserManagement.tsx:103:    const handleAddNew = async () => {
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\admin\UserManagement.tsx:166:    const handleUpdate = async () => {
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\admin\UserManagement.tsx:196:    const handleDelete = async (id: string) => {
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\admin\WorkshopsManager.tsx:89:    const executeDelete = async () => {
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\admin\WorkshopsManager.tsx:100:    const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\admin\WorkshopsManager.tsx:117:    const handleSubmit = async (e: React.FormEvent) => {
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\admin\editors\PageEditor.tsx:34:        const fetchPage = async () => {
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\admin\editors\PageEditor.tsx:48:    const handleSave = async () => {
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\admin\editors\PageEditor.tsx:75:    const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {

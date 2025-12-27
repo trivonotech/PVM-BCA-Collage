@@ -1,0 +1,14 @@
+﻿C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\admin\BackupManager.tsx:447:      allow read: if request.auth != null;
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\admin\BackupManager.tsx:448:      allow write: if request.auth != null; // Admin needs to restore everyone's data
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\admin\BackupManager.tsx:453:    match /system_logs/{logId} { allow create: if true; allow read, delete: if request.auth != null; }
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\admin\BackupManager.tsx:454:    match /contacts/{contactId} { allow create: if true; allow read, delete: if request.auth != null; }
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\admin\BackupManager.tsx:455:    match /inquiries/{docId} { allow create: if true; allow read, delete: if request.auth != null; }
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\admin\BackupManager.tsx:456:    match /subscribers/{docId} { allow create: if true; allow read, delete: if request.auth != null; }
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\admin\BackupManager.tsx:461:      allow write: if request.auth != null;
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\admin\BackupManager.tsx:473:      allow read: if request.auth != null;
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\admin\BackupManager.tsx:474:      allow write: if request.auth != null; // Admin needs to restore everyone's data
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\admin\BackupManager.tsx:479:    match /system_logs/{logId} { allow create: if true; allow read, delete: if request.auth != null; }
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\admin\BackupManager.tsx:480:    match /contacts/{contactId} { allow create: if true; allow read, delete: if request.auth != null; }
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\admin\BackupManager.tsx:481:    match /inquiries/{docId} { allow create: if true; allow read, delete: if request.auth != null; }
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\admin\BackupManager.tsx:482:    match /subscribers/{docId} { allow create: if true; allow read, delete: if request.auth != null; }
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\admin\BackupManager.tsx:487:      allow write: if request.auth != null;
