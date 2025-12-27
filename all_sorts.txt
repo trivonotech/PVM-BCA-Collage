@@ -1,0 +1,6 @@
+﻿C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\components\admin\AdminLayout.tsx:344:                                .sort((a, b) => b[0].length - a[0].length) // Sort by length desc
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\components\admin\AnalyticsDashboard.tsx:29:        .sort(([, a]: [string, any], [, b]: [string, any]) => (b as number) - (a as number))
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\NewsPage.tsx:98:            newsData.sort((a, b) => {
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\PlacementsPage.tsx:86:    const recruiters = useMemo(() => [...new Set(placements.map(p => p.company))].sort(), [placements]);
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\admin\AdminDashboard.tsx:127:                    .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\admin\NewsManager.tsx:91:            newsData.sort((a, b) => {
