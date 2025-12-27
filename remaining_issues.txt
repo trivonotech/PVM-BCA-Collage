@@ -1,0 +1,42 @@
+﻿C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\components\AboutSection.tsx:9:  const [content, setContent] = useState<any>(null);
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\components\Hero.tsx:9:    const [content, setContent] = useState<any>(() => {
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\components\SchemaData.tsx:6:    const [seoData, setSeoData] = useState<any>(null);
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\components\SecurityMonitor.tsx:35:        const unsub = onSnapshot(doc(db, 'settings', 'security'), (snap: any) => {
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\components\admin\AnalyticsDashboard.tsx:27:    const pageViews = (stats as any)?.pageViews || {};
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\components\admin\AnalyticsDashboard.tsx:39:                        <h3 className="text-3xl font-bold">{(stats as any)?.totalVisits || 0}</h3>
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\components\admin\AnalyticsDashboard.tsx:66:                                <span className="text-sm font-bold text-gray-900">{(views as any)}</span>
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\components\admin\NewsEditForm.tsx:19:    submittedAt: any;
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\components\admin\NewsEditForm.tsx:21:    approvedAt?: any;
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\components\admin\NewsEditForm.tsx:23:    rejectedAt?: any;
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\components\admin\NewsItemCard.tsx:18:    submittedAt: any;
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\components\admin\NewsItemCard.tsx:20:    approvedAt?: any;
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\components\admin\NewsItemCard.tsx:22:    rejectedAt?: any;
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\components\admin\SessionManagerModal.tsx:18:    timestamp: any;
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\components\admin\SessionManagerModal.tsx:21:    lastActive?: any;
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\components\admin\SessionManagerModal.tsx:29:    timestamp: any;
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\components\admin\SessionManagerModal.tsx:44:        if (ts && typeof (ts as any).toDate === 'function') return (ts as any).toDate();
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\AboutPage.tsx:11:    const [content, setContent] = useState<any>(null);
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\AcademicsPage.tsx:14:    const [content, setContent] = useState<any>(() => {
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\AcademicsPage.tsx:150:    const getCourseLink = (course: any) => {
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\ContactPage.tsx:12:    const [content, setContent] = useState<any>(null);
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\NewsPage.tsx:26:    submittedAt: any;
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\admin\AdminDashboard.tsx:25:    timestamp: any;
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\admin\AdminDashboard.tsx:33:    onUpdate: (size: number, docs: any[]) => void,
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\admin\AdminLogin.tsx:294:            } catch (loginErr: any) {
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\admin\AdmissionsManager.tsx:54:            if (datesSnap.exists()) setDates(datesSnap.data() as any);
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\admin\InquiriesManager.tsx:132:            const dateStr = formatDateSafe((inq.createdAt as any)?.seconds, 'yyyy-MM-dd HH:mm:ss');
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\admin\InquiriesManager.tsx:282:                                                            {formatDateSafe((inq.createdAt as any)?.seconds, 'MMM d, yyyy')}
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\admin\InquiriesManager.tsx:286:                                                            {formatDateSafe((inq.createdAt as any)?.seconds, 'h:mm a')}
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\admin\InquiriesManager.tsx:359:                                                    {formatDateSafe((inq.createdAt as any)?.seconds, 'MMM d, yyyy')}
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\admin\InquiriesManager.tsx:363:                                                    {formatDateSafe((inq.createdAt as any)?.seconds, 'h:mm a')}
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\admin\InquiriesManager.tsx:405:                                Received on {formatDateSafe((viewInquiry?.createdAt as any)?.seconds, 'MMMM d, yyyy')} at {formatDateSafe((viewInquiry?.createdAt as any)?.seconds, 'h:mm a')}
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\admin\SectionVisibilityManager.tsx:167:                (updatedData as any)[s.key] = value;
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\admin\SEOManager.tsx:31:                setSeoData(prev => ({ ...prev, ...(docSnap.data() as any) }));
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\admin\SettingsManager.tsx:236:                                        value={(formData as any)[key]}
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\admin\SubscribersManager.tsx:226:                                                            {sub.subscribedAt && typeof (sub.subscribedAt as any).toDate === 'function'
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\admin\SubscribersManager.tsx:227:                                                                ? (sub.subscribedAt as any).toDate().toLocaleDateString('en-IN', {
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\admin\SubscribersManager.tsx:321:                                                {sub.subscribedAt && typeof (sub.subscribedAt as any).toDate === 'function'
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\admin\SubscribersManager.tsx:322:                                                    ? (sub.subscribedAt as any).toDate().toLocaleDateString('en-IN', {
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\admin\SystemHealth.tsx:48:    timestamp?: any;
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\admin\SystemHealth.tsx:60:    lastActive?: any;
+C:\Users\yashv\Downloads\pvm bca college\PVM-BCA-Collage\client\pages\admin\SystemHealth.tsx:61:    timestamp?: any;
