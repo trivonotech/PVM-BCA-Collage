@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { db } from '@/lib/firebase';
 import { collection, query, orderBy, onSnapshot, limit } from 'firebase/firestore';
 import { useSectionVisibility } from '@/hooks/useSectionVisibility';
@@ -71,7 +72,7 @@ export default function EventHighlights() {
                 </div>
 
                 <div className="flex justify-center mb-16 md:mb-24">
-                    <button className="flex items-center gap-1 bg-blue-950 hover:bg-blue-900 text-white font-semibold px-10 py-3.5 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
+                    <Link to="/student-life" className="flex items-center gap-1 bg-blue-950 hover:bg-blue-900 text-white font-semibold px-10 py-3.5 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
                         <span>View More</span>
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -79,7 +80,7 @@ export default function EventHighlights() {
                         <svg className="w-5 h-5 -ml-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                         </svg>
-                    </button>
+                    </Link>
                 </div>
             </div>
 

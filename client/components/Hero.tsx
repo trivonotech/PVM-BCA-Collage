@@ -42,7 +42,7 @@ export function Hero() {
                             <div dangerouslySetInnerHTML={{ __html: content.title.replace(/\n/g, '<br/>') }} />
                         ) : (
                             <>
-                                Education That <span className="whitespace-nowrap">Builds <img src={decoBook} className="inline-block w-8 h-8 md:w-12 md:h-12 lg:w-16 lg:h-16 ml-2 -mt-2 lg:-mt-4 align-middle animate-bounce-slow" alt="Comprehensive Learning Materials" /></span> <br />
+                                Education That <span className="whitespace-nowrap">Builds <img src={decoBook} className="inline-block w-8 h-8 md:w-12 md:h-12 lg:w-16 lg:h-16 ml-2 -mt-2 lg:-mt-4 align-middle animate-bounce-slow" alt="Book Icon" /></span> <br />
                                 <span className="text-[#0B0B3B]">Capable Professionals</span>
                             </>
                         )}

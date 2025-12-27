@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import cardCourses from '../assets/card-courses.png';
 import cardStudy from '../assets/card-study.png';
 import cardExam from '../assets/card-exam.png';
@@ -13,6 +14,7 @@ const features = [
     borderColor: 'border-[#FF7582]',
     bgColor: 'bg-[#FFEFF0]', // Light Pink
     image: cardCourses,
+    link: '/academics'
   },
   {
     title: 'Study Materials',
@@ -22,6 +24,7 @@ const features = [
     borderColor: 'border-[#FFB073]',
     bgColor: 'bg-[#FFF5EB]', // Light Peach
     image: cardStudy,
+    link: '/student-life'
   },
   {
     title: 'Exam Notices',
@@ -31,6 +34,7 @@ const features = [
     borderColor: 'border-[#A78BFA]',
     bgColor: 'bg-[#F5F3FF]', // Light Purple
     image: cardExam,
+    link: '/examination'
   },
   {
     title: 'Placements',
@@ -40,6 +44,7 @@ const features = [
     borderColor: 'border-[#34D399]',
     bgColor: 'bg-[#ECFDF5]', // Light Green
     image: cardPlacements,
+    link: '/placements'
   },
 ];
 
@@ -110,11 +115,12 @@ export default function FeatureCards() {
               </p>
 
               <div className="mt-auto w-full pb-4">
-                <button
-                  className={`${feature.buttonClass} border-[#FFD700] border text-white font-bold py-3 px-6 rounded-full text-xs shadow-lg transition-transform hover:scale-105 w-full max-w-[160px]`}
+                <Link
+                  to={feature.link}
+                  className={`${feature.buttonClass} border-[#FFD700] border text-white font-bold py-3 px-6 rounded-full text-xs shadow-lg transition-transform hover:scale-105 w-full max-w-[160px] inline-block`}
                 >
                   {feature.buttonText}
-                </button>
+                </Link>
               </div>
             </div>
           ))}

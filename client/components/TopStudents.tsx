@@ -57,7 +57,7 @@ export default function TopStudents() {
                         >
                             <div className="h-40 md:h-48 bg-gradient-to-br from-blue-200 to-blue-300 relative">
                                 {student.image ? (
-                                    <img src={student.image} alt={student.name} className="w-full h-full object-cover" />
+                                    <img src={student.image} alt={`${student.name} - Top Student`} className="w-full h-full object-cover" />
                                 ) : (
                                     <div className="w-full h-full flex items-center justify-center text-4xl font-bold text-blue-600">
                                         {student.name[0]}
@@ -92,7 +92,7 @@ export default function TopStudents() {
                                 <div className="relative w-24 h-24 mb-3">
                                     <div className="w-full h-full rounded-full bg-gradient-to-br from-blue-200 to-blue-300 overflow-hidden shadow-md">
                                         {student.image ? (
-                                            <img src={student.image} alt={student.name} className="w-full h-full object-cover" />
+                                            <img src={student.image} alt={`${student.name} - Rank ${student.rank}`} className="w-full h-full object-cover" />
                                         ) : (
                                             <div className="w-full h-full flex items-center justify-center text-2xl font-bold text-blue-600">
                                                 {student.name[0]}
@@ -118,7 +118,7 @@ export default function TopStudents() {
                                 <div className="relative w-24 h-24 mb-3">
                                     <div className="w-full h-full rounded-full bg-gradient-to-br from-blue-200 to-blue-300 overflow-hidden shadow-md">
                                         {student.image ? (
-                                            <img src={student.image} alt={student.name} className="w-full h-full object-cover" />
+                                            <img src={student.image} alt={`${student.name} - Rank ${student.rank}`} className="w-full h-full object-cover" />
                                         ) : (
                                             <div className="w-full h-full flex items-center justify-center text-2xl font-bold text-blue-600">
                                                 {student.name[0]}

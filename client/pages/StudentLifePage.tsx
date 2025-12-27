@@ -199,7 +199,7 @@ export default function StudentLifePage() {
                                     filteredEvents.map((event, idx) => (
                                         <div key={idx} className="group relative overflow-hidden rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 cursor-pointer"
                                             onClick={() => setSelectedImage(event)}>
-                                            <img src={event.image} alt={event.name} className="w-full h-64 object-cover" />
+                                            <img src={event.image} alt={event.name || "College Event"} className="w-full h-64 object-cover" />
                                             <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent flex flex-col justify-end p-6">
                                                 <div className="text-[#FACC15] text-sm font-bold mb-1">{event.category}</div>
                                                 <h3 className="text-white text-xl font-bold mb-0.5">{event.name}</h3>
