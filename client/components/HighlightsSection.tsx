@@ -1,25 +1,12 @@
 import { useState, useRef, useEffect } from 'react';
-import { createPortal } from 'react-dom';
 import { Link } from 'react-router-dom';
-import { X, Download, Share2 } from 'lucide-react';
 import { db } from '@/lib/firebase';
 import { collection, query, orderBy, onSnapshot, limit } from 'firebase/firestore';
+import TopStudents from './TopStudents'; // Reusing the component
 
 export default function HighlightsSection() {
-  const [activeIndex, setActiveIndex] = useState(0);
-  const [students, setStudents] = useState<any[]>([]);
   const [events, setEvents] = useState<any[]>([]);
   const carouselRef = useRef<HTMLDivElement>(null);
-
-  // Fetch Top Students Dynamically
-  useEffect(() => {
-    const q = query(collection(db, 'top_students'), orderBy('rank'));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setStudents(data);
-    });
-    return () => unsubscribe();
-  }, []);
 
   // Fetch Latest 10 Events Dynamically
   useEffect(() => {
@@ -30,8 +17,6 @@ export default function HighlightsSection() {
     });
     return () => unsubscribe();
   }, []);
-
-  /* Auto-play Effect - purely CSS based now, simplified component */
 
   return (
     <section className="py-16 md:py-24 bg-white">
@@ -54,7 +39,6 @@ export default function HighlightsSection() {
                       alt={event.name}
                       className="w-full h-full object-cover"
                     />
-                    {/* Dark overlay - light persistent overlay for text readability if needed, or removed active hover state */}
                     <div className="absolute inset-0 bg-black/10" />
                   </div>
                 ))}
@@ -89,158 +73,9 @@ export default function HighlightsSection() {
           </Link>
         </div>
 
-        <h2 className="text-3xl md:text-5xl font-bold text-gray-900 mb-12 md:mb-16 font-grotesk px-4 md:px-0">
-          Top Student
-        </h2>
+        {/* Reusing TopStudents Component to eliminate duplication */}
+        <TopStudents />
 
-        {/* Students Grid - Desktop */}
-        <div className="hidden md:grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 px-4 md:px-0">
-          {students.map((student, index) => (
-            <div
-              key={index}
-              className="rounded-3xl border-2 border-blue-400 overflow-hidden shadow-sm hover:shadow-lg transition-shadow"
-            >
-              {/* Student Image */}
-              <div className="h-40 md:h-48 bg-gradient-to-br from-blue-200 to-blue-300 relative">
-                {student.image ? (
-                  <img src={student.image} alt={student.name} className="w-full h-full object-cover" />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center text-4xl font-bold text-blue-600">
-                    {student.name[0]}
-                  </div>
-                )}
-                <div className="absolute top-3 right-3 bg-gray-900 text-white rounded-full w-8 h-8 md:w-10 md:h-10 flex items-center justify-center font-bold text-xs md:text-sm">
-                  {student.rank}
-                </div>
-              </div>
-
-              {/* Student Info */}
-              <div className="bg-blue-50 p-4 md:p-6">
-                <h4 className="text-xl md:text-2xl font-bold text-gray-900 text-center mb-2">
-                  {student.name}
-                </h4>
-                <p className="text-center text-sm md:text-base font-medium text-gray-800 mb-2">
-                  {student.course}
-                </p>
-                <p className="text-center text-xs md:text-sm text-gray-700">
-                  {student.achievement}
-                </p>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Students Grid - Mobile */}
-        <div className="md:hidden px-4">
-          {/* First Row - 3 Students */}
-          <div className="grid grid-cols-3 gap-3 mb-3">
-            {students.slice(0, 3).map((student, index) => (
-              <div
-                key={index}
-                className="flex flex-col items-center"
-              >
-                {/* Circular Photo */}
-                <div className="relative w-24 h-24 mb-3">
-                  <div className="w-full h-full rounded-full bg-gradient-to-br from-blue-200 to-blue-300 overflow-hidden shadow-md">
-                    {student.image ? (
-                      <img src={student.image} alt={student.name} className="w-full h-full object-cover" />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-2xl font-bold text-blue-600">
-                        {student.name[0]}
-                      </div>
-                    )}
-                  </div>
-                  {/* Rank Badge */}
-                  <div className="absolute -top-1 -right-1 bg-blue-600 text-white rounded-full w-7 h-7 flex items-center justify-center font-bold text-xs shadow-md">
-                    {student.rank}
-                  </div>
-                </div>
-
-                {/* Student Info */}
-                <div className="text-center w-full">
-                  <h4 className="text-sm font-bold text-gray-900 mb-1 truncate px-1">
-                    {student.name}
-                  </h4>
-                  <p className="text-xs text-gray-600 truncate px-1">
-                    {student.course}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Second Row - 3 Students */}
-          <div className="grid grid-cols-3 gap-3 mb-3">
-            {students.slice(3, 6).map((student, index) => (
-              <div
-                key={index + 3}
-                className="flex flex-col items-center"
-              >
-                {/* Circular Photo */}
-                <div className="relative w-24 h-24 mb-3">
-                  <div className="w-full h-full rounded-full bg-gradient-to-br from-blue-200 to-blue-300 overflow-hidden shadow-md">
-                    {student.image ? (
-                      <img src={student.image} alt={student.name} className="w-full h-full object-cover" />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-2xl font-bold text-blue-600">
-                        {student.name[0]}
-                      </div>
-                    )}
-                  </div>
-                  {/* Rank Badge */}
-                  <div className="absolute -top-1 -right-1 bg-blue-600 text-white rounded-full w-7 h-7 flex items-center justify-center font-bold text-xs shadow-md">
-                    {student.rank}
-                  </div>
-                </div>
-
-                {/* Student Info */}
-                <div className="text-center w-full">
-                  <h4 className="text-sm font-bold text-gray-900 mb-1 truncate px-1">
-                    {student.name}
-                  </h4>
-                  <p className="text-xs text-gray-600 truncate px-1">
-                    {student.course}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Third Row - 2 Students Centered */}
-          <div className="grid grid-cols-6 gap-3">
-            {students.slice(6, 8).map((student, index) => (
-              <div
-                key={index + 6}
-                className="flex flex-col items-center col-span-2"
-                style={{ gridColumnStart: index === 0 ? 2 : 4 }}
-              >
-                {/* Circular Photo */}
-                <div className="relative w-24 h-24 mb-3">
-                  <div className="w-full h-full rounded-full bg-gradient-to-br from-blue-200 to-blue-300 overflow-hidden shadow-md">
-                    {/* Photo placeholder - you can add actual images here */}
-                    <div className="w-full h-full flex items-center justify-center text-2xl font-bold text-blue-600">
-                      {student.name[0]}
-                    </div>
-                  </div>
-                  {/* Rank Badge */}
-                  <div className="absolute -top-1 -right-1 bg-blue-600 text-white rounded-full w-7 h-7 flex items-center justify-center font-bold text-xs shadow-md">
-                    {student.rank}
-                  </div>
-                </div>
-
-                {/* Student Info */}
-                <div className="text-center w-full">
-                  <h4 className="text-sm font-bold text-gray-900 mb-1 truncate px-1">
-                    {student.name}
-                  </h4>
-                  <p className="text-xs text-gray-600 truncate px-1">
-                    {student.course}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
       </div>
 
       <style>{`

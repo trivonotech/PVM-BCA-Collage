@@ -67,7 +67,7 @@ export default function Footer() {
                 </a>
               </li>
               <li>
-                <button className="hover:text-white transition-colors text-left" onClick={() => window.open('https://maps.google.com', '_blank')}>
+                <button className="hover:text-white transition-colors text-left" onClick={() => window.open('https://maps.google.com', '_blank', 'noopener,noreferrer')}>
                   Location
                 </button>
               </li>
