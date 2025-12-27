@@ -1,7 +1,0 @@
-﻿client/components/admin/SessionManagerModal.tsx(177,78): error TS18047: 'selectedSession' is possibly 'null'.
-client/components/admin/SessionManagerModal.tsx(178,75): error TS18047: 'selectedSession' is possibly 'null'.
-client/components/admin/SessionManagerModal.tsx(181,85): error TS18047: 'selectedSession' is possibly 'null'.
-client/components/admin/SessionManagerModal.tsx(182,79): error TS18047: 'selectedSession' is possibly 'null'.
-client/components/GlobalErrorBoundary.tsx(24,31): error TS2345: Argument of type 'string | null | undefined' is not assignable to parameter of type 'string | undefined'.
-  Type 'null' is not assignable to type 'string | undefined'.
-client/components/SecurityMonitor.tsx(40,31): error TS7006: Parameter 'prev' implicitly has an 'any' type.
