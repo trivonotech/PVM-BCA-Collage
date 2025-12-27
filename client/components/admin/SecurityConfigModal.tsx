@@ -9,17 +9,27 @@ interface SecurityConfigModalProps {
     onClose: () => void;
 }
 
+interface SecurityConfig {
+    maxRefreshes: number;
+    refreshWindow: number;
+    blockDuration: number;
+    enableRefreshCheck: boolean;
+    enableRateLimit: boolean;
+    maintenanceMode: boolean;
+    isActive: boolean;
+}
+
 export default function SecurityConfigModal({ isOpen, onClose }: SecurityConfigModalProps) {
     const { toast } = useToast();
     const [loading, setLoading] = useState(false);
-    const [config, setConfig] = useState({
+    const [config, setConfig] = useState<SecurityConfig>({
         maxRefreshes: 5,
-        refreshWindow: 15, // seconds
-        blockDuration: 30, // minutes
+        refreshWindow: 15,
+        blockDuration: 30,
         enableRefreshCheck: true,
         enableRateLimit: true,
         maintenanceMode: false,
-        isActive: false // Added Login Security (Shield) state
+        isActive: false
     });
 
     // Load initial settings & Handle Body Scroll
@@ -38,7 +48,7 @@ export default function SecurityConfigModal({ isOpen, onClose }: SecurityConfigM
                             isActive: data.isActive !== undefined ? data.isActive : false
                         }));
                     }
-                } catch (e) {
+                } catch (e: unknown) {
                     /* Silent fail */
                 }
             };
@@ -62,7 +72,7 @@ export default function SecurityConfigModal({ isOpen, onClose }: SecurityConfigM
                 }
             }, { merge: true });
             onClose();
-        } catch (e) {
+        } catch (e: unknown) {
             toast({
                 title: "Error",
                 description: "Failed to save settings",

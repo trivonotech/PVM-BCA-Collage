@@ -4,10 +4,18 @@ import { db } from '@/lib/firebase';
 import { collection, query, orderBy, onSnapshot, limit } from 'firebase/firestore';
 import { useSectionVisibility } from '@/hooks/useSectionVisibility';
 
+interface CollegeEvent {
+    id: string;
+    name: string;
+    date: string;
+    image: string;
+    description?: string;
+}
+
 export default function EventHighlights() {
     const { isVisible } = useSectionVisibility();
     const [loading, setLoading] = useState(true);
-    const [events, setEvents] = useState<any[]>(() => {
+    const [events, setEvents] = useState<CollegeEvent[]>(() => {
         const cached = localStorage.getItem('cache_events');
         return cached ? JSON.parse(cached) : [];
     });
@@ -16,7 +24,7 @@ export default function EventHighlights() {
     useEffect(() => {
         const q = query(collection(db, 'events'), orderBy('date', 'desc'), limit(10));
         const unsubscribe = onSnapshot(q, (snapshot) => {
-            const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as CollegeEvent[];
             setEvents(data);
             localStorage.setItem('cache_events', JSON.stringify(data));
             setLoading(false);

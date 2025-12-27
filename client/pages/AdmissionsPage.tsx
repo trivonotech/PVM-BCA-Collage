@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 import { db } from '@/lib/firebase';
 import { doc, getDoc, onSnapshot } from 'firebase/firestore';
 import { useSectionVisibility } from '@/hooks/useSectionVisibility';
+import { ensureAbsoluteUrl } from '@/lib/utils';
 
 interface AdmissionDates {
     applicationStart: string;
@@ -18,15 +19,34 @@ interface AdmissionHero {
     subtitle?: string;
 }
 
+interface AdmissionStep {
+    id: string;
+    title: string;
+    description: string;
+    step?: string;
+    color?: string;
+    desc?: string; // Standardize this later, but need it for now to fix build
+}
+
+interface Scholarship {
+    id: string;
+    name: string;
+    amount: string;
+    description: string;
+    link?: string;
+    icon?: string;
+    eligibility?: string;
+}
+
 export default function AdmissionsPage() {
     const { isVisible } = useSectionVisibility();
     // Default Static Data (Fallback)
     const [loading, setLoading] = useState(true);
-    const [steps, setSteps] = useState<any[]>(() => {
+    const [steps, setSteps] = useState<AdmissionStep[]>(() => {
         const cached = localStorage.getItem('cache_admission_steps');
         return cached ? JSON.parse(cached) : [];
     });
-    const [scholarships, setScholarships] = useState<any[]>(() => {
+    const [scholarships, setScholarships] = useState<Scholarship[]>(() => {
         const cached = localStorage.getItem('cache_admission_scholarships');
         return cached ? JSON.parse(cached) : [];
     });
@@ -61,18 +81,18 @@ export default function AdmissionsPage() {
                 }
 
                 if (stepsSnap.exists()) {
-                    const data = stepsSnap.data().items || [];
+                    const data = (stepsSnap.data()?.items || []) as AdmissionStep[];
                     setSteps(data);
                     localStorage.setItem('cache_admission_steps', JSON.stringify(data));
                 }
 
                 if (scholarSnap.exists()) {
-                    const data = scholarSnap.data().items || [];
+                    const data = (scholarSnap.data()?.items || []) as Scholarship[];
                     setScholarships(data);
                     localStorage.setItem('cache_admission_scholarships', JSON.stringify(data));
                 }
                 setLoading(false);
-            } catch (err) {
+            } catch (err: unknown) {
                 console.error("Error loading admission content:", err);
                 setLoading(false);
             }

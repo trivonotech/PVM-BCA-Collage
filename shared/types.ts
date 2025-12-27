@@ -40,6 +40,7 @@ export interface Workshop {
     status: 'Upcoming' | 'Ongoing' | 'Completed';
     description?: string;
     venue?: string;
+    image?: string;
     createdAt: string;
     updatedAt: string;
 }

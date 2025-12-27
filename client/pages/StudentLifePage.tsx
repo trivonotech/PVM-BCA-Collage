@@ -4,7 +4,7 @@ import Footer from '@/components/Footer';
 import { Trophy, Lightbulb, Image as ImageIcon, X, Download, ChevronLeft, ChevronRight } from 'lucide-react';
 import { db } from '@/lib/firebase';
 import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
-import type { Event } from '@/../../shared/types';
+import type { Event, Workshop } from '@/../../shared/types';
 import { useSectionVisibility } from '@/hooks/useSectionVisibility';
 import { getEventStatus } from "@/lib/utils";
 
@@ -15,7 +15,7 @@ export default function StudentLifePage() {
         const cached = localStorage.getItem('cache_sl_events');
         return cached ? JSON.parse(cached) : [];
     });
-    const [workshops, setWorkshops] = useState<any[]>(() => {
+    const [workshops, setWorkshops] = useState<Workshop[]>(() => {
         const cached = localStorage.getItem('cache_sl_workshops');
         return cached ? JSON.parse(cached) : [];
     });
@@ -35,11 +35,11 @@ export default function StudentLifePage() {
             const data = snapshot.docs.map(doc => ({
                 id: doc.id,
                 ...doc.data()
-            }));
+            })) as Workshop[];
             setWorkshops(data);
             localStorage.setItem('cache_sl_workshops', JSON.stringify(data));
             setWorkshopsLoading(false);
-        }, (err) => {
+        }, (err: unknown) => {
             console.error(err);
             setWorkshopsLoading(false);
         });

@@ -22,8 +22,8 @@ interface NewsArticle {
         designation?: string;
     };
     status: string;
-    submittedAt: any;
-    approvedAt?: any;
+    submittedAt: { seconds: number; nanoseconds: number } | any; // Firestore Timestamp structure
+    approvedAt?: { seconds: number; nanoseconds: number } | any;
 }
 
 export default function NewsDetailPage() {
@@ -201,7 +201,7 @@ export default function NewsDetailPage() {
                                     <div className="flex flex-wrap gap-3">
                                         {/* WhatsApp */}
                                         <button
-                                            onClick={() => window.open(`https://wa.me/?text=${encodeURIComponent(article.title + ' ' + window.location.href)}`, '_blank')}
+                                            onClick={() => window.open(`https://wa.me/?text=${encodeURIComponent(article.title + ' ' + window.location.href)}`, '_blank', 'noopener,noreferrer')}
                                             className="w-10 h-10 rounded-full bg-green-500 text-white flex items-center justify-center hover:bg-green-600 transition-colors shadow-sm"
                                             title="Share on WhatsApp"
                                         >
@@ -210,7 +210,7 @@ export default function NewsDetailPage() {
 
                                         {/* Facebook */}
                                         <button
-                                            onClick={() => window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`, '_blank')}
+                                            onClick={() => window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`, '_blank', 'noopener,noreferrer')}
                                             className="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center hover:bg-blue-700 transition-colors shadow-sm"
                                             title="Share on Facebook"
                                         >
@@ -219,7 +219,7 @@ export default function NewsDetailPage() {
 
                                         {/* Twitter/X */}
                                         <button
-                                            onClick={() => window.open(`https://twitter.com/intent/tweet?url=${encodeURIComponent(window.location.href)}&text=${encodeURIComponent(article.title)}`, '_blank')}
+                                            onClick={() => window.open(`https://twitter.com/intent/tweet?url=${encodeURIComponent(window.location.href)}&text=${encodeURIComponent(article.title)}`, '_blank', 'noopener,noreferrer')}
                                             className="w-10 h-10 rounded-full bg-black text-white flex items-center justify-center hover:bg-gray-800 transition-colors shadow-sm"
                                             title="Share on X (Twitter)"
                                         >
@@ -228,7 +228,7 @@ export default function NewsDetailPage() {
 
                                         {/* LinkedIn */}
                                         <button
-                                            onClick={() => window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(window.location.href)}`, '_blank')}
+                                            onClick={() => window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(window.location.href)}`, '_blank', 'noopener,noreferrer')}
                                             className="w-10 h-10 rounded-full bg-blue-700 text-white flex items-center justify-center hover:bg-blue-800 transition-colors shadow-sm"
                                             title="Share on LinkedIn"
                                         >

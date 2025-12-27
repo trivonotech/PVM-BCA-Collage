@@ -3,10 +3,20 @@ import { db } from '@/lib/firebase';
 import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
 import { useSectionVisibility } from '@/hooks/useSectionVisibility';
 
+interface Student {
+    id: string;
+    name: string;
+    rank: number;
+    course: string;
+    image?: string;
+    year?: string;
+    achievement?: string;
+}
+
 export default function TopStudents() {
     const { isVisible } = useSectionVisibility();
     const [loading, setLoading] = useState(true);
-    const [students, setStudents] = useState<any[]>(() => {
+    const [students, setStudents] = useState<Student[]>(() => {
         const cached = localStorage.getItem('cache_top_students');
         return cached ? JSON.parse(cached) : [];
     });
@@ -15,7 +25,10 @@ export default function TopStudents() {
     useEffect(() => {
         const q = query(collection(db, 'top_students'), orderBy('rank'));
         const unsubscribe = onSnapshot(q, (snapshot) => {
-            const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            const data = snapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data()
+            })) as Student[];
             setStudents(data);
             localStorage.setItem('cache_top_students', JSON.stringify(data));
             setLoading(false);

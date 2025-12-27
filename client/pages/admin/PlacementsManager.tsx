@@ -16,7 +16,8 @@ interface Placement {
     type: 'Success Story' | 'Top Student' | 'Regular';
     image?: string;
     quote?: string;
-    createdAt?: any;
+    createdAt?: { seconds: number; nanoseconds: number } | string | number | any;
+    updatedAt?: { seconds: number; nanoseconds: number } | string | number | any;
 }
 
 interface PlacementStats {
@@ -79,7 +80,7 @@ export default function PlacementsManager() {
                 if (docSnap.exists()) {
                     setStats(docSnap.data() as PlacementStats);
                 }
-            } catch (error) {
+            } catch (error: unknown) {
                 console.error("Error loading stats:", error);
                 // Silent error or toast? Silent on load is usually better
             }
@@ -132,7 +133,7 @@ export default function PlacementsManager() {
                 title: "Deleted",
                 description: "Placement record has been deleted.",
             });
-        } catch (error) {
+        } catch (error: unknown) {
             console.error("Error deleting:", error);
             toast({
                 title: "Error",
@@ -166,7 +167,7 @@ export default function PlacementsManager() {
                 });
             }
             setShowModal(false);
-        } catch (error) {
+        } catch (error: unknown) {
             console.error("Error saving:", error);
             toast({
                 title: "Error",
@@ -185,7 +186,7 @@ export default function PlacementsManager() {
                 title: "Stats Updated",
                 description: "Placement statistics have been updated successfully.",
             });
-        } catch (error) {
+        } catch (error: unknown) {
             console.error("Error saving stats:", error);
             toast({
                 title: "Error",

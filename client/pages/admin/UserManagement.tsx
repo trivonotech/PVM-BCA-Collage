@@ -35,7 +35,7 @@ interface AdminUser {
     email: string;
     role: 'super_admin' | 'child_admin';
     permissions: string[];
-    createdAt: any; // Changed from string to any (Firestore Timestamp)
+    createdAt: { seconds: number; nanoseconds: number } | number | string | any;
     lastLogin?: string;
 }
 
@@ -139,11 +139,12 @@ export default function UserManagement() {
                 className: "bg-green-500 text-white border-none",
                 duration: 3000,
             });
-        } catch (error: any) {
+        } catch (error: unknown) {
+            const err = error as { message?: string };
             console.error("Error creating user:", error);
             toast({
                 title: "Error",
-                description: "Error creating user: " + error.message,
+                description: "Error creating user: " + (err.message || "Unknown error"),
                 variant: "destructive",
                 duration: 3000,
             });
@@ -180,11 +181,12 @@ export default function UserManagement() {
                 className: "bg-green-500 text-white border-none",
                 duration: 3000,
             });
-        } catch (error: any) {
+        } catch (error: unknown) {
+            const err = error as { message?: string };
             console.error("Error updating user:", error);
             toast({
                 title: "Error",
-                description: "Error updating user: " + error.message,
+                description: "Error updating user: " + (err.message || "Unknown error"),
                 variant: "destructive",
                 duration: 3000,
             });
@@ -205,11 +207,12 @@ export default function UserManagement() {
                     className: "bg-green-500 text-white border-none",
                     duration: 3000,
                 });
-            } catch (error: any) {
+            } catch (error: unknown) {
+                const err = error as { message?: string };
                 console.error("Error deleting user:", error);
                 toast({
                     title: "Error",
-                    description: "Error deleting user: " + error.message,
+                    description: "Error deleting user: " + (err.message || "Unknown error"),
                     variant: "destructive",
                     duration: 3000,
                 });
@@ -359,7 +362,13 @@ export default function UserManagement() {
                                             </span>
                                         </td>
                                         <td className="px-6 py-4 text-sm text-gray-600">
-                                            {new Date(user.createdAt).toLocaleDateString()}
+                                            {(() => {
+                                                if (!user.createdAt) return 'N/A';
+                                                if (typeof user.createdAt === 'object' && 'seconds' in user.createdAt) {
+                                                    return new Date(user.createdAt.seconds * 1000).toLocaleDateString();
+                                                }
+                                                return new Date(user.createdAt).toLocaleDateString();
+                                            })()}
                                         </td>
                                         <td className="px-6 py-4">
                                             <div className="flex items-center justify-end gap-2">

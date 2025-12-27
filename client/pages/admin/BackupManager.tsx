@@ -89,9 +89,10 @@ export default function BackupManager() {
 
     // Listen to real-time security settings
     useEffect(() => {
-        const unsub = onSnapshot(doc(db, 'settings', 'security'), (snap: any) => {
+        const unsub = onSnapshot(doc(db, 'settings', 'security'), (snap) => {
             if (snap.exists()) {
-                setIsMigrationMode(snap.data().migrationMode === true);
+                const data = snap.data();
+                setIsMigrationMode(data?.migrationMode === true);
             }
         });
         return () => unsub();
@@ -142,7 +143,7 @@ export default function BackupManager() {
                 duration: 5000,
             });
 
-        } catch (error) {
+        } catch (error: unknown) {
             console.error("Backup failed:", error);
             toast({
                 title: "Backup Failed",
@@ -179,7 +180,7 @@ export default function BackupManager() {
                 for (const [collectionName, docs] of collections) {
                     setRestoreProgress(`Restoring ${collectionName}...`);
 
-                    for (const docData of docs as any[]) {
+                    for (const docData of docs as Record<string, any>[]) {
                         const { id, ...data } = docData;
                         // Use setDoc to overwrite/create with specific ID
                         const { doc: firestoreDoc, setDoc: firestoreSetDoc } = await import('firebase/firestore');
@@ -196,7 +197,7 @@ export default function BackupManager() {
                 });
                 setRestoreProgress('');
 
-            } catch (error) {
+            } catch (error: unknown) {
                 console.error("Restore failed:", error);
                 toast({
                     title: "Restore Failed",

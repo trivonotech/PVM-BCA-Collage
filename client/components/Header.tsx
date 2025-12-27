@@ -6,6 +6,13 @@ import { useSectionVisibility } from '@/hooks/useSectionVisibility';
 // Import the logo
 import logo from '../assets/institute-logo.png';
 
+interface NavItem {
+  label: string;
+  href?: string;
+  submenu?: { label: string; href: string }[];
+  visible?: boolean;
+}
+
 export default function Header() {
   const { isVisible } = useSectionVisibility();
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -58,12 +65,12 @@ export default function Header() {
     return true;
   });
 
-  const isActiveMenu = (item: any) => {
+  const isActiveMenu = (item: NavItem) => {
     if (item.href) {
       return location.pathname === item.href;
     }
     if (item.submenu) {
-      return item.submenu.some((sub: any) => location.pathname === sub.href);
+      return item.submenu.some((sub: { href: string }) => location.pathname === sub.href);
     }
     return false;
   };
@@ -105,7 +112,7 @@ export default function Header() {
                       {/* Dropdown Menu */}
                       <div className="absolute top-full left-0 mt-2 w-56 bg-white rounded-2xl shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 border border-gray-100">
                         <div className="py-2">
-                          {item.submenu?.map((subItem: any) => (
+                          {item.submenu?.map((subItem: { label: string; href: string }) => (
                             <Link
                               key={subItem.label}
                               to={subItem.href}
@@ -201,7 +208,7 @@ export default function Header() {
                           </button>
                           {expandedMobile === item.label && (
                             <div className="mt-2 ml-4 space-y-2">
-                              {item.submenu?.map((subItem: any) => (
+                              {item.submenu?.map((subItem: { label: string; href: string }) => (
                                 <Link
                                   key={subItem.label}
                                   to={subItem.href}

@@ -9,11 +9,32 @@ interface SessionManagerModalProps {
     onClose: () => void;
 }
 
+interface AdminSession {
+    id: string;
+    adminName: string;
+    email: string;
+    device: string;
+    location: string;
+    timestamp: any;
+    ip: string;
+    status: 'active' | 'revoked' | 'expired';
+    lastActive?: any;
+}
+
+interface ActivityLog {
+    id: string;
+    action: string;
+    target?: string;
+    details: string;
+    timestamp: any;
+    sessionId: string;
+}
+
 export default function SessionManagerModal({ isOpen, onClose }: SessionManagerModalProps) {
-    const [sessions, setSessions] = useState<any[]>([]);
+    const [sessions, setSessions] = useState<AdminSession[]>([]);
     const [loading, setLoading] = useState(true);
-    const [viewingActivities, setViewingActivities] = useState<any[] | null>(null);
-    const [selectedSession, setSelectedSession] = useState<any | null>(null);
+    const [viewingActivities, setViewingActivities] = useState<ActivityLog[] | null>(null);
+    const [selectedSession, setSelectedSession] = useState<AdminSession | null>(null);
     const { toast } = useToast();
     const currentSessionId = localStorage.getItem('currentSessionId');
 
@@ -25,12 +46,12 @@ export default function SessionManagerModal({ isOpen, onClose }: SessionManagerM
         return new Date(ts as string | number); // Fallback for strings/numbers
     };
 
-    const formatDate = (ts: any) => {
+    const formatDate = (ts: unknown) => {
         const date = safeDate(ts);
         return date ? date.toLocaleString() : 'Just now';
     };
 
-    const formatTime = (ts: any) => {
+    const formatTime = (ts: unknown) => {
         const date = safeDate(ts);
         return date ? date.toLocaleTimeString() : 'Just now';
     };
@@ -43,9 +64,9 @@ export default function SessionManagerModal({ isOpen, onClose }: SessionManagerM
             const sessData = snapshot.docs.map(doc => ({
                 id: doc.id,
                 ...doc.data()
-            }));
+            })) as AdminSession[];
             // Filter out already revoked sessions from view if desired, or show them as inactive
-            setSessions(sessData.filter((s: any) => s.status !== 'revoked'));
+            setSessions(sessData.filter((s: AdminSession) => s.status !== 'revoked'));
             setLoading(false);
         }, () => {
             // Silently fail or handle gracefully
@@ -77,7 +98,7 @@ export default function SessionManagerModal({ isOpen, onClose }: SessionManagerM
         );
 
         const unsubscribe = onSnapshot(q, (snapshot) => {
-            setViewingActivities(snapshot.docs.map(d => ({ id: d.id, ...d.data() })));
+            setViewingActivities(snapshot.docs.map(d => ({ id: d.id, ...d.data() })) as ActivityLog[]);
             setLoading(false);
         }, () => {
             toast({ title: "Error", description: "Could not sync activity history.", variant: "destructive" });
@@ -114,7 +135,7 @@ export default function SessionManagerModal({ isOpen, onClose }: SessionManagerM
         }
     };
 
-    const openActivityView = (session: any) => {
+    const openActivityView = (session: AdminSession) => {
         setSelectedSession(session);
     };
 

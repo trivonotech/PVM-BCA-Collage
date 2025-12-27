@@ -33,14 +33,43 @@ import SessionManagerModal from '@/components/admin/SessionManagerModal';
 import AdminLayout from '@/components/admin/AdminLayout';
 import { logAdminActivity } from '@/lib/ActivityLogger';
 
+interface SystemStats {
+    totalVisits: number;
+    activeUsers?: number;
+    requestCount?: number;
+    errorRate?: string;
+    cpuLevel?: string;
+}
+
+interface AppError {
+    id: string;
+    message?: string;
+    type?: 'critical' | 'warning' | 'info';
+    timestamp?: any;
+    path?: string;
+    component?: string;
+    userAgent?: string;
+}
+
+interface AppSession {
+    id: string;
+    userId?: string;
+    userName?: string;
+    adminName?: string;
+    adminEmail?: string;
+    lastActive?: any;
+    timestamp?: any;
+    status: 'active' | 'expired' | 'revoked';
+}
+
 export default function SystemHealth() {
     const { toast } = useToast();
-    const [stats, setStats] = useState<any>(null);
+    const [stats, setStats] = useState<SystemStats | null>(null);
     const [loading, setLoading] = useState(true);
     const [dbStatus, setDbStatus] = useState<'online' | 'offline'>('offline');
     const [latency, setLatency] = useState<number | null>(null);
-    const [recentErrors, setRecentErrors] = useState<any[]>([]);
-    const [recentSessions, setRecentSessions] = useState<any[]>([]);
+    const [recentErrors, setRecentErrors] = useState<AppError[]>([]);
+    const [recentSessions, setRecentSessions] = useState<AppSession[]>([]);
     const [showUsageModal, setShowUsageModal] = useState(false);
     const [showSecurityConfig, setShowSecurityConfig] = useState(false);
     const [showSessionManager, setShowSessionManager] = useState(false);
@@ -87,7 +116,7 @@ export default function SystemHealth() {
         // 1. Connectivity & Stats
         const unsubAnalytics = onSnapshot(doc(db, 'analytics', 'aggregate'), (snap) => {
             if (snap.exists()) {
-                setStats(snap.data());
+                setStats(snap.data() as SystemStats);
                 setDbStatus('online');
             } else {
                 setStats({ totalVisits: 0 });
@@ -121,7 +150,7 @@ export default function SystemHealth() {
             try {
                 const logsQ = query(collection(db, 'system_logs'), orderBy('timestamp', 'desc'), limit(5));
                 const snap = await getDocs(logsQ);
-                setRecentErrors(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+                setRecentErrors(snap.docs.map(d => ({ id: d.id, ...d.data() } as AppError)));
             } catch (e) { console.error("Error logs fetch failed"); }
         };
         fetchErrors();
@@ -138,7 +167,7 @@ export default function SystemHealth() {
                     const lastActive = data.lastActive?.toDate ? data.lastActive.toDate() : (data.timestamp?.toDate ? data.timestamp.toDate() : new Date());
                     return data.status !== 'revoked' && lastActive > fifteenMinsAgo;
                 });
-                setRecentSessions(active.map(d => ({ id: d.id, ...d.data() })));
+                setRecentSessions(active.map(d => ({ id: d.id, ...d.data() } as AppSession)));
             } catch (e) { console.error("Session monitor failed"); }
         };
         fetchSessions();

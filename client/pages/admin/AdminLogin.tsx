@@ -20,7 +20,7 @@ export default function AdminLogin() {
 
     // Listen to System Security Settings
     useEffect(() => {
-        let unsub: any;
+        let unsub: (() => void) | undefined;
         const initListener = async () => {
             const { doc, onSnapshot } = await import('firebase/firestore');
             const { db } = await import('@/lib/firebase');
@@ -74,9 +74,10 @@ export default function AdminLogin() {
                 duration: 3000,
             });
             setError(''); // Clear any previous error message
-        } catch (err: any) {
+        } catch (err: unknown) {
+            const error = err as { message?: string };
             console.error('Reset Password Error:', err);
-            setError('Failed to send reset link: ' + err.message);
+            setError('Failed to send reset link: ' + (error.message || 'Unknown error'));
         } finally {
             setLoading(false);
         }
@@ -132,9 +133,10 @@ export default function AdminLogin() {
                     } else {
                         setError('User profile not found. Contact Super Admin.');
                     }
-                } catch (error: any) {
+                } catch (error: unknown) {
+                    const err = error as { message?: string };
                     console.error("Error signing in with email link", error);
-                    setError('Invalid or expired login link. Please try again.');
+                    setError("Failed to complete email sign-in: " + (err.message || "Unknown error"));
                     // If error, likely link expired or invalid
                 } finally {
                     setLoading(false);
@@ -204,7 +206,7 @@ export default function AdminLogin() {
                 // --- BYPASS MODE (Direct Login) --
                 // Proceed directly to dashboard
 
-                let userData: any = {};
+                let userData: Record<string, any> = {};
                 try {
                     const { doc, getDoc, collection, addDoc } = await import('firebase/firestore');
                     const userDocRef = doc(db, 'users', user.uid);
@@ -309,9 +311,10 @@ export default function AdminLogin() {
                 }
             }
 
-        } catch (err: any) {
+        } catch (loginErr: unknown) {
+            const err = loginErr as { message?: string };
             console.error('Login error:', err);
-            setError('System error. Please try again.');
+            setError(err.message || 'Login failed');
         } finally {
             setLoading(false);
         }

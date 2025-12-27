@@ -24,9 +24,10 @@ export const usePageTracker = () => {
                     [`pageViews.${pageKey}`]: increment(1),
                     totalVisits: increment(1)
                 });
-            } catch (error: any) {
+            } catch (error: unknown) {
+                const err = error as { code?: string };
                 // If doc doesn't exist, create it (only happens once)
-                if (error.code === 'not-found') {
+                if (err.code === 'not-found') {
                     await setDoc(analyticsRef, {
                         pageViews: { [pageKey]: 1 },
                         totalVisits: 1

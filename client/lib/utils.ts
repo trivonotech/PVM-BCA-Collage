@@ -35,3 +35,9 @@ export function getEventStatus(dateStr: string): 'Upcoming' | 'Completed' {
     return 'Upcoming';
   }
 }
+
+export function ensureAbsoluteUrl(url: string | undefined): string {
+  if (!url) return 'javascript:void(0)';
+  if (url.startsWith('http://') || url.startsWith('https://')) return url;
+  return `https://${url}`;
+}

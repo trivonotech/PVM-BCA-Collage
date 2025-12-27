@@ -39,11 +39,11 @@ interface NewsSubmission {
         designation?: string;
     };
     status: 'pending' | 'approved' | 'rejected';
-    submittedAt: any;
+    submittedAt: { seconds: number; nanoseconds: number } | string | number | any;
     approvedBy?: string;
-    approvedAt?: any;
+    approvedAt?: { seconds: number; nanoseconds: number } | string | number | any;
     rejectedBy?: string;
-    rejectedAt?: any;
+    rejectedAt?: { seconds: number; nanoseconds: number } | string | number | any;
 }
 
 export default function NewsManager() {
@@ -96,7 +96,7 @@ export default function NewsManager() {
 
             setNews(newsData);
             setLoading(false);
-        }, (error) => {
+        }, (error: unknown) => {
             console.error('Error fetching news:', error);
             setLoading(false);
         });

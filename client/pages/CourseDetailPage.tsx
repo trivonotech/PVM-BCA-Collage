@@ -22,11 +22,45 @@ import { db } from '@/lib/firebase';
 import { useSectionVisibility } from '@/hooks/useSectionVisibility';
 import { useToast } from "@/components/ui/use-toast";
 
+interface CourseSyllabusItem {
+    srNo: number | string;
+    category: string;
+    title: string;
+    level: string;
+    credit: number | string;
+    teachingHrs: string;
+    seeMarks: number | string;
+    cceMarks: number | string;
+    totalMarks: number | string;
+    duration: string;
+}
+
+interface CourseSemester {
+    id: string;
+    sem: string;
+    courses: CourseSyllabusItem[];
+}
+
+interface Course {
+    id: string;
+    name: string;
+    code?: string;
+    description: string;
+    duration: string;
+    eligibility: string;
+    image?: string;
+    objectives?: string[];
+    eligibilityDetails?: string[];
+    syllabus?: CourseSemester[];
+    careerOpportunities?: string[];
+    fees?: string;
+}
+
 export default function CourseDetailPage() {
     const { id } = useParams<{ id: string }>();
     const { isVisible } = useSectionVisibility();
     const { toast } = useToast();
-    const [course, setCourse] = useState<any>(null);
+    const [course, setCourse] = useState<Course | null>(null);
     const [loading, setLoading] = useState(true);
     const [activeSem, setActiveSem] = useState<number>(0);
     const [mobileActiveSem, setMobileActiveSem] = useState<number | null>(null);
@@ -49,7 +83,7 @@ export default function CourseDetailPage() {
                 const docRef = doc(db, 'courses', id);
                 const docSnap = await getDoc(docRef);
                 if (docSnap.exists()) {
-                    setCourse({ id: docSnap.id, ...docSnap.data() });
+                    setCourse({ id: docSnap.id, ...docSnap.data() } as Course);
                 }
             } catch (error) {
                 toast({
@@ -285,7 +319,7 @@ export default function CourseDetailPage() {
                                     {/* Premium Pilled Tabs Navigation */}
                                     <div className="flex justify-center mb-12">
                                         <div className="inline-flex bg-gray-200/50 p-1.5 rounded-2xl overflow-x-auto max-w-full no-scrollbar">
-                                            {syllabus.map((sem: any, index: number) => (
+                                            {syllabus.map((sem: CourseSemester, index: number) => (
                                                 <button
                                                     key={index}
                                                     onClick={() => setActiveSem(index)}
@@ -355,21 +389,21 @@ export default function CourseDetailPage() {
                                                             </tr>
                                                         </thead>
                                                         <tbody>
-                                                            {syllabus[activeSem]?.courses?.map((course: any, idx: number) => (
+                                                            {syllabus[activeSem]?.courses?.map((courseItem: CourseSyllabusItem, idx: number) => (
                                                                 <tr key={idx} className="group hover:bg-blue-50/30 transition-colors border-b border-gray-100 last:border-0">
                                                                     {/* Explicit Key Mapping for Stability */}
                                                                     {[
-                                                                        course.srNo,
-                                                                        course.category,
-                                                                        course.title,
-                                                                        course.level,
-                                                                        course.credit,
-                                                                        course.teachingHrs,
-                                                                        course.seeMarks,
-                                                                        course.cceMarks,
-                                                                        course.totalMarks,
-                                                                        course.duration
-                                                                    ].map((val: any, vIdx) => {
+                                                                        courseItem.srNo,
+                                                                        courseItem.category,
+                                                                        courseItem.title,
+                                                                        courseItem.level,
+                                                                        courseItem.credit,
+                                                                        courseItem.teachingHrs,
+                                                                        courseItem.seeMarks,
+                                                                        courseItem.cceMarks,
+                                                                        courseItem.totalMarks,
+                                                                        courseItem.duration
+                                                                    ].map((val: string | number, vIdx) => {
                                                                         const aligns = [
                                                                             "text-center", // SrNo
                                                                             "",            // Category
@@ -401,7 +435,7 @@ export default function CourseDetailPage() {
                                 {/* Mobile View: Master-Detail Layout */}
                                 <div className="block md:hidden">
                                     <div className="grid gap-4">
-                                        {syllabus.map((sem: any, index: number) => (
+                                        {syllabus.map((sem: CourseSemester, index: number) => (
                                             <div
                                                 key={index}
                                                 onClick={() => setMobileActiveSem(index)}
@@ -441,14 +475,14 @@ export default function CourseDetailPage() {
                                                     </div>
                                                 </div>
                                                 <div className="p-4 space-y-4 pb-20">
-                                                    {syllabus[mobileActiveSem]?.courses?.map((course: any, idx: number) => (
+                                                    {syllabus[mobileActiveSem]?.courses?.map((courseItem: CourseSyllabusItem, idx: number) => (
                                                         <div key={idx} className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
                                                             {/* Simplified Mobile Card for dynamic data validity safety */}
-                                                            <h4 className="text-lg font-bold text-[#0B0B3B]">{course.title || "Subject"}</h4>
-                                                            <p className="text-sm text-gray-600 mt-2">Credits: {course.credit || "N/A"}</p>
+                                                            <h4 className="text-lg font-bold text-[#0B0B3B]">{courseItem.title || "Subject"}</h4>
+                                                            <p className="text-sm text-gray-600 mt-2">Credits: {courseItem.credit || "N/A"}</p>
                                                             <div className="flex justify-between mt-4 text-xs font-bold text-gray-400 uppercase border-t pt-3">
                                                                 <span>Total Marks</span>
-                                                                <span className="text-[#0B0B3B]">{course.totalMarks || "100"}</span>
+                                                                <span className="text-[#0B0B3B]">{courseItem.totalMarks || "100"}</span>
                                                             </div>
                                                         </div>
                                                     ))}

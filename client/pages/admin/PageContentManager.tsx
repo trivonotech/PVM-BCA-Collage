@@ -281,7 +281,7 @@ export default function PageContentManager() {
                                 </h2>
                                 <div className="flex gap-2">
                                     <button
-                                        onClick={() => window.open(AVAILABLE_PAGES.find(p => p.id === selectedPage)?.path, '_blank')}
+                                        onClick={() => window.open(AVAILABLE_PAGES.find(p => p.id === selectedPage)?.path, '_blank', 'noopener,noreferrer')}
                                         className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg"
                                         title="View Live Page"
                                     >
